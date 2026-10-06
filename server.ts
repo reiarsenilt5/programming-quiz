@@ -1,0 +1,104 @@
+import express from 'express';
+import { createServer as createViteServer } from 'vite';
+import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+async function startServer() {
+  const app = express();
+  const PORT = Number(process.env.PORT) || 3000;
+
+  app.use(express.json());
+
+  const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
+    },
+  });
+
+  // Health check
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // API endpoint: Explain question with AI Tutor (Gemini 3.8 Flash)
+  app.post('/api/ai-explain', async (req, res) => {
+    try {
+      const {
+        questionTitle,
+        codeSnippet,
+        selectedAnswer,
+        correctAnswer,
+        explanation,
+        category,
+        difficulty,
+      } = req.body;
+
+      const prompt = `Actúa como un Senior Staff Software Engineer y Mentor Técnico en la app "DevQuiz: Master Modern Coding".
+Tu objetivo es proporcionar una explicación técnica de nivel profesional sobre la siguiente pregunta:
+
+- Categoría: ${category || 'Software Engineering'}
+- Nivel de Dificultad: ${difficulty || 'Intermedio'}
+- Pregunta: "${questionTitle}"
+${codeSnippet ? `- Código de la pregunta:\n\`\`\`\n${codeSnippet}\n\`\`\`` : ''}
+- Respuesta seleccionada por el usuario: "${selectedAnswer}"
+- Respuesta Correcta: "${correctAnswer}"
+- Explicación breve inicial: "${explanation}"
+
+Por favor, estructura tu respuesta con claridad pedagógica y markdown limpio:
+1. 💡 **Fundamento Técnico & Anatomía del Código**: Explica exactamente qué ocurre en tiempo de ejecución o compilación, el estándar o especificación aplicable.
+2. ⚠️ **Por qué fallan las alternativas incorrectas**: Los errores conceptuales comunes que llevan a elegir las opciones trampa.
+3. 🚀 **Patrón de Producción & Buenas Prácticas**: Un ejemplo conciso de cómo se implementa esto en un proyecto real hoy en día.
+4. 🧠 **Pro-Tip para Entrevistas**: Una regla mnemotécnica o dato clave de arquitectura.
+
+Sé conciso, riguroso y en español neutro profesional.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+      });
+
+      res.json({
+        explanation: response.text || 'No se pudo generar la respuesta detallada.',
+      });
+    } catch (error: any) {
+      console.error('Error al invocar Gemini API:', error);
+      res.status(500).json({
+        error: 'Error al consultar el tutor de IA',
+        details: error?.message || 'Error en el servicio de IA',
+      });
+    }
+  });
+
+  // Vite middleware for dev or static files for prod
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    });
+  } else {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});

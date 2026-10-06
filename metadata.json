@@ -1,0 +1,8 @@
+{
+  "name": "DevQuiz: Master Modern Coding",
+  "description": "Aplicación interactiva y arquitectura nativa de Android con Jetpack Compose, Clean Architecture, Room y tutor de IA para dominar el desarrollo moderno.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
