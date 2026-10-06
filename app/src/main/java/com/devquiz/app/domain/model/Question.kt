@@ -6,7 +6,9 @@ enum class CategoryType(val id: String, val displayName: String) {
     JAVASCRIPT("javascript", "JavaScript Core"),
     TYPESCRIPT("typescript", "TypeScript Avanzado"),
     REACT("react", "React & Ecosystem"),
-    MODERN_FUNDAMENTALS("modern_fundamentals", "Fundamentos Modernos"),
+    SQL("sql", "SQL & Bases de Datos"),
+    SOLID("solid", "Principios SOLID"),
+    MODERN_FUNDAMENTALS("modern_fundamentals", "Fundamentos & Git"),
     AI_ASSISTANCE("ai_assistance", "IA para Programadores");
 
     companion object {

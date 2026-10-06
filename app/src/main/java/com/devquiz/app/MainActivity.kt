@@ -14,9 +14,7 @@ import com.devquiz.app.presentation.home.HomeScreen
 import com.devquiz.app.presentation.quiz.QuizScreen
 import com.devquiz.app.presentation.quiz.QuizViewModel
 import com.devquiz.app.presentation.result.ResultScreen
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: QuizViewModel by viewModels()

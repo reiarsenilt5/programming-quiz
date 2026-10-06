@@ -4,6 +4,8 @@ export type CategoryId =
   | 'javascript'
   | 'typescript'
   | 'react'
+  | 'sql'
+  | 'solid'
   | 'modern_fundamentals'
   | 'ai_assistance';
 

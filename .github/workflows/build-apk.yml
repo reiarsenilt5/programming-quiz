@@ -5,7 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Permite compilar manualmente con un clic en la pestaña Actions de GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,11 +25,11 @@ jobs:
       - name: 🐘 Configurar Gradle Oficial
         uses: gradle/actions/setup-gradle@v3
 
-      - name: 🛡️ Auto-generar Gradle Wrapper si no está en el repo
+      - name: 🛡️ Auto-generar Gradle Wrapper si falta en el repo
         run: |
           if [ ! -f "gradlew" ]; then
-            echo "Aviso: gradlew no encontrado. Generando wrapper automáticamente con Gradle 8.3..."
-            gradle wrapper --gradle-version 8.3
+            echo "Generando Gradle wrapper 8.6..."
+            gradle wrapper --gradle-version 8.6
           fi
           chmod +x gradlew
 
@@ -44,7 +44,7 @@ jobs:
           fi
 
       - name: 🔨 Compilar APK Debug
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: 📦 Subir APK Debug como Artefacto Descargable
         uses: actions/upload-artifact@v4

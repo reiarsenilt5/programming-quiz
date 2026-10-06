@@ -90,9 +90,79 @@
     "explanation": "En cada frame, count es constante. Para encadenar updates dependientes del estado previo, usa setCount(prev => prev + 1)."
   },
   {
+    "id": "sql-01",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Mid",
+    "type": "multiple_choice",
+    "title": "En un índice compuesto B-Tree sobre (user_id, created_at), ¿cuál consulta NO aprovecha el índice?",
+    "codeLanguage": "sql",
+    "codeSnippet": "-- CREATE INDEX idx_user_date ON pedidos(user_id, created_at);",
+    "options": [
+      "SELECT * FROM pedidos WHERE created_at > '2024-01-01';",
+      "SELECT * FROM pedidos WHERE user_id = 42 AND created_at > '2024-01-01';",
+      "SELECT * FROM pedidos WHERE user_id = 42 ORDER BY created_at DESC;",
+      "SELECT * FROM pedidos WHERE user_id = 42;"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Regla del Prefijo Más a la Izquierda (Leftmost Prefix): Si filtras solo por la segunda columna del índice sin especificar la primera, el motor debe realizar un scan completo."
+  },
+  {
+    "id": "sql-02",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué anomalía ACID previene REPEATABLE READ que READ COMMITTED permite?",
+    "options": [
+      "Lectura No Repetible (Non-Repeatable Read): que una misma fila cambie de valor al ser leída de nuevo en la misma transacción.",
+      "Lectura Sucia (Dirty Read).",
+      "Deadlock de tabla.",
+      "Pérdida de la clave primaria."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Bajo READ COMMITTED, cada SELECT toma un nuevo snapshot de la base de datos. REPEATABLE READ preserva el mismo snapshot durante toda la transacción."
+  },
+  {
+    "id": "solid-01",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Mid",
+    "type": "find_the_bug",
+    "title": "¿Qué principio SOLID viola una clase que calcula totales, genera PDFs, guarda en MySQL y envía emails?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class ProcesadorFacturas {\n  calcularTotal() {}\n  generarPDF() {}\n  guardarMySQL() {}\n  enviarEmail() {}\n}",
+    "options": [
+      "Single Responsibility Principle (SRP): La clase tiene múltiples razones para cambiar.",
+      "Open/Closed Principle (OCP).",
+      "Liskov Substitution Principle (LSP).",
+      "Interface Segregation Principle (ISP)."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El Principio de Responsabilidad Única (SRP) estipula que una clase debe tener una sola razón para cambiar y estar acoplada a un único actor de negocio."
+  },
+  {
+    "id": "solid-02",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Por qué heredar Cuadrado de Rectángulo viola el Principio de Sustitución de Liskov (LSP)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class Cuadrado extends Rectangulo {\n  setWidth(w) { this.w = w; this.h = w; }\n}",
+    "options": [
+      "Liskov Substitution Principle (LSP): Subtipos deben sustituir a sus tipos base sin romper invariantes ni expectativas de comportamiento.",
+      "Dependency Inversion: No usa inyección de dependencias.",
+      "Interface Segregation: Cuadrado tiene métodos de más.",
+      "No hay error; un cuadrado es un rectángulo en matemáticas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La postcondición de setWidth en Rectángulo garantiza que el alto no se altere; Cuadrado rompe ese invariante, rompiendo código cliente."
+  },
+  {
     "id": "fund-01",
     "categoryId": "modern_fundamentals",
-    "categoryName": "Fundamentos Modernos",
+    "categoryName": "Fundamentos & Git",
     "difficulty": "Mid",
     "type": "multiple_choice",
     "title": "En Clean Architecture, ¿hacia dónde deben apuntar siempre las dependencias del código?",

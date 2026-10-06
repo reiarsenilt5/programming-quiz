@@ -42,11 +42,27 @@ export const CATEGORIES: CategoryInfo[] = [
     tag: 'React 19',
   },
   {
+    id: 'sql',
+    name: 'SQL & Bases de Datos',
+    icon: '🗄️',
+    color: '#3b82f6',
+    description: 'PostgreSQL/MySQL, índices B-Tree, transacciones ACID, JOINs y EXPLAIN.',
+    tag: 'SQL Moderno',
+  },
+  {
+    id: 'solid',
+    name: 'Principios SOLID',
+    icon: '📐',
+    color: '#ec4899',
+    description: 'SRP, Open/Closed, Liskov, Interface Segregation y Dependency Inversion.',
+    tag: 'Clean Code',
+  },
+  {
     id: 'modern_fundamentals',
-    name: 'Fundamentos Modernos',
+    name: 'Fundamentos & Git',
     icon: '🏛️',
     color: '#10b981',
-    description: 'SOLID, Clean Architecture, Git internals, REST vs GraphQL y patrones.',
+    description: 'Git internals (rebase/merge), REST vs GraphQL, Clean Architecture y patrones.',
     tag: 'Architecture',
   },
   {
@@ -106,21 +122,6 @@ print(registrar_evento("B")) # ¿Qué imprime?`,
     correctAnswerIndex: 1,
     explanation: "Python 3.11 introdujo TaskGroup y ExceptionGroup para adoptar Structured Concurrency. Si una tarea dentro del bloque 'async with' lanza un error, todas las demás tareas pendientes se cancelan inmediatamente, evitando tareas huérfanas que sigan consumiendo recursos.",
     proTip: "Evita asyncio.gather en código nuevo si requieres manejo estricto de cancelación y errores encadenados."
-  },
-  {
-    id: 'py-03',
-    categoryId: 'python',
-    categoryName: 'Python Moderno',
-    difficulty: 'Junior',
-    type: 'true_false',
-    title: 'En Python 3.10+, la sintaxis de unión de tipos `int | str` reemplaza oficialmente la necesidad de importar `Union` de `typing`.',
-    options: [
-      "Verdadero (Syntactic Sugar soportado nativamente por el operador bitwise OR |).",
-      "Falso (Solo funciona dentro de docstrings y no en tiempo de inspección)."
-    ],
-    correctAnswerIndex: 0,
-    explanation: "PEP 604 introdujo el operador | para tipos de unión en Python 3.10. Permite escribir 'int | str' en lugar de 'Union[int, str]', siendo más legible y limpio sin requerir imports adicionales.",
-    proTip: "Si necesitas compatibilidad con versiones previas, puedes usar 'from __future__ import annotations'."
   },
 
   // 2. PHP
@@ -301,40 +302,161 @@ type Resultado = UnpackPromise<Promise<number>>; // ¿Qué tipo es Resultado?`,
     explanation: "En cada render, 'count' es una constante con el valor de ese frame. Las tres llamadas 'setCount(count + 1)' ejecutan 'setCount(0 + 1)'. Para encadenar actualizaciones dependientes del estado previo en el mismo lote (batch), se debe usar la forma funcional: 'setCount(prev => prev + 1)'.",
     proTip: "Siempre que la nueva actualización dependa del valor anterior, utiliza un updater funcional: setCount(c => c + 1)."
   },
-  {
-    id: 'react-02',
-    categoryId: 'react',
-    categoryName: 'React & Ecosystem',
-    difficulty: 'Senior',
-    type: 'multiple_choice',
-    title: 'En React Server Components (RSC), ¿cuál de las siguientes afirmaciones es CORRECTA?',
-    codeLanguage: 'tsx',
-    codeSnippet: `// ServerComponent.tsx
-import db from '@/lib/db';
 
-export default async function ProductList() {
-  const products = await db.query('SELECT * FROM products');
-  return <ul>{products.map(p => <li key={p.id}>{p.name}</li>)}</ul>;
-}`,
+  // 6. SQL & BASES DE DATOS (NUEVO QUIZ SEPARADO)
+  {
+    id: 'sql-01',
+    categoryId: 'sql',
+    categoryName: 'SQL & Bases de Datos',
+    difficulty: 'Mid',
+    type: 'multiple_choice',
+    title: 'En un índice compuesto B-Tree sobre `(user_id, created_at)`, ¿cuál de las siguientes consultas NO puede utilizar el índice eficientemente?',
+    codeLanguage: 'sql',
+    codeSnippet: `-- Tabla: pedidos (id, user_id, total, created_at)
+-- Índice creado: CREATE INDEX idx_pedidos_user_created ON pedidos(user_id, created_at);`,
     options: [
-      "Los Server Components se ejecutan exclusivamente en el servidor, su código fuente no se envía en el bundle de JavaScript al cliente y pueden ser funciones asíncronas con acceso directo a bases de datos.",
-      "Los Server Components pueden utilizar hooks como useState y useEffect sin restricciones.",
-      "Los Server Components reemplazan por completo a los Client Components y eliminan la necesidad de interactividad.",
-      "Para convertir un componente en Server Component se debe agregar obligatoriamente la directiva 'use server' al inicio del archivo."
+      "SELECT * FROM pedidos WHERE created_at > '2024-01-01';",
+      "SELECT * FROM pedidos WHERE user_id = 42 AND created_at > '2024-01-01';",
+      "SELECT * FROM pedidos WHERE user_id = 42 ORDER BY created_at DESC;",
+      "SELECT * FROM pedidos WHERE user_id = 42;"
     ],
     correctAnswerIndex: 0,
-    explanation: "Los React Server Components (RSC) se ejecutan únicamente en el servidor y renderizan hacia un formato serializado intermedio (no HTML estático puro, sino un árbol de componentes), con cero impacto en el tamaño del bundle JS del cliente. La directiva 'use server' define Server Actions, mientras que los Server Components son el comportamiento por defecto en frameworks modernos como Next.js App Router.",
-    proTip: "'use client' marca el límite para Client Components (interactividad, hooks). 'use server' marca Server Actions (funciones ejecutables vía POST)."
+    explanation: "Regla del Prefijo Más a la Izquierda (Leftmost Prefix Rule): Un índice compuesto ordenado por (A, B) está organizado primero por A, y para valores idénticos de A, por B. Si filtras solo por B ('created_at') sin especificar A ('user_id'), el motor debe hacer un Full Table Scan o Full Index Scan porque no puede saltar directamente a los nodos relevantes.",
+    proTip: "El orden de las columnas en un índice compuesto es crítico: coloca primero la columna de mayor cardinalidad y filtro común."
+  },
+  {
+    id: 'sql-02',
+    categoryId: 'sql',
+    categoryName: 'SQL & Bases de Datos',
+    difficulty: 'Senior',
+    type: 'multiple_choice',
+    title: '¿Qué anomalía de concurrencia ACID previene el nivel de aislamiento `REPEATABLE READ` que `READ COMMITTED` permite?',
+    codeLanguage: 'sql',
+    codeSnippet: `-- Transacción 1:
+BEGIN;
+SELECT saldo FROM cuentas WHERE id = 1; -- Retorna 100
+-- [En este punto, la Transacción 2 actualiza a 150 y hace COMMIT]
+SELECT saldo FROM cuentas WHERE id = 1; -- ¿Qué ve T1?`,
+    options: [
+      "Lectura No Repetible (Non-Repeatable Read): en REPEATABLE READ, T1 verá siempre 100 mediante MVCC / Snapshot Isolation.",
+      "Lectura Sucia (Dirty Read): leer datos de una transacción que aún no ha hecho commit.",
+      "Deadlock total entre conexiones simultáneas.",
+      "Pérdida de la clave primaria por truncado de página."
+    ],
+    correctAnswerIndex: 0,
+    explanation: "Bajo 'READ COMMITTED', cada SELECT toma una nueva instantánea, por lo que si otra transacción modifica el registro y hace commit, la segunda lectura arrojará un valor diferente (Non-Repeatable Read). 'REPEATABLE READ' mantiene la misma vista consistente de datos durante toda la duración de la transacción.",
+    proTip: "En PostgreSQL, REPEATABLE READ también previene lecturas fantasma (Phantom Reads) gracias a su motor MVCC basado en snapshots."
+  },
+  {
+    id: 'sql-03',
+    categoryId: 'sql',
+    categoryName: 'SQL & Bases de Datos',
+    difficulty: 'Mid',
+    type: 'multiple_choice',
+    title: '¿Cuál es la función analítica (Window Function) recomendada para obtener el salario más alto de cada departamento sin agrupar todas las filas?',
+    codeLanguage: 'sql',
+    codeSnippet: `SELECT id, departamento_id, salario,
+       ROW_NUMBER() OVER (
+           PARTITION BY departamento_id 
+           ORDER BY salario DESC
+       ) as ranking
+FROM empleados;`,
+    options: [
+      "Asigna un número secuencial del 1 al N a cada empleado dentro de su propio departamento, ordenado de mayor a menor salario.",
+      "Elimina físicamente las filas duplicadas de la tabla empleados.",
+      "Calcula la suma acumulada del salario en la empresa.",
+      "Es una cláusula GROUP BY que solo retorna una única fila por departamento."
+    ],
+    correctAnswerIndex: 0,
+    explanation: "Las Window Functions operan sobre particiones de datos calculadas en tiempo de consulta sin colapsar las filas como un GROUP BY. 'PARTITION BY departamento_id ORDER BY salario DESC' reinicia el contador 'ranking' en 1 para el empleado con mayor salario de cada departamento.",
+    proTip: "Para obtener solo el top 1, envuelve esta consulta en un CTE ('WITH ranked AS (...) SELECT * FROM ranked WHERE ranking = 1')."
   },
 
-  // 6. FUNDAMENTOS MODERNOS
+  // 7. PRINCIPIOS SOLID (NUEVO QUIZ SEPARADO)
+  {
+    id: 'solid-01',
+    categoryId: 'solid',
+    categoryName: 'Principios SOLID',
+    difficulty: 'Mid',
+    type: 'find_the_bug',
+    title: '¿Qué principio SOLID se está violando flagrantemente en esta clase `ProcesadorFacturas`?',
+    codeLanguage: 'typescript',
+    codeSnippet: `class ProcesadorFacturas {
+  calcularTotal(factura: Factura): number { /* calcula total */ }
+  imprimirFacturaPDF(factura: Factura): void { /* genera PDF */ }
+  guardarEnBaseDeDatos(factura: Factura): void { /* inserta en MySQL */ }
+  enviarEmailAlCliente(factura: Factura): void { /* conecta a SMTP */ }
+}`,
+    options: [
+      "Single Responsibility Principle (SRP): La clase tiene múltiples razones para cambiar (lógica financiera, formato de renderizado, persistencia y envío de red).",
+      "Open/Closed Principle (OCP): No permite heredar de Factura.",
+      "Liskov Substitution Principle (LSP): Porque no implementa una interfaz.",
+      "Interface Segregation Principle (ISP): Porque tiene más de 3 métodos."
+    ],
+    correctAnswerIndex: 0,
+    explanation: "El Principio de Responsabilidad Única (SRP) estipula que una clase o módulo debe tener una, y solo una, razón para cambiar (estar acoplado a un único actor de negocio). Esta clase cambiará si cambia la regla impositiva, si cambia el diseño del PDF, si se migra de base de datos o si cambia el proveedor de email.",
+    proTip: "Separa en: CalculadorFactura (Core), GeneradorFacturaPdf, RepositorioFacturas y NotificadorFacturas."
+  },
+  {
+    id: 'solid-02',
+    categoryId: 'solid',
+    categoryName: 'Principios SOLID',
+    difficulty: 'Senior',
+    type: 'find_the_bug',
+    title: '¿Por qué la relación clásica entre `Rectangulo` y `Cuadrado` viola el Principio de Sustitución de Liskov (LSP)?',
+    codeLanguage: 'typescript',
+    codeSnippet: `class Rectangulo {
+  setWidth(w: number) { this.w = w; }
+  setHeight(h: number) { this.h = h; }
+  getArea(): number { return this.w * this.h; }
+}
+
+class Cuadrado extends Rectangulo {
+  setWidth(w: number) { this.w = w; this.h = w; } // Modifica ambos
+  setHeight(h: number) { this.w = h; this.h = h; }
+}
+
+function cambiarDimensiones(r: Rectangulo) {
+  r.setWidth(5);
+  r.setHeight(4);
+  assert(r.getArea() === 20); // ¡Falla si r es Cuadrado (dará 16)!
+}`,
+    options: [
+      "Liskov Substitution Principle (LSP): Los subtipos deben ser sustituibles por sus tipos base sin alterar la corrección del programa ni violar invariantes.",
+      "Dependency Inversion: No usa inyección de dependencias en el constructor.",
+      "Interface Segregation: Cuadrado debería tener más métodos que Rectángulo.",
+      "No hay error; las matemáticas demuestran que un cuadrado es un rectángulo."
+    ],
+    correctAnswerIndex: 0,
+    explanation: "Aunque en geometría todo cuadrado es un rectángulo, en programación orientada a objetos conductual (LSP de Barbara Liskov), el comportamiento observable importa más que la taxonomía. La postcondición de 'setWidth(5)' en Rectángulo es que el alto no se altere; Cuadrado rompe ese invariante, haciendo que el código cliente falle.",
+    proTip: "LSP regla práctica: Si una subclase sobrescribe un método lanzando excepciones no soportadas o alterando efectos colaterales esperados, es una violación de LSP."
+  },
+  {
+    id: 'solid-03',
+    categoryId: 'solid',
+    categoryName: 'Principios SOLID',
+    difficulty: 'Mid',
+    type: 'multiple_choice',
+    title: '¿Cuál es la definición exacta del Principio de Inversión de Dependencias (DIP)?',
+    options: [
+      "Los módulos de alto nivel no deben depender de módulos de bajo nivel; ambos deben depender de abstracciones. Las abstracciones no deben depender de los detalles.",
+      "Toda clase debe recibir sus dependencias exclusivamente a través de variables globales.",
+      "Siempre se debe usar un framework de inversión de control como Spring o Dagger/Hilt.",
+      "Las clases deben derivar siempre de una clase base abstracta única."
+    ],
+    correctAnswerIndex: 0,
+    explanation: "El Principio de Inversión de Dependencias (la 'D' de SOLID) establece que la lógica de negocio nuclear (alto nivel) no debe importar drivers de bases de datos o clientes HTTP concretos (bajo nivel), sino interfaces abstractas (ej: RepositorioUsuarios). Los detalles de implementación dependen de la interfaz definida por el dominio.",
+    proTip: "DIP es la base de la Dependency Inversion que permite la Clean Architecture y la arquitectura hexagonal."
+  },
+
+  // 8. FUNDAMENTOS MODERNOS & GIT
   {
     id: 'fund-01',
     categoryId: 'modern_fundamentals',
-    categoryName: 'Fundamentos Modernos',
+    categoryName: 'Fundamentos & Git',
     difficulty: 'Mid',
     type: 'multiple_choice',
-    title: 'En Clean Architecture de Uncle Bob, ¿cuál es la regla sagrada e inquebrantable de Dependencia (Dependency Rule)?',
+    title: 'En Clean Architecture de Uncle Bob, ¿cuál es la regla sagrada de Dependencia (Dependency Rule)?',
     options: [
       "Las dependencias del código fuente solo pueden apuntar hacia adentro, hacia las políticas de más alto nivel (Domain/Entities).",
       "Las capas internas (Domain) deben importar directamente las librerías de UI y bases de datos para acelerar el desarrollo.",
@@ -342,13 +464,13 @@ export default async function ProductList() {
       "La base de datos debe ser el centro del sistema y definir los modelos de negocio."
     ],
     correctAnswerIndex: 0,
-    explanation: "La Dependency Rule establece que el código de una capa interna no debe saber absolutamente nada de las capas externas. La capa de Dominio (Entidades y Casos de Uso) es pura y no tiene dependencias de frameworks, bases de datos (Room/SQL) ni UI (Jetpack Compose/React). La inversión de dependencias (DIP) se usa para conectar repositorios mediante interfaces.",
+    explanation: "La Dependency Rule establece que el código de una capa interna no debe saber absolutamente nada de las capas externas. La capa de Dominio (Entidades y Casos de Uso) es pura y no tiene dependencias de frameworks ni persistencia.",
     proTip: "En Android: La capa 'domain' solo contiene Kotlin puro, sin android.* ni androidx.*."
   },
   {
     id: 'fund-02',
     categoryId: 'modern_fundamentals',
-    categoryName: 'Fundamentos Modernos',
+    categoryName: 'Fundamentos & Git',
     difficulty: 'Senior',
     type: 'multiple_choice',
     title: 'En Git, ¿cuál es la diferencia conceptual entre `git merge` y `git rebase`?',
@@ -363,7 +485,7 @@ export default async function ProductList() {
     proTip: "Regla de oro de Git: ¡Nunca hagas rebase en una rama pública compartida que otros colaboradores estén utilizando!"
   },
 
-  // 7. ASISTENCIA DE IA PARA PROGRAMADORES
+  // 9. ASISTENCIA DE IA PARA PROGRAMADORES
   {
     id: 'ai-01',
     categoryId: 'ai_assistance',
@@ -378,8 +500,8 @@ export default async function ProductList() {
       "Una vulnerabilidad de inyección SQL en la interfaz de chat del LLM."
     ],
     correctAnswerIndex: 0,
-    explanation: "Los modelos de lenguaje pueden alucinar paquetes ficticios con nombres verosímiles (ej: 'npm install react-safe-crypto-utils'). Investigadores de ciberseguridad han demostrado que actores maliciosos registran deliberadamente esos nombres alucinados en repositorios públicos con malware (Slingshot/Supply-chain attack) para infectar a desarrolladores descuidados que copian y pegan el comando sugerido.",
-    proTip: "Siempre audita y verifica en npmjs.com o pypi.org la fecha de creación, estrellas, mantenedores y descargas de cualquier librería recomendada por IA."
+    explanation: "Los modelos de lenguaje pueden alucinar paquetes ficticios con nombres verosímiles. Investigadores han demostrado que actores maliciosos registran deliberadamente esos nombres alucinados en repositorios públicos con malware para infectar a desarrolladores descuidados que copian el comando sugerido.",
+    proTip: "Siempre audita y verifica en npmjs.com o pypi.org la fecha de creación, estrellas y mantenedores de cualquier librería recomendada por IA."
   },
   {
     id: 'ai-02',
@@ -395,22 +517,7 @@ export default async function ProductList() {
       "Usar temperaturas muy altas (1.5 - 2.0) para que el modelo sea más creativo."
     ],
     correctAnswerIndex: 0,
-    explanation: "Proveer los tests unitarios o firmas de tipos como restricciones invariantes (Grounding) fuerza al modelo a verificar internamente que la nueva implementación sigue satisfaciendo el contrato. Mantener baja la temperatura (0.0 - 0.2) reduce la variabilidad y el riesgo de cambios inesperados.",
+    explanation: "Proveer los tests unitarios o firmas de tipos como restricciones invariantes (Grounding) fuerza al modelo a verificar internamente que la nueva implementación sigue satisfaciendo el contrato. Mantener baja la temperatura (0.0 - 0.2) reduce la variabilidad.",
     proTip: "En herramientas como Cursor/Copilot: Incluye en el prompt los archivos de test (*.test.ts o *Test.kt) como contexto explícito."
-  },
-  {
-    id: 'ai-03',
-    categoryId: 'ai_assistance',
-    categoryName: 'IA para Programadores',
-    difficulty: 'Junior',
-    type: 'true_false',
-    title: 'El código generado por herramientas de IA como GitHub Copilot o Claude nunca infringe licencias de código abierto ni presenta vulnerabilidades OWASP comunes.',
-    options: [
-      "Falso: Los LLMs pueden reproducir vulnerabilidades (ej. inyecciones SQL, buffer overflows) y patrones inseguros si fueron entrenados con código público vulnerable.",
-      "Verdadero: Los modelos cuentan con un filtro estricto que garantiza código 100% libre de vulnerabilidades y con certificación estática."
-    ],
-    correctAnswerIndex: 0,
-    explanation: "Los modelos de IA reproducen patrones estadísticos de su corpus de entrenamiento, el cual incluye millones de repositorios con malas prácticas y vulnerabilidades conocidas. Por ello, el desarrollador humano sigue siendo legal y técnicamente el responsable de auditar, testear y validar cada línea antes de enviarla a producción.",
-    proTip: "Trata la sugerencia del LLM como el PR de un pasante brillante pero descuidado: revísalo meticulosamente."
   }
 ];

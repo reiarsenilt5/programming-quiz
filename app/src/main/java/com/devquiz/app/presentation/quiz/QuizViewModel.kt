@@ -1,11 +1,16 @@
 package com.devquiz.app.presentation.quiz
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.devquiz.app.BuildConfig
+import com.devquiz.app.domain.model.CategoryType
+import com.devquiz.app.domain.model.DifficultyLevel
 import com.devquiz.app.domain.model.GameMode
 import com.devquiz.app.domain.model.Question
+import com.devquiz.app.domain.model.QuestionType
 import com.google.ai.client.generativeai.GenerativeModel
-import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,22 +18,111 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import java.io.InputStream
 
-@HiltViewModel
-class QuizViewModel @Inject constructor(
-    private val geminiModel: GenerativeModel
-) : ViewModel() {
+class QuizViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
     private var timerJob: Job? = null
+    private var allQuestionsCache: List<Question> = emptyList()
+
+    private val geminiModel: GenerativeModel by lazy {
+        val apiKey = BuildConfig.GEMINI_API_KEY
+        GenerativeModel(
+            modelName = "gemini-3.8-flash",
+            apiKey = apiKey.ifEmpty { "AI_KEY" }
+        )
+    }
+
+    init {
+        loadAllQuestionsFromAssets()
+    }
+
+    private fun loadAllQuestionsFromAssets() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val context = getApplication<Application>()
+                val inputStream: InputStream = context.assets.open("questions.json")
+                val jsonString = inputStream.bufferedReader().use { it.readText() }
+                val jsonArray = JSONArray(jsonString)
+                val list = mutableListOf<Question>()
+
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+                    val optionsJson = obj.getJSONArray("options")
+                    val optionsList = mutableListOf<String>()
+                    for (j in 0 until optionsJson.length()) {
+                        optionsList.add(optionsJson.getString(j))
+                    }
+
+                    val catId = obj.optString("categoryId", "modern_fundamentals")
+                    val catType = CategoryType.fromId(catId)
+
+                    val diffStr = obj.optString("difficulty", "Mid")
+                    val difficulty = when (diffStr) {
+                        "Junior" -> DifficultyLevel.Junior
+                        "Senior" -> DifficultyLevel.Senior
+                        else -> DifficultyLevel.Mid
+                    }
+
+                    val typeStr = obj.optString("type", "multiple_choice")
+                    val type = when (typeStr) {
+                        "find_the_bug" -> QuestionType.FindTheBug
+                        "true_false" -> QuestionType.TrueFalse
+                        else -> QuestionType.MultipleChoice
+                    }
+
+                    list.add(
+                        Question(
+                            id = obj.optString("id", "q-$i"),
+                            category = catType,
+                            difficulty = difficulty,
+                            type = type,
+                            title = obj.optString("title", ""),
+                            codeSnippet = if (obj.has("codeSnippet")) obj.getString("codeSnippet") else null,
+                            codeLanguage = if (obj.has("codeLanguage")) obj.getString("codeLanguage") else null,
+                            options = optionsList,
+                            correctAnswerIndex = obj.optInt("correctAnswerIndex", 0),
+                            explanation = obj.optString("explanation", ""),
+                            proTip = if (obj.has("proTip")) obj.getString("proTip") else null
+                        )
+                    )
+                }
+
+                allQuestionsCache = list
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     fun loadQuiz(categoryId: String, mode: GameMode) {
         viewModelScope.launch {
+            if (allQuestionsCache.isEmpty()) {
+                withContext(Dispatchers.IO) {
+                    loadAllQuestionsFromAssets()
+                }
+            }
+
+            var filtered = if (categoryId == "all") {
+                allQuestionsCache.shuffled()
+            } else {
+                allQuestionsCache.filter { it.category.id == categoryId }
+            }
+
+            if (mode == GameMode.DailyChallenge || filtered.isEmpty()) {
+                filtered = allQuestionsCache.shuffled().take(5)
+            } else if (mode == GameMode.TimeTrial) {
+                filtered = allQuestionsCache.shuffled()
+            }
+
             _uiState.update {
                 it.copy(
+                    questions = filtered,
                     currentIndex = 0,
                     selectedOptionIndex = null,
                     isAnswerConfirmed = false,
