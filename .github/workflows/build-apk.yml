@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Permite compilar manualmente con un clic en la pestaña Actions de GitHub
+
+jobs:
+  build:
+    name: Compilar APK (Debug)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐘 Configurar Gradle Oficial
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: 🛡️ Auto-generar Gradle Wrapper si no está en el repo
+        run: |
+          if [ ! -f "gradlew" ]; then
+            echo "Aviso: gradlew no encontrado. Generando wrapper automáticamente con Gradle 8.3..."
+            gradle wrapper --gradle-version 8.3
+          fi
+          chmod +x gradlew
+
+      - name: ⚙️ Configurar local.properties
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          touch local.properties
+          echo "sdk.dir=${ANDROID_HOME}" >> local.properties
+          if [ -n "${GEMINI_API_KEY}" ]; then
+            echo "gemini.api.key=${GEMINI_API_KEY}" >> local.properties
+          fi
+
+      - name: 🔨 Compilar APK Debug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: 📦 Subir APK Debug como Artefacto Descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: DevQuiz-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
