@@ -5,14 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.devquiz.app.domain.model.CategoryType
 import com.devquiz.app.domain.model.GameMode
 
@@ -76,37 +75,37 @@ fun HomeScreen(
                     GameModeCard(
                         title = "Práctica",
                         subtitle = "Sin límite",
-                        icon = Icons.Default.MenuBook,
+                        emoji = "📖",
                         modifier = Modifier.weight(1f),
                         onClick = { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.Practice) }
                     )
                     GameModeCard(
                         title = "Contrarreloj",
                         subtitle = "60 Segundos",
-                        icon = Icons.Default.Timer,
+                        emoji = "⏱",
                         modifier = Modifier.weight(1f),
-                        onClick = { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.TimeTrial) }
+                        onClick = { onCategorySelected(CategoryType.SQL, GameMode.TimeTrial) }
                     )
                     GameModeCard(
                         title = "Diario",
                         subtitle = "5 Retos",
-                        icon = Icons.Default.CalendarToday,
+                        emoji = "📅",
                         modifier = Modifier.weight(1f),
-                        onClick = { onCategorySelected(CategoryType.AI_ASSISTANCE, GameMode.DailyChallenge) }
+                        onClick = { onCategorySelected(CategoryType.SOLID, GameMode.DailyChallenge) }
                     )
                 }
             }
 
             item {
                 Text(
-                    "Categorías de Conocimiento",
+                    "Categorías Técnicas",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
-            items(CategoryType.entries) { category ->
+            items(CategoryType.values()) { category ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,7 +119,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(category.displayName, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-                        Icon(Icons.Default.ChevronRight, contentDescription = null)
+                        Text("➔", color = MaterialTheme.colorScheme.outline, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -132,7 +131,7 @@ fun HomeScreen(
 fun GameModeCard(
     title: String,
     subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    emoji: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -145,7 +144,7 @@ fun GameModeCard(
             modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Text(emoji, fontSize = 24.sp)
             Spacer(modifier = Modifier.height(6.dp))
             Text(title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
