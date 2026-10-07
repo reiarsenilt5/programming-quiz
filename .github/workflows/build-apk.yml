@@ -3,9 +3,10 @@ name: Build Android APK
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,21 +23,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 🐘 Configurar Gradle 8.4
+      - name: 🐘 Configurar Gradle Oficial
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
 
-      - name: 🛡️ Preparar Gradle Wrapper
+      - name: 🛡️ Configurar y asegurar Gradle Wrapper
         run: |
-          if [ ! -f "gradlew" ] || [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "Generando Gradle wrapper 8.4 bin..."
-            gradle wrapper --gradle-version 8.4 --distribution-type bin
+          if [ ! -f "gradlew" ]; then
+            echo "Generando Gradle wrapper 8.6..."
+            gradle wrapper --gradle-version 8.6
           fi
           chmod +x gradlew
 
-
-      - name: ⚙️ Configurar local.properties
+      - name: ⚙️ Configurar local.properties y variables de entorno
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -47,21 +45,39 @@ jobs:
           fi
 
       - name: 🔨 Compilar APK Debug
-        run: |
-          if [ -f "./gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            ./gradlew assembleDebug --stacktrace --no-daemon
-          else
-            gradle assembleDebug --stacktrace --no-daemon
-          fi
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
-      - name: 🔍 Verificar generación de APK
+      - name: 🏷️ Preparar APK con versión para Release
         run: |
-          echo "Buscando APK generado..."
-          ls -la app/build/outputs/apk/debug/ || true
+          cp app/build/outputs/apk/debug/app-debug.apk "DevQuiz-v1.0.${{ github.run_number }}-debug.apk"
+          ls -lh DevQuiz-v1.0.${{ github.run_number }}-debug.apk
 
-      - name: 📦 Subir APK Debug como Artefacto Descargable
+      - name: 📦 Subir APK Debug a Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: DevQuiz-Debug-APK
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 14
+          name: DevQuiz-APK-Debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: 🚀 Crear GitHub Release con APK descargable
+        uses: softprops/action-gh-release@v2
+        if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch')
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "DevQuiz APK v1.0.${{ github.run_number }}"
+          body: |
+            ## 📱 DevQuiz Android APK
+            Compilación automatizada #${{ github.run_number }} generada exitosamente desde GitHub Actions.
+            
+            ### 📥 Descarga Directa:
+            Descarga el archivo adjunto **DevQuiz-v1.0.${{ github.run_number }}-debug.apk** e instálalo en tu dispositivo Android.
+            
+            - **Versión**: `1.0.${{ github.run_number }}`
+            - **Rama**: `${{ github.ref_name }}`
+            - **Commit**: `${{ github.sha }}`
+            - **Categorías**: 9 cuestionarios técnicos (SOLID, SQL, Fundamentos, Backend, Clean Code, etc.)
+            - **Modo**: 100% Funcional Offline (IA Gemini opcional)
+          files: |
+            DevQuiz-v1.0.${{ github.run_number }}-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

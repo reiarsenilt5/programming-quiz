@@ -1,0 +1,6 @@
+{
+  "summary":  "Plan integral para resolver definitivamente los fallos de compilación hacia APK en GitHub Actions CI, estabilizar el código Kotlin/Compose de la app Android DevQuiz y habilitar la entrega automática de la APK tanto en Artifacts como en GitHub Releases.",
+  "updatedAt":  "2026-10-07T20:54:43.355766115Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
