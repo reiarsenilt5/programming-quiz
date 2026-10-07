@@ -9,7 +9,9 @@ export type CategoryId =
   | 'modern_fundamentals'
   | 'ai_assistance'
   | 'senior_fullstack'
-  | 'devops_cloud';
+  | 'devops_cloud'
+  | 'subtle_engineering'
+  | 'docker_mastery';
 
 export type DifficultyLevel = 'Junior' | 'Mid' | 'Senior';
 

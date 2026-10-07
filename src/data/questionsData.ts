@@ -1,6 +1,8 @@
 import { CategoryInfo, Question } from '../types/quiz';
 import { SENIOR_FULLSTACK_QUESTIONS } from './seniorFullstackQuestions';
 import { DEVOPS_CLOUD_QUESTIONS } from './devopsCloudQuestions';
+import { SUBTLE_ENGINEERING_QUESTIONS } from './subtleEngineeringQuestions';
+import { DOCKER_MASTERY_QUESTIONS } from './dockerMasteryQuestions';
 
 export const CATEGORIES: CategoryInfo[] = [
   {
@@ -90,6 +92,22 @@ export const CATEGORIES: CategoryInfo[] = [
     color: '#0ea5e9',
     description: 'Top entrevistas senior 2026: Linux internals, Docker, K8s, CI/CD, OTel y resiliencia.',
     tag: 'Cloud & Infra 2026',
+  },
+  {
+    id: 'subtle_engineering',
+    name: 'Sutilezas Pro & Producción',
+    icon: '🎯',
+    color: '#8b5cf6',
+    description: 'N+1 ORM, Cache Stampede, RabbitMQ, S3/PDFs, Git Worktrees, Sentry y CI/CD.',
+    tag: 'Senior Craft',
+  },
+  {
+    id: 'docker_mastery',
+    name: 'Docker & Containers Mastery',
+    icon: '🐳',
+    color: '#0284c7',
+    description: 'Kernel namespaces, cgroups v2, Overlay2, BuildKit secrets, rootless y seguridad.',
+    tag: 'Docker Deep Dive',
   },
 ];
 
@@ -539,5 +557,7 @@ function cambiarDimensiones(r: Rectangulo) {
     proTip: "En herramientas como Cursor/Copilot: Incluye en el prompt los archivos de test (*.test.ts o *Test.kt) como contexto explícito."
   },
   ...SENIOR_FULLSTACK_QUESTIONS,
-  ...DEVOPS_CLOUD_QUESTIONS
+  ...DEVOPS_CLOUD_QUESTIONS,
+  ...SUBTLE_ENGINEERING_QUESTIONS,
+  ...DOCKER_MASTERY_QUESTIONS
 ];

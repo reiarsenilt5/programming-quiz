@@ -2121,5 +2121,1050 @@
     "correctAnswerIndex": 1,
     "explanation": "Chaos Engineering no consiste en \"romper cosas al azar\", sino en experimentos científicos controlados: definir el estado estacionario normal, formular una hipótesis (ej. \"si la zona de disponibilidad B cae, el tráfico se redirigirá sin degradar el 99.9% de peticiones\"), inyectar el fallo y verificar si la hipótesis se sostiene.",
     "proTip": "Comienza siempre ejecutando experimentos de caos en entornos de Staging con límites de radio de explosión (Blast Radius) controlados antes de pasar a producción."
+  },
+  {
+    "id": "sub-01",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se evita que múltiples commits rápidos a un Pull Request saturen la cola de runners de GitHub Actions consumiendo minutos innecesarios?",
+    "codeSnippet": "concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true",
+    "codeLanguage": "yaml",
+    "options": [
+      "Configurando \"cancel-in-progress: true\" dentro del bloque \"concurrency\" asociado al branch o PR.",
+      "Añadiendo una directiva \"timeout-minutes: 1\" en cada step del workflow.",
+      "Usando \"runs-on: ubuntu-latest-single-threaded\" para forzar ejecución secuencial.",
+      "GitHub Actions lo cancela por defecto automáticamente si hay un push posterior."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El bloque \"concurrency\" agrupado por workflow y ref/PR con \"cancel-in-progress: true\" le indica a GitHub Actions que si llega un nuevo commit mientras el job anterior sigue corriendo, cancele inmediatamente la ejecución en curso para liberar runners y ahorrar minutos de CI.",
+    "proTip": "En ramas principales protegidas (main/production) suele usarse cancel-in-progress: false para no abortar despliegues críticos a mitad de camino, pero en ramas de PR siempre debe activarse cancel-in-progress: true."
+  },
+  {
+    "id": "sub-02",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Cuál es el bug crítico en esta clave de caché de dependencias en GitHub Actions?",
+    "codeSnippet": "- name: Cache dependencies\n  uses: actions/cache@v4\n  with:\n    path: ~/.npm\n    key: ${{ runner.os }}-node-${{ hashFiles('package.json') }}\n    restore-keys: |\n      ${{ runner.os }}-node-",
+    "codeLanguage": "yaml",
+    "options": [
+      "Usa \"package.json\" en vez del lockfile (\"package-lock.json\" o \"pnpm-lock.yaml\"), permitiendo que versiones compatibles cambien sin invalidar la caché.",
+      "La ruta \"~/.npm\" es inválida en entornos Linux de GitHub Actions.",
+      "El campo \"restore-keys\" no admite saltos de línea ni sintaxis multilínea.",
+      "La acción actions/cache@v4 requiere obligatoriamente privilegios de administrador."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Al calcular el hash sobre \"package.json\", si un rango dependiente (ej. ^1.2.0) se actualiza en el registro pero package.json no cambia su texto, la clave de caché no varía y el CI reutiliza dependencias desactualizadas. Debe calcularse sobre el lockfile (\"package-lock.json\", \"yarn.lock\" o \"pnpm-lock.yaml\").",
+    "proTip": "Siempre incluye el hash del lockfile exacto. Para monorepos, usa patterns como hashFiles('**/pnpm-lock.yaml')."
+  },
+  {
+    "id": "sub-03",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En Docker Buildx dentro de un pipeline de CI, ¿cuál es el mecanismo moderno más eficiente para reutilizar la caché de capas entre ejecuciones efímeras de runners?",
+    "codeSnippet": "docker buildx build \\\n  --cache-from=type=gha \\\n  --cache-to=type=gha,mode=max \\\n  -t mi-app:latest .",
+    "codeLanguage": "bash",
+    "options": [
+      "El backend de caché de GitHub Actions (type=gha) con mode=max para cachear todas las capas intermedias en el servicio de caché nativo del runner.",
+      "Hacer \"docker commit\" del contenedor anterior y descargarlo vía SSH.",
+      "Montar una carpeta compartida en el host mediante \"-v /var/run/docker.sock\".",
+      "Configurar \"DOCKER_BUILDKIT=0\" para deshabilitar BuildKit y usar la caché de Docker clásica."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Buildx soporta backends de caché externos. \"--cache-from=type=gha\" y \"--cache-to=type=gha,mode=max\" transfieren las capas cacheadas directamente hacia el GitHub Actions Cache API, eliminando la necesidad de registry dedicado solo para capas.",
+    "proTip": "Usa \"mode=max\" en tus ramas principales para que todas las etapas multi-stage se almacenen en caché; en PRs puedes usar el modo por defecto (min) para no saturar los 10GB de límite de GitHub Actions."
+  },
+  {
+    "id": "sub-04",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "En un endpoint de Django REST Framework, ¿por qué este código sufre el problema de N+1 queries a pesar de usar select_related?",
+    "codeSnippet": "# Models: Post tiene ForeignKey a Author, y ManyToMany a Tag\nposts = Post.objects.select_related('tags').all()\nfor p in posts:\n    print([t.name for t in p.tags.all()])",
+    "codeLanguage": "python",
+    "options": [
+      "\"select_related\" solo funciona en relaciones One-to-One y ForeignKey (JOIN simple); para Many-to-Many o Reverse FKs se debe usar \"prefetch_related\".",
+      "Django no permite llamar a \".all()\" después de aplicar \"select_related\".",
+      "\"tags\" debe llamarse con \"tags_set\" obligatoriamente.",
+      "El problema se soluciona únicamente desactivando el lazy evaluation de Django ORM."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"select_related\" genera un SQL JOIN estándar, lo cual solo es válido para relaciones donde una fila de la tabla origen corresponde a máximo una fila de la tabla destino (ForeignKey o OneToOne). Para colecciones o Many-to-Many, \"select_related\" falla o no precarga la colección; la solución es \"prefetch_related('tags')\", que ejecuta una segunda consulta con \"IN (...)\" y empareja en memoria en Python.",
+    "proTip": "Regla mnemotécnica en Django: select_related para objetos singulares (1:1 o N:1 con JOIN en SQL); prefetch_related para colecciones múltiples (1:N o N:M mediante 2 consultas optimizadas)."
+  },
+  {
+    "id": "sub-05",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En Laravel 10+, ¿cómo proteges a todo el equipo de desarrollo para que nunca suban a producción una consulta N+1 accidental?",
+    "codeSnippet": "// En AppServiceProvider::boot()\nModel::preventLazyLoading(! app()->isProduction());",
+    "codeLanguage": "php",
+    "options": [
+      "Activando \"Model::preventLazyLoading(! app()->isProduction())\", lo que lanza una LazyLoadingViolationException durante tests y desarrollo local.",
+      "Eliminando las relaciones belongsTo de todos los modelos Eloquent.",
+      "Configurando DB::disableQueryLog() en el archivo .env.",
+      "Laravel previene N+1 automáticamente por defecto mediante su motor JIT."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"Model::preventLazyLoading(! app()->isProduction())\" detiene la ejecución arrojando una excepción inmediata si algún desarrollador accede a una relación no precargada (eager loaded) fuera de producción. En producción, simplemente se registra en logs sin tumbar la petición.",
+    "proTip": "Combina \"preventLazyLoading\" con \"preventSilentlyDiscardingAttributes\" y \"preventAccessingMissingAttributes\" dentro de tu AppServiceProvider en entornos locales y CI."
+  },
+  {
+    "id": "sub-06",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cómo resuelve GraphQL el problema N+1 cuando clientes anidados consultan relaciones profundamente estructuradas?",
+    "codeSnippet": "const authorLoader = new DataLoader(async (authorIds) => {\n  const authors = await db.authors.findMany({ where: { id: { in: authorIds } } });\n  return authorIds.map(id => authors.find(a => a.id === id));\n});",
+    "codeLanguage": "typescript",
+    "options": [
+      "Mediante el patrón DataLoader, agrupando (batching) todas las solicitudes de claves en un solo tick del event loop y memoizando los resultados.",
+      "Limitando la profundidad máxima de las consultas a 2 niveles.",
+      "Convirtiendo automáticamente todas las consultas GraphQL a vistas materializadas en Postgres.",
+      "Obligando al cliente a enviar la consulta como un payload REST con JOINs."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "DataLoader recolecta todas las invocaciones individuales de resolución durante la misma fase del bucle de eventos (process.nextTick / microtask), ejecuta una única consulta por lotes (\"SELECT ... WHERE id IN (...)\") y mapea los resultados en el orden exacto de las claves solicitadas.",
+    "proTip": "Crea una nueva instancia de DataLoader por cada petición HTTP para evitar fugas de memoria y contaminación de datos entre diferentes usuarios autenticados."
+  },
+  {
+    "id": "sub-07",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el fenómeno de \"Cache Stampede\" (Dogpiling) y cuál es la solución probabilística más elegante para resolverlo?",
+    "codeSnippet": "// Probabilistic Early Expiration (Algoritmo XFetch)\nfunction shouldRecompute(cachedAt, ttl, beta = 1.0, computeDeltaMs) {\n  const timeRemaining = (cachedAt + ttl) - Date.now();\n  return -beta * computeDeltaMs * Math.log(Math.random()) > timeRemaining;\n}",
+    "codeLanguage": "javascript",
+    "options": [
+      "Ocurre cuando una clave muy solicitada expira y cientos de peticiones concurrentes golpean la base de datos simultáneamente. Se resuelve con XFetch (expiración temprana probabilística) o un Distributed Lock (Mutex).",
+      "Ocurre cuando Redis se queda sin memoria RAM y se resuelve aumentando la swap del sistema operativo.",
+      "Es un ataque DDoS contra la capa de caché y se mitiga activando un firewall WAF.",
+      "Ocurre cuando dos claves tienen el mismo hash MD5 y se resuelve cambiando el algoritmo a SHA-256."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El Cache Stampede ocurre cuando una entrada caliente expira, provocando que miles de hilos concurrentes no encuentren la clave e intenten recalcularla en la base de datos a la vez. El algoritmo XFetch (Vattani et al.) recalcula el valor de forma probabilística justo antes de que expire según el tiempo que toma computarlo, de modo que solo un proceso refresca la caché de forma transparente.",
+    "proTip": "Si no implementas XFetch, utiliza un Mutex Distribuido (ej. \"SET key:lock uuid NX PX 5000\"): el primer hilo adquiere el lock y computa, los demás esperan 50ms y leen la caché fresca."
+  },
+  {
+    "id": "sub-08",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En Redis configurado como LRU Cache, ¿cuál es la diferencia crítica entre \"allkeys-lru\" y \"volatile-lru\" al llenarse la memoria (maxmemory)?",
+    "codeSnippet": "# redis.conf\nmaxmemory 2gb\nmaxmemory-policy allkeys-lru # vs volatile-lru",
+    "codeLanguage": "text",
+    "options": [
+      "\"allkeys-lru\" expulsa las claves menos usadas sin importar si tienen TTL o no; \"volatile-lru\" solo expulsa claves que tienen una expiración (TTL) configurada explícitamente.",
+      "\"volatile-lru\" guarda las claves expulsadas en disco SSD, mientras que \"allkeys-lru\" las destruye.",
+      "\"allkeys-lru\" solo funciona con estructuras de datos Hash y List.",
+      "\"volatile-lru\" es más rápido porque nunca calcula estadísticas de acceso."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Bajo \"volatile-lru\", si tu memoria se llena de datos persistentes sin TTL configurado, Redis no podrá liberar espacio y responderá con errores \"OOM command not allowed\". Si tu instancia se dedica puramente a almacenamiento en caché temporal, \"allkeys-lru\" o \"allkeys-lfu\" es la configuración estándar requerida.",
+    "proTip": "Si usas la misma instancia de Redis para colas (BullMQ/Sidekiq) y para caché de datos, ¡nunca uses allkeys-lru! Podrías expulsar trabajos encolados. Lo ideal es separar instancias de Redis para caché y para colas."
+  },
+  {
+    "id": "sub-09",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué el patrón \"Write-Behind\" (Write-Back) en caché ofrece menor latencia de escritura pero mayor riesgo de inconsistencia que \"Write-Through\"?",
+    "codeSnippet": "// Flujo Write-Behind:\n1. App escribe inmediatamente a la Caché (en memoria).\n2. La API responde 200 OK de inmediato al cliente.\n3. Un proceso en segundo plano asíncrono persiste los cambios a la Base de Datos.",
+    "codeLanguage": "text",
+    "options": [
+      "Si el nodo de caché sufre un reinicio o crash antes de que el proceso en background persista a la base de datos, los datos recién confirmados al cliente se pierden irremediablemente.",
+      "Write-Behind ejecuta transacciones distribuidas 2-Phase Commit obligatorias.",
+      "Write-Through no admite índices secundarios en bases de datos relacionales.",
+      "Write-Behind duplica el consumo de CPU en la base de datos al realizar consultas periódicas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Al confirmar la escritura al usuario antes de tocar el almacenamiento durable, Write-Behind prioriza velocidad extrema sobre durabilidad. Una falla de hardware o caída del proceso en el intervalo intermedio provoca pérdida de datos (data loss). Por ello se usa en contadores, visualizaciones o telemetría, nunca en balances financieros o cobros.",
+    "proTip": "Para sistemas transaccionales, usa \"Cache-Aside\" con invalidación directa o \"Write-Through\" sincrónico."
+  },
+  {
+    "id": "sub-10",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En RabbitMQ, ¿por qué es peligroso dejar el valor de \"prefetch_count\" (QoS) en 0 (sin límite) en consumidores con tareas pesadas?",
+    "codeSnippet": "channel.basicQos(0); // Peligro: prefetchCount sin límite\nchannel.basicConsume(\"heavy_video_processing\", false, consumer);",
+    "codeLanguage": "java",
+    "options": [
+      "RabbitMQ enviará todos los mensajes de la cola inmediatamente al primer consumidor conectado, saturando su memoria y dejando a los demás consumidores ociosos (worker starving).",
+      "RabbitMQ desconecta el canal TCP automáticamente tras 10 mensajes.",
+      "Provoca que los mensajes se borren sin ejecutarse debido a un timeout interno.",
+      "Obliga a que todos los mensajes se procesen en orden alfabético."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Un prefetchCount de 0 significa que el broker empuja (push) tantos mensajes como tenga disponibles sin esperar confirmaciones (acks). Si un worker tarda 30 segundos en procesar un mensaje y hay 100 mensajes, los 100 van a parar a la memoria de ese único worker, mientras 5 workers adicionales recién levantados quedan inactivos con carga 0.",
+    "proTip": "Para tareas pesadas (CPU bound o I/O lento), configura \"prefetch_count = 1\". Para micro-tareas ultrarrápidas, valores entre 50 y 200 optimizan el throughput de red reduciendo el overhead de ACKs individuales."
+  },
+  {
+    "id": "sub-11",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Qué error catastrófico provoca este código ante un mensaje con formato inválido (poison message)?",
+    "codeSnippet": "try {\n    processOrder(message);\n    channel.basicAck(deliveryTag, false);\n} catch (Exception e) {\n    logger.error(\"Error procesando orden\", e);\n    // Reencolar de inmediato para no perder el mensaje\n    channel.basicNack(deliveryTag, false, true); // requeue = true\n}",
+    "codeLanguage": "java",
+    "options": [
+      "Crea un bucle infinito (\"poison pill loop\"): el mensaje corrupto vuelve a la cabeza de la cola, falla de nuevo, se reencola de nuevo y satura CPU/logs al 100% indefinidamente.",
+      "RabbitMQ cierra la conexión automáticamente tras el primer Nack.",
+      "El parámetro \"requeue = true\" descarta el mensaje permanentemente.",
+      "El método \"basicAck\" no puede invocarse dentro de un bloque try-catch."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Si un mensaje falla debido a un error no transitorio (ej. JSON malformado o NullPointerException en el payload), llamar a \"basicNack\" con \"requeue = true\" reinserta el mensaje al inicio de la cola para que sea consumido inmediatamente por el mismo worker o el siguiente, repitiéndose en bucle infinito miles de veces por segundo.",
+    "proTip": "Solución: Configura un Dead Letter Exchange (DLX) con \"x-dead-letter-exchange\" en la cola. Ante fallos de negocio, haz nack con \"requeue = false\" para que RabbitMQ desvíe el mensaje a la Dead Letter Queue (DLQ) para inspección manual."
+  },
+  {
+    "id": "sub-12",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Dado que los brokers como RabbitMQ, Kafka y SQS garantizan entrega \"At-Least-Once\", ¿cómo se garantiza que un pago no se cobre dos veces si el worker recibe el mismo mensaje duplicado?",
+    "codeSnippet": "// Patrón Idempotent Consumer\nasync function handlePayment(event) {\n  const isProcessed = await redis.set(`processed:${event.idempotencyKey}`, \"1\", \"NX\", \"EX\", 86400);\n  if (!isProcessed) {\n    logger.warn(`Evento duplicado detectado: ${event.idempotencyKey}. Ignorando.`);\n    return;\n  }\n  await paymentGateway.charge(event.amount);\n}",
+    "codeLanguage": "javascript",
+    "options": [
+      "Haciendo que el consumidor sea idempotente: verificando y registrando una clave única (idempotency key) en una base de datos o Redis mediante una operación atómica antes de ejecutar la acción.",
+      "Configurando RabbitMQ en modo \"Exactly-Once-Hardware\" en el archivo de configuración.",
+      "Aumentando el tiempo de timeout de la conexión AMQP a 1 hora.",
+      "Enviando siempre un ACK antes de comenzar a procesar el mensaje."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En sistemas distribuidos, fallos de red durante el envío del ACK provocan que el broker reenvíe el mensaje creyendo que el worker murió. Por ende, los consumidores deben ser idempotentes por diseño: usar \"idempotency keys\" únicas con locks o registros transaccionales en base de datos para ignorar o no reejecutar efectos colaterales duplicados.",
+    "proTip": "En bases de datos relacionales, el patrón \"Outbox Pattern\" combinado con una tabla de eventos procesados con restricción UNIQUE sobre event_id dentro de la misma transacción local es la solución más robusta."
+  },
+  {
+    "id": "sub-13",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Estás a mitad de una refactorización compleja con 15 archivos sin commitear y surge un bug urgente en producción. ¿Cómo te permite \"git worktree\" solucionarlo sin recurrir a \"git stash\" ni clonar de nuevo el repositorio?",
+    "codeSnippet": "git worktree add ../hotfix-login hotfix/login-crash\ncd ../hotfix-login\n# Reparar bug, commitear y pushear\ncd ../mi-proyecto-principal\ngit worktree remove ../hotfix-login",
+    "codeLanguage": "bash",
+    "options": [
+      "Crea un nuevo directorio de trabajo vinculado al mismo repositorio local (.git), permitiendo tener múltiples ramas activas chequeadas en simultáneo en carpetas independientes.",
+      "Crea una máquina virtual aislada con Docker para compilar el código.",
+      "Hace un backup de los archivos modificados en la nube de GitHub.",
+      "Es un alias obsoleto de \"git clone --depth 1\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"git worktree\" te permite tener dos o más carpetas de trabajo apuntando al mismo almacenamiento de objetos en .git. Puedes estar ejecutando tu suite de pruebas en tu feature branch en una carpeta, y tener otra carpeta abierta en VS Code/IntelliJ con la rama de hotfix sin ensuciar el estado de trabajo ni perder tiempo haciendo stash/pop o re-instalando dependencias.",
+    "proTip": "Para limpiar worktrees que eliminaste manualmente con rm -rf, ejecuta \"git worktree prune\"."
+  },
+  {
+    "id": "sub-14",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué restricción estricta tiene \"git worktree\" para evitar inconsistencias de ramas?",
+    "codeSnippet": "fatal: 'main' is already checked out at '/path/to/project-main'",
+    "codeLanguage": "text",
+    "options": [
+      "No permite tener la misma rama (branch) chequeada en más de un worktree al mismo tiempo para prevenir colisiones en el puntero HEAD.",
+      "No permite ramas que tengan nombres con caracteres guion o barra inclinada.",
+      "Solo funciona si el repositorio tiene menos de 100 commits en su historial.",
+      "Requiere que el repositorio esté alojado en GitHub Enterprise."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Git impide que dos worktrees tengan activa la misma rama local porque si ambos hicieran commits independientes, el puntero de la rama divergiría en dos estados sin que exista una operación de merge explícita. Si necesitas inspeccionar la misma rama en otro worktree, puedes chequearla como un commit específico en estado detached HEAD.",
+    "proTip": "Usa \"git worktree list\" para auditar qué ramas están asignadas a qué carpetas en tu máquina local."
+  },
+  {
+    "id": "sub-15",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Qué code smell sutil presenta este diseño y cuál es su principal riesgo de mantenimiento?",
+    "codeSnippet": "class UserService {\n  public void register(String email, String rawPassword, String phoneCountry, String phoneArea, String phoneNumber) {\n    if (!email.contains(\"@\")) throw new IllegalArgumentException();\n    if (rawPassword.length() < 8) throw new IllegalArgumentException();\n    String formattedPhone = \"+\" + phoneCountry + \" (\" + phoneArea + \") \" + phoneNumber;\n    // ...\n  }\n}",
+    "codeLanguage": "java",
+    "options": [
+      "\"Primitive Obsession\": usar tipos primitivos planos (Strings) para conceptos del dominio que tienen reglas de validación e invariantes propias, en vez de Value Objects (Email, Password, PhoneNumber).",
+      "\"Feature Envy\": el método accede a métodos privados de otra clase externa.",
+      "\"God Object\": la clase tiene más de 5000 líneas de código.",
+      "\"Dead Code\": la variable formattedPhone nunca se utiliza en el código."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"Primitive Obsession\" ocurre cuando conceptos de dominio con reglas de validación (email, contraseña, teléfono, dinero, coordenadas) se representan con strings o floats crudos. La validación se duplica en cada método/controlador, es fácil intercambiar argumentos (\"phoneCountry\" por \"phoneArea\") y el modelo se vuelve frágil. Se soluciona encapsulando en Value Objects inmutables con auto-validación.",
+    "proTip": "Los Value Objects (ej. \"record Email(String value)\") garantizan que si un objeto de tipo Email existe, siempre es válido, eliminando defensas repetitivas en capas de servicio."
+  },
+  {
+    "id": "sub-16",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el code smell \"Feature Envy\" y cómo se identifica durante un Code Review?",
+    "codeSnippet": "class OrderInvoicePrinter {\n  public double calculateTotal(Order order) {\n    double sum = 0;\n    for (OrderItem item : order.getItems()) {\n      sum += item.getPrice() * item.getQuantity() - (item.getDiscountRate() * item.getPrice());\n    }\n    return sum + (sum * order.getCustomer().getTaxProfile().getVatPercentage());\n  }\n}",
+    "codeLanguage": "java",
+    "options": [
+      "Un método en una clase parece más interesado en los datos y cálculos internos de otra clase que en los propios; la lógica debería pertenecer a la clase que posee los datos (Order).",
+      "Una clase que utiliza demasiadas librerías externas de terceros.",
+      "Un componente React que utiliza demasiados custom hooks concurrentes.",
+      "Una función que tarda más de 200ms en devolver su resultado."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"Feature Envy\" (envidia de características) viola el principio \"Information Expert\" y la ley de Demeter: la clase OrderInvoicePrinter está haciendo cálculos matemáticos minuciosos extrayendo getters de Order, OrderItem y Customer. Ese cálculo de totales e impuestos debe residir dentro del modelo Order o de un Dominio de Precios, no en una clase de impresión.",
+    "proTip": "Si ves código que encadena más de 2 o 3 getters (\"order.getCustomer().getTaxProfile()...\"), es un indicador claro de Feature Envy o violación de la Ley de Demeter."
+  },
+  {
+    "id": "sub-17",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el \"Temporal Coupling\" (acoplamiento temporal) y por qué genera bugs difíciles de rastrear en pruebas unitarias?",
+    "codeSnippet": "const report = new ReportGenerator();\nreport.setContext(ctx);\nreport.prepareHeaders(); // Si olvidas llamar a esto primero...\nreport.generatePdf();    // ¡Falla con NullPointerException en tiempo de ejecución!",
+    "codeLanguage": "javascript",
+    "options": [
+      "Ocurre cuando métodos de una clase deben ejecutarse en un orden cronológico específico estricto sin que la firma o el compilador fuercen dicho orden.",
+      "Ocurre cuando el servidor y el cliente tienen la zona horaria desfasada por NTP.",
+      "Es un bug exclusivo de operaciones asíncronas con setTimeout.",
+      "Es la dependencia entre dos microservicios que comparten una base de datos en común."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El acoplamiento temporal ocurre cuando la API de una clase depende de un orden secreto de invocación de métodos mutables. Si un programador nuevo no llama a \"prepareHeaders()\" antes de \"generatePdf()\", el sistema explota. La solución es usar constructores con parámetros obligatorios, métodos puros o el patrón Fluent/Builder que no exponga estados intermedios inválidos.",
+    "proTip": "Para erradicar el acoplamiento temporal, haz que el método previo devuelva una instancia tipada necesaria como parámetro del método siguiente (Type-Driven State Machine)."
+  },
+  {
+    "id": "sub-18",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Por qué esta configuración de Sentry en una API de producción causó una factura astronómica y saturó la cuota mensual en 2 días?",
+    "codeSnippet": "Sentry.init({\n  dsn: \"https://example@sentry.io/123\",\n  tracesSampleRate: 1.0,\n  profilesSampleRate: 1.0,\n  integrations: [new Sentry.Integrations.Http({ tracing: true })],\n});",
+    "codeLanguage": "typescript",
+    "options": [
+      "Configuró un muestreo del 100% (\"1.0\") en trazas y perfiles en una aplicación de alto tráfico, enviando cada petición y captura de CPU en vez de usar una tasa representativa (ej. 0.05).",
+      "El DSN es público y cualquier usuario puede enviar errores a la cuenta.",
+      "La integración HTTP no es compatible con Node.js en producción.",
+      "Sentry requiere deshabilitar el tracing para que el plan gratuito no expire."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En aplicaciones con miles o millones de peticiones por minuto, \"tracesSampleRate: 1.0\" y \"profilesSampleRate: 1.0\" significa capturar e ingestar el 100% absoluto de transacciones y perfiles de memoria/CPU. En producción de alto tráfico, se debe usar muestreo estadístico (0.01 a 0.1) o \"tracesSampler\" dinámico para muestrear 100% de errores y rutas críticas (ej. /checkout) y 1% de endpoints comunes (ej. /health).",
+    "proTip": "Usa la función tracesSampler para descartar endpoints de salud (/healthz, /ready) devolviendo 0.0 y reservar presupuesto para rutas de negocio."
+  },
+  {
+    "id": "sub-19",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cómo previene un ingeniero senior que contraseñas, tokens JWT o tarjetas de crédito de usuarios terminen en los eventos de Sentry vulnerando GDPR/SOC2?",
+    "codeSnippet": "Sentry.init({\n  beforeSend(event, hint) {\n    if (event.request && event.request.headers) {\n      delete event.request.headers['authorization'];\n      delete event.request.headers['cookie'];\n    }\n    // Scrub de payloads sensibles\n    return event;\n  }\n});",
+    "codeLanguage": "javascript",
+    "options": [
+      "Implementando el hook \"beforeSend\" para limpiar (scrub) headers de autenticación y campos sensibles en el cuerpo de la petición antes de su transmisión.",
+      "Configurando una clave SSL privada en el dashboard de Sentry.",
+      "Los errores capturados por Sentry están encriptados y ninguna ley de privacidad los regula.",
+      "Desactivando el logging de excepciones en tiempo de compilación."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"beforeSend\" es el punto de intercepción final del SDK de Sentry donde puedes auditar, modificar o rechazar eventos. Es mandatorio purgar encabezados como \"Authorization\", cookies de sesión y campos de formulario como \"password\", \"cardNumber\" o \"cvv\" para cumplir con regulaciones como PCI-DSS, HIPAA y GDPR.",
+    "proTip": "Sentry también ofrece \"Data Scrubbers\" en su UI que reemplazan automáticamente con [Filtered] campos comunes como \"pass*\", \"token*\", \"secret*\" y expresiones regulares de tarjetas."
+  },
+  {
+    "id": "sub-20",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En Distributed Tracing entre un Frontend SPA y múltiples Microservicios Backend, ¿qué cabeceras HTTP estándar son responsables de propagar el identificador de la traza (traceparent)?",
+    "codeSnippet": "sentry-trace: 4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-1\nbaggage: sentry-environment=production,sentry-release=1.2.0",
+    "codeLanguage": "text",
+    "options": [
+      "Las cabeceras \"sentry-trace\" (o el estándar W3C \"traceparent\") y \"baggage\", que transmiten el Trace ID, Parent Span ID y metadatos contextuales a través de llamadas de red.",
+      "El encabezado \"X-Forwarded-For\" junto con \"User-Agent\".",
+      "El cookie \"PHPSESSID\" o \"JSESSIONID\".",
+      "El campo \"Host\" y \"Accept-Encoding\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El estándar W3C Trace Context define \"traceparent\" (y Sentry usa \"sentry-trace\" + \"baggage\") para transmitir: versión, trace_id de 16 bytes, parent_id de 8 bytes y flags de muestreo. Cuando el frontend realiza un fetch, inyecta estas cabeceras; el backend las extrae y crea sus spans vinculados al mismo trace_id, permitiendo visualizar la cascada completa de latencia de extremo a extremo.",
+    "proTip": "Configura \"tracePropagationTargets: ['api.tudominio.com']\" en el frontend para evitar propagar cabeceras de rastreo a llamadas de dominios de terceros (Google Analytics, Stripe, etc.)."
+  },
+  {
+    "id": "sub-21",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Un usuario sube un archivo PDF confidencial a un bucket S3 privado. Necesitas que el usuario lo visualice directamente en el visor de PDF integrado del navegador durante 5 minutos sin que se descargue como archivo en disco. ¿Qué parámetros de Presigned URL son obligatorios?",
+    "codeSnippet": "const command = new GetObjectCommand({\n  Bucket: 'mis-facturas-privadas',\n  Key: 'factura_123.pdf',\n  ResponseContentType: 'application/pdf',\n  ResponseContentDisposition: 'inline; filename=\"factura_123.pdf\"'\n});\nconst url = await getSignedUrl(s3Client, command, { expiresIn: 300 });",
+    "codeLanguage": "typescript",
+    "options": [
+      "Configurar \"ResponseContentType: application/pdf\" y \"ResponseContentDisposition: inline; filename=...\" con un tiempo de expiración (expiresIn: 300).",
+      "Configurar \"ResponseContentDisposition: attachment\" con permisos públicos en el bucket S3.",
+      "Convertir el archivo a base64 y enviarlo en el header HTTP Authorization.",
+      "Hacer el bucket S3 de lectura pública durante los 5 minutos mediante una política de IAM."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"ResponseContentDisposition: inline\" le ordena al navegador renderizar el recurso dentro de la ventana/pestaña si dispone de un visor compatible (como el visor PDF nativo de Chrome o Firefox). Por el contrario, \"attachment\" fuerza la descarga del archivo al disco del usuario. \"ResponseContentType\" garantiza que el navegador no lo interprete como texto plano (\"text/plain\") ni como binario genérico (\"application/octet-stream\").",
+    "proTip": "Si no sobreescribes el Content-Type al generar la Presigned URL o al subir el archivo, S3 puede servirlo como application/octet-stream, lo que obligará al navegador a descargarlo aunque configures inline."
+  },
+  {
+    "id": "sub-22",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué un video MP4 servido directamente desde un bucket S3 o CloudFront falla o no permite adelantar/retroceder la barra de reproducción (seeking) en Safari/iOS?",
+    "codeSnippet": "HTTP/1.1 206 Partial Content\nContent-Range: bytes 1048576-2097151/10485760\nContent-Length: 1048576\nAccept-Ranges: bytes",
+    "codeLanguage": "http",
+    "options": [
+      "Safari requiere obligatoriamente soporte de peticiones de rango HTTP (Range header) y respuesta con código de estado \"206 Partial Content\" para reproducir y hacer seeking en archivos multimedia.",
+      "iOS solo permite reproducir videos en formato exclusivo Apple ProRes con códec H.265.",
+      "S3 no soporta archivos de más de 10 Megabytes sin compresión Gzip.",
+      "CloudFront bloquea por defecto todas las extensiones de video que no sean WebM."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los reproductores HTML5 modernos (y especialmente Safari en iOS/macOS) no descargan el archivo de video completo; envían solicitudes HTTP con el encabezado \"Range: bytes=0-1\" para leer los metadatos iniciales (moov atom) y luego solicitan trozos específicos según la posición de la barra de reproducción. El servidor/CDN debe soportar \"Range requests\" y responder con \"206 Partial Content\".",
+    "proTip": "Al usar ffmpeg para web, asegúrate de utilizar el flag \"-movflags +faststart\" para mover el átomo de metadatos \"moov\" al principio del archivo MP4, permitiendo reproducción instantánea sin esperar la descarga completa."
+  },
+  {
+    "id": "sub-23",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Al servir imágenes estáticas versionadas a través de AWS CloudFront conectado a S3, ¿cuál es la mejor práctica de Cache-Control para lograr máxima velocidad y cero costos de invalidaciones manuales?",
+    "codeSnippet": "// Estrategia Cache-Busting con Hashes:\n// /assets/hero-banner.a8f2bc91.webp\nCache-Control: public, max-age=31536000, immutable",
+    "codeLanguage": "http",
+    "options": [
+      "Nombrar los archivos con el hash de su contenido y enviar \"Cache-Control: public, max-age=31536000, immutable\"; si la imagen cambia, cambia la URL, eliminando la necesidad de invalidar la CDN.",
+      "Enviar siempre \"Cache-Control: no-cache, no-store\" para forzar revalidación permanente.",
+      "Ejecutar \"aws cloudfront create-invalidation --paths /*\" cada vez que un usuario solicita una imagen.",
+      "Configurar el TTL de CloudFront en 60 segundos para todo el tráfico."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El patrón de assets inmutables con huella digital en la URL (fingerprinting/content hashing) permite configurar \"max-age=31536000 (1 año)\" e \"immutable\". El navegador y los Edge Locations de CloudFront retienen el archivo indefinidamente con tasa de aciertos (Cache Hit) cercana al 100%. Cuando se publica un nuevo diseño, el nombre del archivo cambia (ej. hero.f901.webp), por lo que nunca se pagan invalidaciones ni se sirven datos obsoletos.",
+    "proTip": "Para archivos con nombres fijos que deben cambiar en el mismo path (ej. avatar_actual.png), usa \"Cache-Control: no-cache\" junto con ETag para que el navegador haga validaciones 304 Not Modified ultra-livianas."
+  },
+  {
+    "id": "sub-24",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Para permitir que clientes web suban archivos pesados (videos de 2 GB) a S3 directamente sin saturar el ancho de banda ni la memoria de tu servidor backend, ¿qué arquitectura se utiliza?",
+    "codeSnippet": "1. Frontend solicita sesión de carga a Backend.\n2. Backend genera IDs de Multipart Upload y Presigned URLs por cada parte (chunk).\n3. Frontend sube cada parte directamente a S3 en paralelo.\n4. Backend completa el Multipart Upload en S3.",
+    "codeLanguage": "text",
+    "options": [
+      "S3 Multipart Upload con Presigned URLs: el backend solo firma criptográficamente las partes y el navegador sube los fragmentos directamente a los servidores de AWS en paralelo.",
+      "Recibir el archivo completo en la RAM del backend con multer y enviarlo por FTP.",
+      "Aumentar el límite \"client_max_body_size\" de Nginx a 10 GB y retransmitir el stream.",
+      "Guardar el video dividido en fragmentos Base64 en una tabla de PostgreSQL."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Transmitir gigabytes a través del servidor de aplicaciones desperdicia CPU, RAM y ancho de banda de salida (egress). Con S3 Multipart Upload + Presigned URLs, el cliente divide el archivo en fragmentos (ej. de 10MB) y los sube directo a AWS con reintentos individuales por fragmento si la conexión falla, mientras tu API backend solo firma URLs y orquesta el inicio y fin de la carga.",
+    "proTip": "Configura una regla de ciclo de vida (Lifecycle Rule) en tu bucket S3 con \"AbortIncompleteMultipartUpload\" tras 3 o 7 días; de lo contrario, las subidas fallidas inconclusas acumulan partes ocultas en S3 que AWS te cobrará cada mes."
+  },
+  {
+    "id": "sub-25",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué un contenedor Docker con Node.js o Python ejecutándose como PID 1 a menudo ignora \"docker stop\" (tarda 10 segundos en apagarse y muere por SIGKILL) y acumula procesos zombies?",
+    "codeSnippet": "// Dockerfile sin init:\nENTRYPOINT [\"node\", \"server.js\"] // Se ejecuta como PID 1 en el contenedor\n\n// Solución moderna:\nENTRYPOINT [\"/usr/bin/tini\", \"--\", \"node\", \"server.js\"]",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "En Linux, el proceso PID 1 tiene la responsabilidad especial de adoptar procesos huérfanos (reaping) y no aplica los manejadores por defecto para señales como SIGTERM; \"tini\" actúa como un init ligero que reenvía señales y recoge zombies.",
+      "Node.js y Python no son compatibles con la arquitectura x86 de Linux.",
+      "Docker stop envía por defecto una señal SIGSEGV que corrompe la memoria del runtime.",
+      "Porque el archivo package.json no incluye la dependencia \"@types/docker\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En el kernel de Linux, el PID 1 (tradicionalmente systemd/init) ignora cualquier señal que no tenga un manejador explícito registrado en código. Cuando Docker envía SIGTERM, Node.js no termina a menos que tenga un listener de SIGTERM. Además, si la app lanza subprocesos que mueren, quedan como zombies (\"<defunct>\") porque Node.js no hace \"waitpid()\". Herramientas como \"tini\" o \"dumb-init\" solucionan esto de raíz.",
+    "proTip": "Docker incluye tini integrado: puedes probarlo directamente en tu comando docker run pasando la bandera \"--init\"."
+  },
+  {
+    "id": "sub-26",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Por qué este Dockerfile reconstruye y reinstala TODOS los módulos de npm cada vez que cambia una sola línea de código fuente en \"src/index.ts\"?",
+    "codeSnippet": "FROM node:20-alpine\nWORKDIR /app\nCOPY . .\nRUN npm ci --omit=dev\nCMD [\"node\", \"src/index.ts\"]",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Hizo \"COPY . .\" antes de \"RUN npm ci\", lo que invalida la caché de Docker de la capa de dependencias ante cualquier mínimo cambio en cualquier archivo del proyecto.",
+      "El comando \"npm ci\" no tiene soporte de caché en Alpine Linux.",
+      "Falta la instrucción \"EXPOSE 3000\" para habilitar la caché de capas.",
+      "La imagen base de Node 20 no permite capas intermedias."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Docker valida la caché de capas de forma secuencial. Al copiar todo el repositorio (\"COPY . .\"), cualquier cambio en el código fuente modifica la firma de esa capa, invalidando todas las capas posteriores y forzando a que \"npm ci\" se ejecute desde cero. La solución es copiar primero solo \"package*.json\", ejecutar \"npm ci\", y luego copiar el resto del código (\"COPY . .\").",
+    "proTip": "Asegúrate de tener un .dockerignore completo que excluya \"node_modules\", \".git\", \"coverage\" y archivos \".env\"."
+  },
+  {
+    "id": "sub-27",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Con Docker BuildKit moderno, ¿cómo compartes la caché de gestores de paquetes (npm, pip, go, cargo) entre compilaciones sin que la carpeta de caché quede grabada en la imagen final?",
+    "codeSnippet": "RUN --mount=type=cache,target=/root/.cache/pip \\\n    pip install -r requirements.txt",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Utilizando montajes de caché (\"RUN --mount=type=cache,target=...\"), que mantienen los paquetes descargados en el host de compilación sin inflar el tamaño de la imagen resultante.",
+      "Guardando la carpeta de caché en un volumen montado con \"-v /tmp:/tmp\" en tiempo de ejecución.",
+      "Haciendo un \"chmod 777\" a la carpeta de dependencias en el host.",
+      "Comprando una licencia comercial de Docker Desktop."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"--mount=type=cache\" es una característica de BuildKit que monta temporalmente un directorio persistente exclusivo para el motor de build durante la ejecución de ese comando RUN. Los paquetes descargados se reutilizan en builds posteriores sin necesidad de descargarlos de nuevo por internet y sin añadir ni un solo megabyte al sistema de archivos de la imagen final.",
+    "proTip": "En Node.js puedes usar \"RUN --mount=type=cache,target=/root/.npm npm ci\" para acelerar pipelines locales y en CI drásticamente."
+  },
+  {
+    "id": "sub-28",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué ejecutar contenedores en producción con el usuario \"root\" por defecto representa un riesgo de seguridad crítico y cómo se soluciona?",
+    "codeSnippet": "# Dockerfile Seguro:\nRUN addgroup -S appgroup && adduser -S appuser -G appgroup\nUSER appuser:appgroup",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Si ocurre un fallo de escape de contenedor (container breakout), el atacante adquiere privilegios de root (UID 0) en el sistema operativo host. Se soluciona creando y declarando un usuario sin privilegios con la instrucción \"USER\".",
+      "Root hace que el contenedor consuma el doble de ancho de banda de red.",
+      "El kernel de Linux no permite conexiones HTTPS cuando el proceso es UID 0.",
+      "Solo los contenedores de Windows soportan ejecución con usuario root."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Un contenedor comparte el mismo kernel del host. El usuario root (UID 0) dentro del contenedor tiene el mismo identificador numérico que root en el host a menos que esté activo User Namespaces. Si el atacante explota una vulnerabilidad en Docker o en el kernel (ej. Dirty COW, runc CVE), tiene control total de la máquina host. Declarar un usuario no root (\"USER appuser\") mitiga drásticamente el impacto.",
+    "proTip": "En Kubernetes, refuerza esto a nivel de clúster con \"securityContext: runAsNonRoot: true\" y \"allowPrivilegeEscalation: false\"."
+  },
+  {
+    "id": "sub-29",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia sutil pero crucial entre la instrucción \"ENTRYPOINT\" y \"CMD\" en un Dockerfile?",
+    "codeSnippet": "ENTRYPOINT [\"python\", \"app.py\"]\nCMD [\"--port\", \"8080\"]",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "\"ENTRYPOINT\" define el ejecutable inmutable que siempre correrá; \"CMD\" proporciona los argumentos por defecto que pueden ser fácilmente sobreescritos al ejecutar \"docker run <imagen> <otros-argumentos>\".",
+      "\"CMD\" se ejecuta durante el build de la imagen y \"ENTRYPOINT\" durante el arranque del contenedor.",
+      "\"ENTRYPOINT\" solo funciona en imágenes basadas en Ubuntu, mientras \"CMD\" es universal.",
+      "Son idénticos y solo existen dos palabras clave por compatibilidad histórica con UNIX."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Cuando se combinan en su formato exec (corchetes JSON), ENTRYPOINT especifica el comando principal del contenedor y CMD proporciona los parámetros predeterminados. Si ejecutas \"docker run mi-imagen --port 9090\", sólo los parámetros de CMD se reemplazan por \"--port 9090\", manteniendo el ejecutable \"python app.py\" intacto.",
+    "proTip": "Utiliza siempre la sintaxis de array JSON [\"ejecutable\", \"arg\"] (Exec form) en lugar de la forma shell (ENTRYPOINT python app.py), ya que la forma shell lanza /bin/sh -c como PID 1 y oculta las señales del sistema operativo a tu aplicación."
+  },
+  {
+    "id": "sub-30",
+    "categoryId": "subtle_engineering",
+    "categoryName": "Sutilezas Pro & Producción",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En un pipeline de CI con pruebas automatizadas contra una base de datos PostgreSQL, ¿cuál es la técnica más veloz para acelerar los tests sin comprometer la integridad de las pruebas?",
+    "codeSnippet": "// Docker / Postgres config para CI:\ndocker run -e POSTGRES_PASSWORD=secret \\\n  postgres:16-alpine \\\n  -c fsync=off -c synchronous_commit=off -c full_page_writes=off",
+    "codeLanguage": "bash",
+    "options": [
+      "Desactivar fsync y synchronous_commit en la instancia de Postgres efímera del CI, ya que las garantías de durabilidad en disco ante caídas de energía son irrelevantes en runners que se destruyen al finalizar.",
+      "Reemplazar PostgreSQL por un archivo JSON en memoria en todas las pruebas.",
+      "Ejecutar las pruebas unitarias sin compilar el proyecto.",
+      "Hacer commit a git con el flag \"--no-verify\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Postgres dedica una gran cantidad de tiempo esperando que el kernel escriba físicamente las páginas en disco (fsync) para garantizar durabilidad ACID ante apagones. En un runner de CI que vivirá 3 minutos y se destruirá, esa persistencia no tiene valor. Apagar fsync (\"fsync=off\", \"synchronous_commit=off\", \"full_page_writes=off\") puede hacer que las suites de pruebas corran de 3 a 8 veces más rápido.",
+    "proTip": "¡Nunca apliques esto en bases de datos de producción ni en staging donde residan datos persistentes!"
+  },
+  {
+    "id": "doc-01",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cuáles son los dos pilares fundamentales del kernel de Linux sobre los cuales Docker construye el aislamiento y control de los contenedores?",
+    "codeSnippet": "// Aislamiento de vista vs Control de recursos\nls -l /proc/$$/ns/ # Linux Namespaces\ncat /sys/fs/cgroup/memory.max # Cgroups v2",
+    "codeLanguage": "bash",
+    "options": [
+      "Linux Namespaces (para aislamiento de visibilidad: PID, NET, MNT, IPC, UTS, USER) y Control Groups / Cgroups (para limitación y medición de recursos: CPU, Memoria, I/O).",
+      "KVM (Kernel-based Virtual Machine) y QEMU.",
+      "Selinux y eBPF exclusivamente.",
+      "Hyper-V containers y WSL2."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Un contenedor no es una máquina virtual; es un proceso estándar de Linux. Los Namespaces crean la ilusión de un entorno dedicado (cada contenedor ve solo sus propios PIDs, interfaces de red, puntos de montaje y usuarios), mientras que Cgroups v1/v2 limitan la cantidad de memoria, CPU, I/O y número de procesos que ese grupo puede consumir.",
+    "proTip": "En entrevistas, enfatiza: \"Un contenedor es un proceso confinado por cgroups, aislado por namespaces y restringido por seccomp/capabilities; no hay hipervisor\"."
+  },
+  {
+    "id": "doc-02",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En el driver de almacenamiento Overlay2, ¿cómo interactúan los directorios \"lowerdir\", \"upperdir\" y \"merged\" cuando un contenedor modifica un archivo de una imagen base?",
+    "codeSnippet": "mount -t overlay overlay \\\n  -o lowerdir=/var/lib/docker/overlay2/l/base,upperdir=/app/upper,workdir=/app/work \\\n  /app/merged",
+    "codeLanguage": "bash",
+    "options": [
+      "\"lowerdir\" es de solo lectura (las capas de la imagen); \"upperdir\" es la capa de lectura/escritura del contenedor; al modificar un archivo, Overlay2 hace \"Copy-on-Write\" (CoW) copiando el archivo desde lowerdir a upperdir antes de escribir.",
+      "\"lowerdir\" se sobreescribe directamente en disco para ahorrar espacio.",
+      "\"upperdir\" se borra cada 5 minutos por el daemon de Docker.",
+      "\"merged\" es una partición de swap temporal en memoria RAM."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Overlay2 monta las capas de la imagen como \"lowerdir\" (inmutables y de solo lectura). Al arrancar el contenedor, se crea \"upperdir\" (capa rw). Si un proceso modifica un archivo existente de 100 MB, el kernel primero copia todo el archivo desde lowerdir a upperdir (Copy-on-Write) y luego aplica el cambio, lo que introduce una penalización de I/O en la primera escritura de archivos grandes.",
+    "proTip": "Por esta razón de Copy-on-Write, las bases de datos (Postgres, MySQL) y operaciones de I/O intensivas NUNCA deben escribir en el filesystem del contenedor; deben usar volúmenes de Docker montados directamente."
+  },
+  {
+    "id": "doc-03",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Por qué incluir un token secreto de GitHub en una variable ARG dentro de un Dockerfile clásico expone la credencial en producción incluso si se borra en un RUN posterior?",
+    "codeSnippet": "FROM node:20\nARG GITHUB_TOKEN\nRUN git clone https://${GITHUB_TOKEN}@github.com/empresa/privado.git\nRUN unset GITHUB_TOKEN # Intento de limpiarlo",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Los valores de ARG y las capas intermedias quedan grabados permanentemente en los metadatos de la imagen y en el historial accesible con \"docker history\" o extrayendo el tar de la imagen.",
+      "El comando \"unset\" solo funciona en Windows.",
+      "Git rechaza clonar repositorios con tokens en la URL.",
+      "Node.js 20 desactiva la lectura de variables ARG."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Cualquiera con acceso a la imagen puede ejecutar \"docker history --no-trunc <imagen>\" o \"docker inspect\" y ver los valores de ARG pasados durante la compilación. Además, los archivos creados en una capa previa permanecen en esa capa aunque se borren en un \"RUN\" posterior.",
+    "proTip": "La forma moderna y segura con BuildKit es usar secretos de compilación: \"RUN --mount=type=secret,id=gh_token TOKEN=$(cat /run/secrets/gh_token) ...\", lo cual no deja ningún rastro en las capas de la imagen."
+  },
+  {
+    "id": "doc-04",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia de resolución DNS entre la red bridge por defecto (\"bridge\") y una red bridge creada por el usuario (\"docker network create mi-red\")?",
+    "codeSnippet": "docker run --name app1 --network bridge mi-img\ndocker run --name app2 --network mi-red mi-img",
+    "codeLanguage": "bash",
+    "options": [
+      "En las redes bridge creadas por el usuario, Docker proporciona resolución DNS automática por nombre de contenedor (ej. \"ping app2\"); en la red bridge por defecto, la resolución DNS por nombre está desactivada y solo se pueden comunicar por dirección IP (a menos que se use el obsoleto --link).",
+      "La red bridge por defecto es más rápida porque no usa iptables.",
+      "Las redes creadas por el usuario requieren obligatoriamente túneles VPN.",
+      "No hay ninguna diferencia técnica."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El embedded DNS server de Docker (en 127.0.0.11 dentro del contenedor) solo está activo en \"user-defined networks\". En la red bridge por defecto (docker0), Docker deshabilita la resolución de nombres por razones de retrocompatibilidad histórica, obligando a usar IPs crudas o el flag legado \"--link\".",
+    "proTip": "Nunca uses la red bridge por defecto en producción ni en desarrollo. Siempre crea una red dedicada con \"docker network create\" o mediante Docker Compose."
+  },
+  {
+    "id": "doc-05",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es una imagen \"Distroless\" (ej. gcr.io/distroless/nodejs20-debian12) y qué ventajas de seguridad radicales aporta en producción?",
+    "codeSnippet": "FROM node:20-alpine AS build\nWORKDIR /app\nCOPY . .\nRUN npm ci && npm run build\n\nFROM gcr.io/distroless/nodejs20-debian12\nWORKDIR /app\nCOPY --from=build /app/dist ./dist\nCMD [\"dist/index.js\"]",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Contiene únicamente la aplicación y sus dependencias estrictas de runtime; no contiene gestor de paquetes (apt, apk), ni shells (/bin/sh, /bin/bash), ni binarios de utilidades comunes (curl, wget), reduciendo la superficie de ataque y los CVEs a casi cero.",
+      "Es una imagen que se ejecuta sin procesador CPU usando WebAssembly.",
+      "Es una distribución de Linux experimental creada por el MIT para computación cuántica.",
+      "Es una imagen que no requiere Docker para ejecutarse."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Distroless elimina todo lo innecesario para ejecutar tu código compilado. Al carecer de shell y de administradores de paquetes, si un atacante logra ejecución remota de código (RCE) en tu app, no puede ejecutar \"curl malicious.com | sh\", ni instalar paquetes, ni spawnear una reverse shell tradicional, frustrando la mayoría de los vectores de ataque.",
+    "proTip": "Para depurar un contenedor distroless en desarrollo, puedes usar \"docker debug <container_id>\" (Docker Desktop reciente) o conectar un contenedor efímero a sus namespaces de red y procesos."
+  },
+  {
+    "id": "doc-06",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué la directiva \".dockerignore\" es crucial para el rendimiento de compilación y qué problema grave evita?",
+    "codeSnippet": "# .dockerignore\n.git\nnode_modules\ndist\n*.log\n.env*",
+    "codeLanguage": "text",
+    "options": [
+      "Evita que Docker envíe el \"Build Context\" innecesariamente pesado (como la carpeta .git o gigabytes de node_modules locales) a través del socket al daemon, y previene la fuga accidental de secretos (.env).",
+      "Desactiva el escaneo antivirus durante el arranque del contenedor.",
+      "Comprime los archivos en formato zip antes de guardarlos en caché.",
+      "Obliga a Docker a ignorar los errores de TypeScript en compilación."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Antes de que se ejecute la primera línea de un Dockerfile, el cliente empaqueta todo el directorio actual (Build Context) y lo envía al daemon. Si no excluyes \".git\" o \"node_modules\", puedes estar transfiriendo cientos de megabytes o gigabytes en cada compilación, además del riesgo crítico de incluir credenciales de archivos \".env\" en la imagen.",
+    "proTip": "Siempre incluye \".git\" en tu .dockerignore. Además de pesar mucho, cada commit cambia los archivos en .git, lo que invalidaría la caché de cualquier \"COPY . .\" posterior."
+  },
+  {
+    "id": "doc-07",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué sucede si un contenedor excede el límite de memoria configurado con \"--memory 512m\" en Linux?",
+    "codeSnippet": "docker run -d --name cache-app --memory=512m --memory-swap=512m redis:alpine",
+    "codeLanguage": "bash",
+    "options": [
+      "El kernel de Linux ejecuta el OOM Killer (Out Of Memory Killer) y termina el proceso del contenedor inmediatamente con un código de salida 137 (128 + SIGKILL 9).",
+      "El contenedor reduce automáticamente la frecuencia de su reloj de CPU.",
+      "Docker pausa el contenedor y lo reanuda cuando se libera memoria en el host.",
+      "La memoria restante se descarga automáticamente en Amazon S3."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Cuando los cgroups detectan que el consumo de memoria excede el límite configurado (y no hay swap disponible o el swap también se agotó con --memory-swap=512m), el cgroup invoca al OOM Killer del kernel, el cual envía SIGKILL (señal 9) al proceso con mayor oom_score_adj. En docker inspect, se reflejará como \"OOMKilled: true\" y ExitCode 137.",
+    "proTip": "Verifica si tus contenedores han muerto por OOM inspeccionando \"docker inspect <container> --format '{{.State.OOMKilled}}'\"."
+  },
+  {
+    "id": "doc-08",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia entre montar un volumen con el flag \":z\" vs \":Z\" en sistemas con SELinux activo (como RHEL, Fedora, CentOS)?",
+    "codeSnippet": "docker run -v /data/shared:/data:z mi-app # vs\ndocker run -v /data/private:/data:Z mi-app",
+    "codeLanguage": "bash",
+    "options": [
+      "\":z\" aplica una etiqueta SELinux compartida (svirt_sandbox_file_t) permitiendo que múltiples contenedores compartan el volumen; \":Z\" aplica una etiqueta privada exclusiva y única, impidiendo que cualquier otro contenedor acceda al directorio.",
+      "\":z\" comprime los datos con algoritmo zip; \":Z\" los cifra con RSA.",
+      "\":z\" es de solo lectura y \":Z\" es de lectura/escritura.",
+      "Son banderas idénticas introducidas por redundancia."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "SELinux previene que procesos confinados en contenedores accedan a archivos del sistema anfitrión a menos que tengan el contexto de seguridad correcto. El modificador \":z\" reetiqueta el directorio con un contexto compartido por todos los contenedores. El modificador \":Z\" lo reetiqueta con un MCS (Multi-Category Security) único y exclusivo para ese contenedor en particular.",
+    "proTip": "¡Cuidado con \":Z\"! Nunca uses \":Z\" sobre directorios del sistema como /home o /var/log, ya que romperá el acceso para el resto de servicios del sistema operativo host."
+  },
+  {
+    "id": "doc-09",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la instrucción RUN de este Dockerfile NO reduce el tamaño de la imagen final a pesar de ejecutar \"rm -rf\"?",
+    "codeSnippet": "FROM ubuntu:22.04\nRUN apt-get update && apt-get install -y build-essential\nRUN rm -rf /var/lib/apt/lists/*",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Al ejecutarse en un \"RUN\" separado, crea una nueva capa de Overlay2 donde los archivos se marcan como eliminados (whiteout), pero los datos binarios siguen ocupando espacio en la capa anterior inmutable.",
+      "Ubuntu 22.04 no soporta la eliminación de paquetes por CLI.",
+      "El comando \"rm -rf\" no funciona con asteriscos dentro de Docker.",
+      "Se requiere reiniciar el daemon de Docker para que se aplique la reducción."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Cada directiva RUN genera una capa independiente inmutable. Si instalas paquetes en una capa y los limpias en la siguiente capa, la primera capa conserva todos los megabytes de los paquetes descargados. Para optimizar el tamaño, la instalación y la limpieza deben combinarse en una sola instrucción RUN encadenada con \"&&\": \"RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*\".",
+    "proTip": "Utiliza linters de Dockerfiles como Hadolint en tu pipeline de CI para detectar automáticamente capas divididas y advertencias de seguridad."
+  },
+  {
+    "id": "doc-10",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "Para endurecer al máximo la seguridad de un contenedor en producción (Principio de Menor Privilegio), ¿qué combinación de flags de Docker CLI se considera estándar de oro?",
+    "codeSnippet": "docker run -d \\\n  --cap-drop=ALL \\\n  --cap-add=NET_BIND_SERVICE \\\n  --read-only \\\n  --tmpfs /tmp:rw,noexec,nosuid,size=64m \\\n  --security-opt=no-new-privileges:true \\\n  --user 10001:10001 \\\n  mi-web-server",
+    "codeLanguage": "bash",
+    "options": [
+      "Descartar todas las Linux Capabilities (--cap-drop=ALL), montar el sistema de archivos raíz como solo lectura (--read-only), usar tmpfs efímero con noexec para archivos temporales, bloquear escalamiento de privilegios (--security-opt=no-new-privileges) y correr con UID no-root.",
+      "Ejecutar con \"--privileged\" para permitir que Docker administre la memoria directamente.",
+      "Desactivar AppArmor y SELinux con \"--security-opt unconfined\".",
+      "Asignar el contenedor a la red host con \"--net=host\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Esta combinación mitiga la inmensa mayoría de ataques: un atacante no puede modificar binarios ni inyectar código en el filesystem raíz (--read-only), no puede ganar privilegios adicionales (no-new-privileges), no puede ejecutar binarios en /tmp (noexec en tmpfs), y carece de capacidades del kernel para alterar redes, montar discos o rastrear procesos (--cap-drop=ALL).",
+    "proTip": "Si tu servicio necesita vincularse a un puerto inferior a 1024 (ej. 80 o 443) sin ser root, agrega únicamente la capacidad \"--cap-add=NET_BIND_SERVICE\"."
+  },
+  {
+    "id": "doc-11",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué diferencia existe entre \"docker exec\" y \"docker run\"?",
+    "codeSnippet": "docker run -it alpine sh # vs\ndocker exec -it mi-alpine-activo sh",
+    "codeLanguage": "bash",
+    "options": [
+      "\"docker run\" crea e inicializa un nuevo contenedor desde cero a partir de una imagen; \"docker exec\" ejecuta un nuevo proceso dentro de los namespaces de un contenedor que YA está en ejecución.",
+      "\"docker exec\" se ejecuta en el servidor remoto y \"docker run\" en local.",
+      "\"docker exec\" compila el código antes de lanzarlo.",
+      "Son sinónimos intercambiables."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"docker run\" instancia un nuevo ciclo de vida de contenedor (crea nuevos cgroups, namespaces y capa de escritura Overlay2). En cambio, \"docker exec\" utiliza la llamada al sistema \"setns()\" del kernel de Linux para unir un nuevo proceso a los namespaces existentes del contenedor que ya está corriendo.",
+    "proTip": "Usa \"docker exec\" exclusivamente para tareas de introspección, depuración o comandos administrativos temporales, nunca como mecanismo principal para correr tareas batch de producción."
+  },
+  {
+    "id": "doc-12",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué los logs de Docker en un servidor de producción pueden saturar el disco duro al 100% y cómo se previene en \"/etc/docker/daemon.json\"?",
+    "codeSnippet": "// /etc/docker/daemon.json\n{\n  \"log-driver\": \"json-file\",\n  \"log-opts\": {\n    \"max-size\": \"100m\",\n    \"max-file\": \"5\"\n  }\n}",
+    "codeLanguage": "json",
+    "options": [
+      "Por defecto, el driver \"json-file\" no tiene límite de tamaño ni rotación, acumulando stdout/stderr indefinidamente en /var/lib/docker/containers/; se previene configurando \"max-size\" y \"max-file\" para activar rotación automática.",
+      "Porque Docker guarda un volcado de memoria (core dump) de cada paquete TCP.",
+      "Porque las imágenes de Docker crecen de tamaño a medida que pasa el tiempo.",
+      "Se soluciona deshabilitando el comando \"console.log\" en JavaScript."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El driver por defecto de Docker escribe todos los logs en un archivo JSON plano en el host. Sin rotación explícita, una aplicación ruidosa puede generar cientos de gigabytes hasta agotar los inodos o el espacio del disco, provocando caídas en cascada. Configurar \"max-size: 100m\" y \"max-file: 5\" garantiza que nunca se utilicen más de 500 MB en logs por contenedor.",
+    "proTip": "En entornos de producción distribuidos, es aún mejor enviar los logs a un recolector externo como Fluentbit, Loki o Datadog usando el driver \"fluentd\", \"syslog\" o \"awslogs\"."
+  },
+  {
+    "id": "doc-13",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En Docker Compose v2, ¿cómo configuras un servicio para que espere a que su base de datos esté lista y acepte conexiones (Healthcheck) antes de arrancar, en vez de solo esperar a que el contenedor se inicie?",
+    "codeSnippet": "services:\n  web:\n    image: mi-app\n    depends_on:\n      db:\n        condition: service_healthy\n  db:\n    image: postgres:16\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5",
+    "codeLanguage": "yaml",
+    "options": [
+      "Configurando \"depends_on\" con \"condition: service_healthy\", requiriendo que el servicio dependiente pase exitosamente su test de \"healthcheck\".",
+      "Añadiendo \"sleep 60\" en el comando de inicio de la aplicación web.",
+      "Docker Compose espera automáticamente a que los puertos de red estén abiertos.",
+      "Usando la propiedad \"wait_for_ports: [5432]\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El \"depends_on\" básico solo espera a que el contenedor esté en estado RUNNING (es decir, que el proceso arrancó), pero servicios como PostgreSQL o MySQL tardan varios segundos en inicializar el catálogo y aceptar clientes. La condición \"service_healthy\" retrasa el arranque del servicio web hasta que el healthcheck devuelva código de salida 0.",
+    "proTip": "Para proyectos sin healthcheck nativo, puedes implementar healthchecks con curl/wget (\"test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']\")."
+  },
+  {
+    "id": "doc-14",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es \"Rootless Docker\" y qué ventaja fundamental de seguridad ofrece contra vulnerabilidades de escape de contenedor (Zero-Day exploits en runc)?",
+    "codeSnippet": "# Instalación y arranque de Docker en espacio de usuario\ndockerd-rootless-setuptool.sh install\nsystemctl --user start docker",
+    "codeLanguage": "bash",
+    "options": [
+      "Permite ejecutar tanto el daemon de Docker (dockerd) como los contenedores dentro de un User Namespace sin privilegios de root (UID != 0) en el host, eliminando el riesgo de que un escape del contenedor tome el control de la máquina host.",
+      "Permite ejecutar contenedores sin necesidad de instalar Linux.",
+      "Es un comando especial para ejecutar Docker en modo solo lectura.",
+      "Permite ejecutar Docker en dispositivos móviles Android sin root."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En el modo Rootless, incluso si un atacante es root (UID 0) dentro del contenedor y logra una falla de escape del runtime (como CVE-2019-5736 en runc), en el sistema host solo es un usuario normal sin privilegios (ej. UID 1000). No puede modificar archivos del kernel, ni instalar módulos, ni acceder a /etc/shadow.",
+    "proTip": "En modo Rootless, el kernel no permite vincular puertos privilegiados (< 1024) por defecto a menos que configures \"sysctl net.ipv4.ip_unprivileged_port_start=80\"."
+  },
+  {
+    "id": "doc-15",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "find_the_bug",
+    "title": "¿Por qué este contenedor tarda exactamente 10 segundos en responder a \"docker stop\" antes de apagarse abruptamente con Exit Code 137?",
+    "codeSnippet": "FROM python:3.11-slim\nWORKDIR /app\nCOPY app.py .\nCMD python app.py # Nota: formato Shell en vez de Exec",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Al usar el formato Shell (\"CMD python app.py\"), Docker ejecuta \"/bin/sh -c\" como PID 1. La shell /bin/sh no reenvía las señales del sistema operativo (SIGTERM) al proceso hijo de Python, provocando un timeout de 10s hasta que Docker envía SIGKILL.",
+      "Python requiere compilarse con Cython para recibir señales del sistema operativo.",
+      "El flag \"-slim\" de Python elimina la librería de sockets de Linux.",
+      "Docker stop solo es compatible con aplicaciones escritas en Go."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La sintaxis shell (\"CMD comando arg\") envuelve el comando en \"/bin/sh -c\". En Linux, /bin/sh no propaga señales a los procesos hijos. Al recibir \"SIGTERM\" de \"docker stop\", la shell lo ignora, tu app de Python nunca se entera para hacer graceful shutdown, se alcanza el timeout de 10 segundos y Docker termina matando el contenedor con SIGKILL.",
+    "proTip": "Usa siempre el formato Exec con corchetes JSON: 'CMD [\"python\", \"app.py\"]' o 'ENTRYPOINT [\"python\", \"app.py\"]'."
+  },
+  {
+    "id": "doc-16",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la función del comando \"docker diff <container_id>\" al realizar análisis forense o debugging de un contenedor?",
+    "codeSnippet": "docker diff mi-contenedor\nC /etc\nC /etc/hosts\nA /tmp/payload.sh\nD /var/log/app.log",
+    "codeLanguage": "text",
+    "options": [
+      "Muestra todos los cambios en el sistema de archivos del contenedor en comparación con su imagen base: A (Añadido), C (Cambiado) y D (Eliminado).",
+      "Compara el consumo de CPU entre dos contenedores activos.",
+      "Calcula la diferencia de versiones entre el daemon local y Docker Hub.",
+      "Genera un parche git entre dos imágenes distintas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"docker diff\" inspecciona la capa superior escribible (upperdir) del contenedor y reporta cada archivo que fue modificado (C), creado (A) o eliminado (D) desde que el contenedor fue instanciado a partir de la imagen original. Es invaluable en incidentes de seguridad para identificar malware o archivos temporales no deseados.",
+    "proTip": "En un contenedor correctamente configurado con \"--read-only\", \"docker diff\" no debería reportar casi ninguna modificación fuera de los volúmenes montados."
+  },
+  {
+    "id": "doc-17",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cómo compilas una imagen compatible tanto con procesadores Intel/AMD (x86_64) como con Apple Silicon / AWS Graviton (ARM64) usando Docker Buildx?",
+    "codeSnippet": "docker buildx create --name multibuilder --use\ndocker buildx build \\\n  --platform linux/amd64,linux/arm64 \\\n  -t mi-registro.com/app:v1.0.0 \\\n  --push .",
+    "codeLanguage": "bash",
+    "options": [
+      "Creando una instancia de buildx con soporte multi-nodo o emulación QEMU y usando \"--platform linux/amd64,linux/arm64 --push\" para generar un OCI Image Index (manifiesto múltiple).",
+      "Cambiando la extensión del Dockerfile a \".multi\".",
+      "No es posible; se debe crear un Dockerfile completamente diferente por cada arquitectura.",
+      "Compilando la imagen en una máquina virtual de Windows."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Buildx soporta emulación mediante QEMU o nodos constructores remotos. Al pasar múltiples plataformas (\"--platform linux/amd64,linux/arm64\"), compila ambas variantes y crea un \"Manifest List\" en el registro de destino, de modo que cuando un servidor ARM64 o un servidor AMD64 ejecuta \"docker pull\", descarga automáticamente la variante nativa correspondiente a su arquitectura.",
+    "proTip": "El flag \"--push\" es obligatorio en builds multi-arquitectura porque el motor de Docker local clásico no puede almacenar más de una arquitectura simultáneamente bajo el mismo tag en su daemon tradicional."
+  },
+  {
+    "id": "doc-18",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el modo de red \"host\" (\"--net=host\") y cuándo es indispensable a pesar de romper el aislamiento de red?",
+    "codeSnippet": "docker run -d --name proxy --net=host envoyproxy/envoy:v1.28",
+    "codeLanguage": "bash",
+    "options": [
+      "El contenedor comparte directamente el namespace de red del host: no tiene su propia IP ni pasa por NAT/iptables; se utiliza para proxys de ultra-alto rendimiento o monitoreo de red para eliminar la sobrecarga de traducción de paquetes (NAT overhead).",
+      "Permite conectar el contenedor a internet sin usar un módem.",
+      "Hace que el contenedor se ejecute únicamente en la memoria caché L3 del CPU.",
+      "Es el único modo compatible con Docker Swarm."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Con \"--net=host\", el contenedor no obtiene una interfaz virtual veth ni una IP propia; se vincula directamente a las interfaces físicas del host (eth0, lo). Esto elimina por completo el overhead de conmutación de iptables y NAT de la red bridge, ofreciendo rendimiento de red idéntico al metal puro.",
+    "proTip": "Ten en cuenta que en \"--net=host\", el mapeo de puertos (-p 8080:80) se ignora; el servicio se vincula directamente al puerto en el host, por lo que no puedes correr dos contenedores en el mismo puerto."
+  },
+  {
+    "id": "doc-19",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué comando de Docker permite limpiar de un solo golpe todos los contenedores detenidos, redes no utilizadas, imágenes intermedias colgantes y la caché de BuildKit?",
+    "codeSnippet": "docker system prune -a --volumes",
+    "codeLanguage": "bash",
+    "options": [
+      "\"docker system prune -a --volumes\", que elimina todos los contenedores detenidos, imágenes no asociadas a ningún contenedor en ejecución, redes no usadas y volúmenes huérfanos.",
+      "\"docker clear --all\".",
+      "\"rm -rf /var/lib/docker\" con el daemon en marcha.",
+      "\"docker uninstall --clean\"."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "\"docker system prune\" limpia recursos no utilizados. El flag \"-a\" (all) extiende la limpieza para eliminar también imágenes que no tienen contenedores activos asociados (no solo dangling), y \"--volumes\" remueve los volúmenes anónimos que quedaron huérfanos tras borrar contenedores.",
+    "proTip": "¡Extrema precaución con \"--volumes\" en producción! Si tienes bases de datos con volúmenes que no están actualmente adjuntos a un contenedor en ejecución, este comando los eliminará de forma irreversible."
+  },
+  {
+    "id": "doc-20",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cómo permite Docker montar el socket del daemon (\"/var/run/docker.sock\") dentro de un contenedor y por qué es equivalente a otorgar acceso root sin restricciones a toda la máquina host?",
+    "codeSnippet": "docker run -v /var/run/docker.sock:/var/run/docker.sock mi-herramienta-ci",
+    "codeLanguage": "bash",
+    "options": [
+      "Al tener acceso directo a la API de Docker mediante el socket Unix, cualquier proceso dentro del contenedor puede ordenar al daemon host crear un nuevo contenedor con \"--privileged\" montando la raíz \"/\" del host y tomar control total del servidor.",
+      "El socket de Docker está encriptado con TLS y solo permite comandos de solo lectura.",
+      "Solo expone la lista de nombres de contenedores sin permisos de ejecución.",
+      "Es un método seguro recomendado por el estándar CIS Benchmark."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El socket Unix \"/var/run/docker.sock\" es el punto de control absoluto del daemon de Docker. Si un contenedor tiene montado este socket, puede enviar un payload a la API ordenando: \"docker run -v /:/host-root alpine chroot /host-root\", adquiriendo acceso root irrestricto sobre todo el sistema de archivos del sistema anfitrión.",
+    "proTip": "En pipelines de CI/CD, evita el patrón Docker-out-of-Docker montando el socket. Utiliza herramientas modernas sin privilegios para compilar imágenes, como Kaniko, Buildah o contenedores Sysbox."
+  },
+  {
+    "id": "doc-21",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia fundamental entre un \"Named Volume\" y un \"Bind Mount\" en Docker?",
+    "codeSnippet": "docker run -v datos_db:/var/lib/postgresql/data mi-db # Named Volume\ndocker run -v /home/usuario/app:/app mi-app # Bind Mount",
+    "codeLanguage": "bash",
+    "options": [
+      "Los \"Named Volumes\" son gestionados completamente por Docker en su directorio interno (/var/lib/docker/volumes/), son independientes del SO host y fáciles de respaldar; los \"Bind Mounts\" mapean una ruta explícita del filesystem del host y dependen de la estructura de carpetas y permisos del host.",
+      "Los Bind Mounts se guardan en la memoria RAM y los Named Volumes en el disco SSD.",
+      "Los Named Volumes son de solo lectura y los Bind Mounts de lectura/escritura.",
+      "Los Bind Mounts solo funcionan en Windows."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los volúmenes nombrados abstraen el almacenamiento del host: Docker gestiona su ciclo de vida, permisos de usuario y migración entre entornos. Los bind mounts dependen de una ruta rígida del host anfitrión y a menudo causan dolores de cabeza por discrepancias de UID/GID entre el usuario de tu laptop y el usuario del contenedor.",
+    "proTip": "Usa Bind Mounts para desarrollo local (sincronizar código fuente en vivo con hot-reload); usa Named Volumes para persistencia de datos (bases de datos, uploads) en producción."
+  },
+  {
+    "id": "doc-22",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "En un contenedor con Alpine Linux o Debian, ¿por qué es crítico ejecutar \"set -e\" o verificar códigos de retorno en scripts de ENTRYPOINT personalizados?",
+    "codeSnippet": "#!/bin/sh\nset -e # ¿Por qué es indispensable?\n# Tareas de migración de base de datos\nnpm run db:migrate\nexec \"$@\"",
+    "codeLanguage": "bash",
+    "options": [
+      "\"set -e\" asegura que el script termine inmediatamente si cualquier comando falla; sin él, si las migraciones fallan, el script continuará ciegamente y levantará el servidor web con una base de datos corrupta o desactualizada.",
+      "\"set -e\" activa el soporte para emojis en los logs del contenedor.",
+      "Sin \"set -e\", el shell no puede interpretar la instrucción \"exec\".",
+      "Es una directiva obligatoria para que el script sea ejecutable con chmod +x."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En scripts de shell POSIX, los comandos que fallan continúan ejecutándose por defecto a menos que se use \"set -e\". Además, la última línea \"exec '$@'\" reemplaza el proceso del script por el comando final de la aplicación, transfiriéndole el PID 1 para que reciba las señales del sistema operativo adecuadamente.",
+    "proTip": "La combinación recomendada en scripts entrypoint de Linux es \"set -euo pipefail\" para atrapar errores, variables no declaradas y fallos en pipes."
+  },
+  {
+    "id": "doc-23",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Qué es \"Docker Content Trust\" (DCT) y cómo garantiza que una imagen no fue alterada ni suplantada en el registro?",
+    "codeSnippet": "export DOCKER_CONTENT_TRUST=1\ndocker pull mi-empresa/core-api:1.0.0",
+    "codeLanguage": "bash",
+    "options": [
+      "Utiliza firmas criptográficas digitales con llaves públicas/privadas (mediante The Update Framework / Notary); si \"DOCKER_CONTENT_TRUST=1\" está activo, Docker rechaza descargar o ejecutar cualquier imagen que no esté debidamente firmada por un publicador de confianza.",
+      "Verifica la tarjeta de crédito del usuario en Docker Hub antes de descargar.",
+      "Escanea la imagen con un antivirus en la nube de Microsoft Defender.",
+      "Obliga a que el nombre del autor coincida con el correo del desarrollador."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Docker Content Trust garantiza integridad y autenticidad en la cadena de suministro de software (Supply Chain Security). Al publicar una imagen, el autor la firma criptográficamente con una clave privada offline. Al activar DCT en el cliente o cluster, Docker verifica la firma antes de permitir su ejecución, bloqueando ataques de intermediarios (Man-In-The-Middle) o imágenes comprometidas en el registro.",
+    "proTip": "En Kubernetes moderno y entornos cloud-native, esta misma verificación de firmas se realiza a través de Sigstore/Cosign y políticas de Kyverno o Gatekeeper."
+  },
+  {
+    "id": "doc-24",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Cómo accedes al servicio ejecutándose en el \"localhost\" del sistema host desde adentro de un contenedor Docker en Linux y en Docker Desktop?",
+    "codeSnippet": "// Dentro de la app en el contenedor:\nconst HOST_DB_URL = \"http://host.docker.internal:5432\";",
+    "codeLanguage": "javascript",
+    "options": [
+      "En Docker Desktop (macOS/Windows) se usa el hostname especial \"host.docker.internal\". En Linux nativo, se debe agregar el flag \"--add-host=host.docker.internal:host-gateway\" al comando docker run.",
+      "Usando \"127.0.0.1\", ya que el contenedor comparte el loopback del host por defecto.",
+      "Escribiendo \"localhost\" directamente sin ninguna configuración.",
+      "No es posible acceder a servicios del host desde un contenedor bajo ninguna circunstancia."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Dentro de un contenedor, \"127.0.0.1\" o \"localhost\" apunta a su propia interfaz de red loopback aislada. Para llegar al host, Docker Desktop resuelve \"host.docker.internal\" a la IP del gateway de la VM. En Linux nativo, este nombre no viene habilitado por defecto y se debe mapear explícitamente con \"--add-host=host.docker.internal:host-gateway\".",
+    "proTip": "En docker-compose.yml para Linux, puedes añadir a tu servicio: \"extra_hosts: ['host.docker.internal:host-gateway']\"."
+  },
+  {
+    "id": "doc-25",
+    "categoryId": "docker_mastery",
+    "categoryName": "Docker & Containers Mastery",
+    "difficulty": "Senior",
+    "type": "multiple_choice",
+    "title": "¿Por qué la directiva \"HEALTHCHECK\" dentro de un Dockerfile es superior a depender únicamente de que el proceso principal siga vivo?",
+    "codeSnippet": "HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \\\n  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+    "codeLanguage": "dockerfile",
+    "options": [
+      "Detecta escenarios de \"Deadlock\" o loops infinitos donde el proceso sigue vivo en la tabla de procesos (PID activo), pero la aplicación está congelada y ya no responde a peticiones de red.",
+      "Reinicia la máquina anfitriona si la memoria RAM se calienta.",
+      "Permite que el contenedor se ejecute más rápido en producción.",
+      "Es un requisito estricto para compilar imágenes en plataformas ARM."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Un proceso puede estar en ejecución (\"docker ps\" reporta UP), pero atrapado en un bloqueo mutuo (deadlock), agotamiento de conexiones a la base de datos o fallo de red. El HEALTHCHECK ejecuta un comando periódico: si devuelve 0 el estado es \"healthy\", si devuelve 1 o falla en los reintentos, el estado cambia a \"unhealthy\", permitiendo que orquestadores (Docker Swarm, Compose o K8s) reinicien o desvíen tráfico del contenedor.",
+    "proTip": "\"--start-period\" es crucial para apps que tardan en arrancar (como JVMs o apps con migraciones): evita que los fallos iniciales cuenten contra los reintentos permitidos."
   }
 ]

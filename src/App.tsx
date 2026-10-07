@@ -66,6 +66,8 @@ export default function App() {
     ai_assistance: { answered: 4, correct: 3 },
     senior_fullstack: { answered: 5, correct: 4 },
     devops_cloud: { answered: 5, correct: 4 },
+    subtle_engineering: { answered: 4, correct: 4 },
+    docker_mastery: { answered: 5, correct: 5 },
   });
 
   // AI Tutor Modal state
