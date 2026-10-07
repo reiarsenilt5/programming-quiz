@@ -116,15 +116,30 @@ include(":app")`
     name: 'gradle-wrapper.properties',
     category: 'gradle',
     language: 'groovy',
-    description: 'Versión de Gradle fijada en 8.3 para compatibilidad garantizada con AGP 8.3.',
+    description: 'Versión de Gradle fijada en 8.6 para compatibilidad garantizada con AGP 8.3.',
     content: `distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
-distributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip
+distributionUrl=https\\://services.gradle.org/distributions/gradle-8.6-bin.zip
 networkTimeout=10000
 validateDistributionUrl=true
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists`
+  },
+  {
+    path: 'gradle.properties',
+    name: 'gradle.properties',
+    category: 'gradle',
+    language: 'groovy',
+    description: 'Configuración crítica de Gradle: activa android.useAndroidX=true para resolver compilación en CI.',
+    content: `# Project-wide Gradle settings.
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
 
+# AndroidX enabled (Obligatorio para evitar fallo de CI)
+android.useAndroidX=true
+android.nonTransitiveRClass=true
+
+# Kotlin settings
+kotlin.code.style=official`
   },
   {
     path: 'app/src/main/AndroidManifest.xml',
@@ -405,12 +420,18 @@ enum class CategoryType(val id: String, val displayName: String) {
     JAVASCRIPT("javascript", "JavaScript Core"),
     TYPESCRIPT("typescript", "TypeScript Avanzado"),
     REACT("react", "React & Ecosystem"),
-    MODERN_FUNDAMENTALS("modern_fundamentals", "Fundamentos Modernos"),
-    AI_ASSISTANCE("ai_assistance", "IA para Programadores");
+    SQL("sql", "SQL & Bases de Datos"),
+    SOLID("solid", "Principios SOLID"),
+    MODERN_FUNDAMENTALS("modern_fundamentals", "Fundamentos & Git"),
+    AI_ASSISTANCE("ai_assistance", "IA para Programadores"),
+    SENIOR_FULLSTACK("senior_fullstack", "Fullstack Senior (React, Python, Laravel)"),
+    DEVOPS_CLOUD("devops_cloud", "DevOps & Cloud (Linux, Docker, K8s)"),
+    SUBTLE_ENGINEERING("subtle_engineering", "Sutilezas Pro & Trucos de Producción"),
+    DOCKER_MASTERY("docker_mastery", "Docker & Containers Mastery");
 
     companion object {
         fun fromId(id: String): CategoryType =
-            entries.find { it.id == id } ?: MODERN_FUNDAMENTALS
+            values().find { it.id == id } ?: MODERN_FUNDAMENTALS
     }
 }
 
@@ -515,31 +536,6 @@ interface QuestionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(questions: List<QuestionEntity>)
-}`
-  },
-  {
-    path: 'app/src/main/java/com/devquiz/app/data/local/QuizDatabase.kt',
-    name: 'QuizDatabase.kt',
-    category: 'model',
-    language: 'kotlin',
-    description: 'Room Database abstract class con soporte TypeConverters y DAO.',
-    content: `package com.devquiz.app.data.local
-
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.devquiz.app.data.local.dao.QuestionDao
-import com.devquiz.app.data.local.entity.Converters
-import com.devquiz.app.data.local.entity.QuestionEntity
-
-@Database(
-    entities = [QuestionEntity::class],
-    version = 1,
-    exportSchema = false
-)
-@TypeConverters(Converters::class)
-abstract class QuizDatabase : RoomDatabase() {
-    abstract fun questionDao(): QuestionDao
 }`
   },
 

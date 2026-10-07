@@ -83,12 +83,12 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                             difficulty = difficulty,
                             type = type,
                             title = obj.optString("title", ""),
-                            codeSnippet = if (obj.has("codeSnippet")) obj.getString("codeSnippet") else null,
-                            codeLanguage = if (obj.has("codeLanguage")) obj.getString("codeLanguage") else null,
+                            codeSnippet = if (obj.has("codeSnippet") && !obj.isNull("codeSnippet")) obj.getString("codeSnippet") else null,
+                            codeLanguage = if (obj.has("codeLanguage") && !obj.isNull("codeLanguage")) obj.getString("codeLanguage") else null,
                             options = optionsList,
                             correctAnswerIndex = obj.optInt("correctAnswerIndex", 0),
                             explanation = obj.optString("explanation", ""),
-                            proTip = if (obj.has("proTip")) obj.getString("proTip") else null
+                            proTip = if (obj.has("proTip") && !obj.isNull("proTip")) obj.getString("proTip") else null
                         )
                     )
                 }

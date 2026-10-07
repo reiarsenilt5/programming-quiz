@@ -105,7 +105,7 @@ fun HomeScreen(
                 )
             }
 
-            items(CategoryType.entries) { category ->
+            items(CategoryType.values().toList()) { category ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()

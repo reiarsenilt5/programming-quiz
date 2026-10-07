@@ -17,7 +17,7 @@ enum class CategoryType(val id: String, val displayName: String) {
 
     companion object {
         fun fromId(id: String): CategoryType =
-            entries.find { it.id == id } ?: MODERN_FUNDAMENTALS
+            values().find { it.id == id } ?: MODERN_FUNDAMENTALS
     }
 }
 

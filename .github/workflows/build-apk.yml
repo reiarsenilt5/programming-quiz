@@ -75,7 +75,7 @@ jobs:
             - **Versión**: `1.0.${{ github.run_number }}`
             - **Rama**: `${{ github.ref_name }}`
             - **Commit**: `${{ github.sha }}`
-            - **Categorías**: 9 cuestionarios técnicos (SOLID, SQL, Fundamentos, Backend, Clean Code, etc.)
+            - **Categorías**: 13 cuestionarios técnicos (SOLID, SQL, Fullstack Senior 2026, DevOps & Cloud 2026, Sutilezas Pro, Docker Mastery 25+, etc.)
             - **Modo**: 100% Funcional Offline (IA Gemini opcional)
           files: |
             DevQuiz-v1.0.${{ github.run_number }}-debug.apk
