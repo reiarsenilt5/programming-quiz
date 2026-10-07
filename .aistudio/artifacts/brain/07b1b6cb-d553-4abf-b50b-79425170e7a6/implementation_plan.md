@@ -1,149 +1,69 @@
-# Plan de Resolución Definitiva: Compilación y Descarga de APK en GitHub Actions CI
+# Plan de Implementación: Top 100 Preguntas de Entrevistas Técnicas Senior 2026 (2 Nuevos Quizzes)
 
-Plan exhaustivo para diagnosticar, corregir y blindar el pipeline de integración continua (CI) en GitHub Actions para el repositorio `programming-quiz`, garantizando la compilación limpia del APK Android en Kotlin/Jetpack Compose y su distribución automática mediante GitHub Releases y Artifacts.
-
----
-
-### User Review & Critical Decisions
-
-> [!IMPORTANT]
-> Decisiones confirmadas a través del proceso interactivo de aclaración:
-> - **Entrega del APK**: Se generará tanto como artefacto descargable en **GitHub Actions** como en una **GitHub Release automática** con enlace directo para descarga en móvil.
-> - **Gestión de IA en la app**: Modo híbrido y resiliente. La aplicación funciona 100% offline con el banco de preguntas local (`questions.json`) y activa explicaciones avanzadas si se provee la clave de Gemini (sin bloquear la ejecución si la clave no está configurada).
-> - **Disparadores de compilación**: El workflow se ejecutará automáticamente en cada `push` a la rama `main` y bajo demanda mediante el botón manual `workflow_dispatch` ("Run workflow").
+Plan estructurado para diseñar, categorizar e integrar **100 preguntas avanzadas de entrevistas técnicas senior** organizadas en dos nuevos quizzes especializados de 50 preguntas cada uno, cubriendo escenarios reales de producción, depuración de código crítico y decisiones de arquitectura, con sincronización total entre la versión Web (React/TypeScript) y la aplicación móvil Android (Kotlin/Jetpack Compose).
 
 ---
 
-### 1. Overview & Core Concept
+## 1. Visión y Objetivos de los 2 Nuevos Quizzes
 
-- **Problema**: Las ejecuciones de CI en GitHub Actions fallaban durante la tarea Gradle `assembleDebug` debido a errores acumulados en el código fuente de Kotlin (dependencias de Room huérfanas, llamadas incorrectas a la API de Jetpack Compose Material3, métodos de delegación de ViewModel) y a la ausencia de los ejecutables del Gradle Wrapper en el repositorio.
-- **Objetivo**: Garantizar que el runner de GitHub Actions compile el APK (`app-debug.apk`) de manera determinista y confiable en menos de 3 minutos, publicándolo inmediatamente para que el usuario pueda descargarlo e instalarlo en su dispositivo móvil.
-- **Público Objetivo**: Desarrolladores y estudiantes que desean practicar preguntas técnicas de programación (SOLID, SQL, Arquitectura, Backend, Kotlin, etc.) en una aplicación móvil nativa Android fluida.
+### Quiz 1: Fullstack Senior 2026 (`senior_fullstack`)
+* **Nombre mostrado**: *Fullstack Senior 2026 (React, Python, Laravel & SQL)*
+* **Volumen**: 50 preguntas exclusivas y de alta dificultad.
+* **Núcleo temático**:
+  1. **React 19 & Frontend Moderno (12 preguntas)**: React Compiler, Server Actions, Server Components vs Client Components, fugas en `useEffect` y cierres asíncronos (`stale closures`), concurrencia (`useTransition`, `useDeferredValue`), reconciliación virtual DOM vs render directo, microfrontends y hydration mismatches.
+  2. **Python Moderno Backend & Async (13 preguntas)**: Python 3.13 free-threaded build (no-GIL), `asyncio` event loop blocking con operaciones síncronas, generadores/iteradores y consumo de memoria (`yield`), FastAPI inyección de dependencias (`Depends`), Pydantic v2 validación en Rust, decoradores con preservación de metadatos (`functools.wraps`), profiling de memoria.
+  3. **Laravel 11 & PHP Moderno (13 preguntas)**: Laravel 11 lean skeleton, ciclo de vida del Service Container (Singletons con state leaks en Laravel Octane/FrankenPHP), Eloquent N+1 con subqueries complejas y lazy loading en producción, bloqueos atómicos en Redis para queues (`withoutOverlapping`), transacciones anidadas y deadlocks en base de datos.
+  4. **SQL Avanzado & Arquitectura de Datos (12 preguntas)**: Window functions complejas (`ROW_NUMBER`, `DENSE_RANK`, `LAG`/`LEAD`), optimización con `EXPLAIN (ANALYZE, BUFFERS)` (Index Only Scan vs Bitmap Heap Scan), niveles de aislamiento de transacciones (Read Committed vs Repeatable Read vs Serializable, phantom reads), particionamiento de tablas y control de bloat con PostgreSQL MVCC/VACUUM.
 
----
-
-### 2. Diagnóstico de Errores Identificados en CI
-
-A partir del análisis de los registros de ejecución en GitHub Actions (`job/113003807536` y anteriores) y la inspección del árbol de código:
-
-1. **Gradle Wrapper ausente en el repositorio Git**:
-   - *Causa*: Los scripts `gradlew`, `gradlew.bat` y el binario `gradle-wrapper.jar` no estaban incluidos o carecían de permisos de ejecución en el entorno Linux del runner.
-   - *Solución*: Se han incorporado los archivos oficiales del Gradle Wrapper 8.6 y se aseguró el paso `chmod +x ./gradlew` en el workflow.
-
-2. **Imports no resueltos de Room (`Unresolved reference: room`)**:
-   - *Causa*: Los archivos `QuestionDao.kt` y `QuestionEntity.kt` importaban anotaciones de `androidx.room.*`, pero Room y KSP no estaban configurados en Gradle (la app carga sus preguntas desde `assets/questions.json`).
-   - *Solución*: Eliminación definitiva de los archivos de DAO/Entity obsoletos para erradicar errores de compilación estática.
-
-3. **Incompatibilidad de firmas en Jetpack Compose Material 3**:
-   - *Causa*: En `QuizScreen.kt`, `LinearProgressIndicator` utilizaba un lambda `{ state.progress }` en lugar del valor directo `state.progress: Float`, lo que causaba un fallo de resolución de tipos en Kotlin 1.9+.
-   - *Solución*: Actualizado a `progress = state.progress`.
-
-4. **Falta de biblioteca Material Icons Extended**:
-   - *Causa*: `HomeScreen.kt` y `ResultScreen.kt` utilizan iconos como `School`, `Quiz` y `CheckCircle` que residen en `material-icons-extended`.
-   - *Solución*: Inclusión explícita de `libs.androidx.material.icons.extended` en las dependencias de `app/build.gradle.kts`.
-
-5. **Delegado `by viewModels()` sin `activity-ktx`**:
-   - *Causa*: `MainActivity.kt` utilizaba el delegado de conveniencia de Fragment/Activity KTX sin esa dependencia declarada.
-   - *Solución*: Inicialización mediante `by lazy { QuizViewModel(application) }`, completamente nativa y sin dependencias externas adicionales.
-
-6. **Modelo Gemini y tolerancia a fallos offline**:
-   - *Causa*: Llamada a un identificador no compatible con el SDK móvil de Generative AI y ausencia de manejo ante clave vacía.
-   - *Solución*: Actualización a `gemini-1.5-flash` con inicialización segura que no interrumpe el quiz si no hay conexión o API Key.
+### Quiz 2: DevOps & Cloud Architecture 2026 (`devops_cloud`)
+* **Nombre mostrado**: *DevOps & Cloud Architecture 2026 (Linux, K8s & CI/CD)*
+* **Volumen**: 50 preguntas exclusivas y de alta dificultad.
+* **Núcleo temático**:
+  1. **Linux Internals & Incident Response (13 preguntas)**: Triage en vivo bajo caída (`strace`, `lsof`, `tcpdump`, `htop`, `dmesg`), gestión de memoria en kernel (Page Cache, Swappiness, OOM Killer y `oom_score_adj`), descriptores de archivos (`ulimit`, `file-max`), señales de procesos (`SIGTERM`, `SIGKILL`, `SIGINT`), sockets y TIME_WAIT tuning (`sysctl`).
+  2. **Docker & Containers Seguros (12 preguntas)**: Multi-stage builds con imágenes distroless, cgroups v2 y asignación estricta de CPU/Memory quotas, problema del PID 1 (zombie processes y signal handling con `tini`), ataques de contenedor con privilegios y namespaces de Linux, caching de capas y SBOM generation.
+  3. **Kubernetes & Orquestación Cloud-Native (13 preguntas)**: Ciclo de vida de Pods y políticas de QoS (Guaranteed, Burstable, BestEffort), probes críticas (`liveness`, `readiness`, `startup`), cero tiempo de inactividad en RollingUpdates (`preStop` hooks y graceful shutdown), Ingress controllers, Network Policies, autoscaling horizontal con KEDA vs HPA.
+  4. **CI/CD, Seguridad & Arquitectura de Resiliencia (12 preguntas)**: Pipelines modernos de GitHub Actions / GitLab CI, escaneo de vulnerabilidades en artefactos (Trivy, Cosign signing), estrategias de despliegue (Canary, Blue/Green con Service Mesh), resiliencia de microservicios (Circuit Breakers con Sentinel/Resilience4j, Exponential Backoff con Jitter), observabilidad y OpenTelemetry (trazas distribuidas, métricas y spans).
 
 ---
 
-### 3. Pipeline de CI & Distribución del APK
+## 2. Especificación Técnica de las Preguntas
 
-Configuración del flujo de automatización en `.github/workflows/build-apk.yml`:
-
-```
-┌────────────────────────────────────────────────────────┐
-│             Disparador: push (main) o manual           │
-└───────────────────────────┬────────────────────────────┘
-                            │
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│  Runner: ubuntu-latest con JDK 17 (Eclipse Temurin)    │
-└───────────────────────────┬────────────────────────────┘
-                            │
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│       Configurar Gradle & Permisos de gradlew          │
-└───────────────────────────┬────────────────────────────┘
-                            │
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│     Compilación: ./gradlew assembleDebug --no-daemon   │
-└───────────────────────────┬────────────────────────────┘
-                            │
-              ┌─────────────┴─────────────┐
-              ▼                           ▼
-┌───────────────────────────┐ ┌───────────────────────────┐
-│  Upload GitHub Artifact   │ │  Crear GitHub Release     │
-│   (DevQuiz-APK-Debug)     │ │   con APK adjunto         │
-└───────────────────────────┘ └───────────────────────────┘
-```
-
-#### Acciones de Distribución:
-1. **GitHub Actions Artifacts**:
-   - Nombre: `DevQuiz-APK-Debug`
-   - Archivo: `app/build/outputs/apk/debug/app-debug.apk`
-   - Retención: 30 días
-2. **GitHub Release Automática**:
-   - Acción: `softprops/action-gh-release@v2`
-   - Tag automático: `v1.0.${{ github.run_number }}`
-   - Nombre de la Release: `DevQuiz APK Build #${{ github.run_number }}`
-   - Archivo adjunto directo: `DevQuiz-v1.0.${{ github.run_number }}-debug.apk`
+Cada pregunta incluirá:
+* **Título claro del problema**: Enunciado directo simulando la pregunta formulada por un Staff/Principal Engineer en una ronda técnica.
+* **Snippet de código o comando real**: Ejemplos concisos en Python, PHP/Laravel, JavaScript/React, SQL, Bash o YAML de Kubernetes según aplique.
+* **Opciones precisas**: 4 alternativas técnicas con distractores plausibles que capturan los errores más comunes de desarrolladores Mid/Junior.
+* **Explicación técnica profunda**: Detalle paso a paso del porqué de la respuesta correcta y la razón por la cual fallan las alternativas.
+* **Pro-Tip de Entrevista**: Consejo táctico de alto valor ("Qué busca escuchar el entrevistador" o "Buenas prácticas recomendadas en producción").
 
 ---
 
-### 4. Technical Architecture & Data Strategy
+## 3. Plan de Integración en el Código
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     DevQuiz Android Module                      │
-│                                                                 │
-│   ┌────────────────────┐          ┌─────────────────────────┐   │
-│   │ assets/            │          │ Gradle Build System     │   │
-│   │ questions.json     │          │ - Kotlin 1.9.22         │   │
-│   │ (9 categorías)     │          │ - Android SDK 34        │   │
-│   └─────────┬──────────┘          │ - Jetpack Compose M3    │   │
-│             │                     └─────────────────────────┘   │
-│             ▼                                                   │
-│   ┌────────────────────┐          ┌─────────────────────────┐   │
-│   │ QuizViewModel      │◄─────────┤ MainActivity            │   │
-│   │ - StateFlow        │          │ - Single Activity       │   │
-│   │ - Timer 30s        │          │ - Theme Provider        │   │
-│   │ - Gemini Fallback  │          └────────────┬────────────┘   │
-│   └─────────┬──────────┘                       │                │
-│             │                                  │                │
-│             ▼                                  ▼                │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │ Compose Screens: HomeScreen -> QuizScreen -> ResultUI   │   │
-│   └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Fase 1: Actualización de Modelos y Tipos
+1. **Web (`src/types/quiz.ts` y `src/data/questionsData.ts`)**:
+   * Registrar las dos nuevas categorías en `CATEGORIES` con iconos, colores y metadatos visuales.
+   * Añadir el banco completo de las 100 preguntas estructuradas y tipadas.
+2. **Android Native (`com.devquiz.app.domain.model.Question.kt`)**:
+   * Extender el enum `CategoryType`:
+     ```kotlin
+     SENIOR_FULLSTACK("senior_fullstack", "Fullstack Senior 2026"),
+     DEVOPS_CLOUD("devops_cloud", "DevOps & Cloud 2026")
+     ```
+   * Actualizar el repositorio local o data source nativo de Android en `androidProjectCode.ts` para que la app Android compilada contenga las 100 nuevas preguntas sin necesidad de backend externo.
 
-#### Categorías integradas en `questions.json`:
-1. `solid` - Principios SOLID de diseño de software.
-2. `sql` - SQL relacional, índices, ACID y optimización.
-3. `fundamentals` - Fundamentos de desarrollo y programación.
-4. `backend` - Arquitectura de servidores, APIs y concurrencia.
-5. `clean-code` - Código limpio, refactorización y testing.
-6. `design-patterns` - Patrones de diseño GoF y arquitecturales.
-7. `devops` - CI/CD, Docker y despliegue.
-8. `security` - Seguridad web, autenticación y OWASP.
-9. `cloud` - Cloud computing y servicios distribuidos.
+### Fase 2: Experiencia de Usuario en la App
+1. **Filtros y navegación**: Asegurar que las tarjetas de las nuevas categorías se muestren con insignias destacadas ("🔥 Top 50 Senior" y "☁️ Top 50 DevOps").
+2. **Selector de preguntas en el Quiz**: Soporte fluido tanto para sesiones completas de 50 preguntas como para tandas de práctica rápida (10 preguntas aleatorias) y modo contrarreloj.
+
+### Fase 3: Verificación y Compilación
+1. Ejecutar `lint_applet` para garantizar que no existan errores de tipos o sintaxis en TypeScript.
+2. Ejecutar `compile_applet` para confirmar la compilación exitosa de la aplicación web.
+3. Verificar la compatibilidad del código Kotlin para que GitHub Actions CI continúe generando la APK sin ninguna regresión.
 
 ---
 
-### 5. Pasos de Ejecución tras Aprobación
-
-1. **Ajuste del Workflow `.github/workflows/build-apk.yml`**:
-   - Incluir el paso de creación de GitHub Release automática con permisos `contents: write`.
-   - Renombrar y copiar el APK compilado con el número de build para fácil identificación.
-2. **Verificación de archivos y dependencias**:
-   - Confirmar la presencia de `gradlew`, `gradlew.bat` y `gradle/wrapper/gradle-wrapper.jar`.
-   - Validar la sintaxis de `app/build.gradle.kts` y `libs.versions.toml`.
-3. **Instrucciones de commit y descarga**:
-   - Proporcionar las instrucciones claras para que el usuario sincronice los cambios a GitHub y descargue el APK directamente desde la Release o desde Artifacts.
+## 4. Criterios de Aceptación
+* [ ] Las categorías `senior_fullstack` y `devops_cloud` aparecen activas en la interfaz web y móvil.
+* [ ] 50 preguntas rigurosas de Fullstack Senior (React, Python, Laravel, SQL) integradas con snippets y explicaciones.
+* [ ] 50 preguntas rigurosas de DevOps & Cloud (Linux, Docker, K8s, CI/CD) integradas con snippets y explicaciones.
+* [ ] La aplicación compila limpiamente sin advertencias ni errores.

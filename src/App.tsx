@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { 
   Home, 
   Zap, 
@@ -23,25 +22,12 @@ import {
   VolumeX,
   Smartphone,
   ShieldCheck,
-  Check,
-  GitBranch,
-  Layers,
-  Code2,
-  ExternalLink,
-  AlertTriangle,
-  Info
+  Check
 } from 'lucide-react';
 import { CategoryId, GameMode, Question, QuizUserAnswer } from './types/quiz';
 import { CATEGORIES, QUESTIONS_DATA } from './data/questionsData';
-import CiCdGuide from './components/CiCdGuide';
-import CodeExplorer from './components/CodeExplorer';
-import ArchitectureView from './components/ArchitectureView';
 
 export default function App() {
-  // Global View Navigation: Simulator vs CI/CD vs Code vs Architecture
-  const [globalView, setGlobalView] = useState<'simulator' | 'cicd' | 'code' | 'architecture'>('simulator');
-  const [showDiagnosticAlert, setShowDiagnosticAlert] = useState(true);
-
   // Navigation Tabs in Mobile App
   const [activeTab, setActiveTab] = useState<'home' | 'blitz' | 'stats' | 'settings'>('home');
 
@@ -78,6 +64,8 @@ export default function App() {
     solid: { answered: 4, correct: 4 },
     modern_fundamentals: { answered: 4, correct: 4 },
     ai_assistance: { answered: 4, correct: 3 },
+    senior_fullstack: { answered: 5, correct: 4 },
+    devops_cloud: { answered: 5, correct: 4 },
   });
 
   // AI Tutor Modal state
@@ -230,106 +218,15 @@ export default function App() {
   const currentQ = activeQuestions[currentIndex];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none selection:bg-indigo-500 selection:text-white">
-      {/* Top Header & Navigation Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 px-4 py-2.5">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-md shadow-indigo-950">
-              <Smartphone className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-bold text-sm text-white">DevQuiz: Master Modern Coding</h1>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
-                  Jetpack Compose & Room
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400">Transiciones fluidas con Framer Motion • Pipeline de GitHub Actions 100% Reparado</p>
-            </div>
-          </div>
-
-          {/* Navigation View Switcher */}
-          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs font-medium">
-            <button
-              onClick={() => setGlobalView('simulator')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
-                globalView === 'simulator'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>Simulador Pixel</span>
-            </button>
-            <button
-              onClick={() => setGlobalView('cicd')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
-                globalView === 'cicd'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <GitBranch className="w-3.5 h-3.5 text-emerald-400" />
-              <span>CI/CD & Fix GitHub</span>
-            </button>
-            <button
-              onClick={() => setGlobalView('code')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
-                globalView === 'code'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Code2 className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Código Fuente (.ZIP)</span>
-            </button>
-            <button
-              onClick={() => setGlobalView('architecture')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
-                globalView === 'architecture'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 text-purple-400" />
-              <span>Arquitectura</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-2 sm:p-4 font-sans select-none selection:bg-indigo-500 selection:text-white">
+      {/* Native Mobile Frame (Material 3 Mobile Screen) */}
+      <div className="w-full max-w-[420px] h-[860px] max-h-[96vh] bg-slate-950 rounded-[44px] shadow-2xl border-4 border-slate-800 ring-1 ring-slate-700/50 flex flex-col overflow-hidden relative">
+        
+        {/* Android Punch Hole & Speaker */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-slate-900 rounded-full z-50 flex items-center justify-between px-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-slate-950 ring-1 ring-slate-800" />
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
         </div>
-      </header>
-
-      {/* Main View Area */}
-      <main className="flex-1 flex items-center justify-center p-2 sm:p-4">
-        {globalView === 'cicd' && (
-          <div className="w-full max-w-5xl py-2">
-            <CiCdGuide />
-          </div>
-        )}
-
-        {globalView === 'code' && (
-          <div className="w-full max-w-5xl py-2">
-            <CodeExplorer />
-          </div>
-        )}
-
-        {globalView === 'architecture' && (
-          <div className="w-full max-w-5xl py-2">
-            <ArchitectureView />
-          </div>
-        )}
-
-        {globalView === 'simulator' && (
-          <div className="flex flex-col items-center justify-center">
-            {/* Native Mobile Frame (Material 3 Mobile Screen) */}
-            <div className="w-full max-w-[420px] h-[860px] max-h-[96vh] bg-slate-950 rounded-[44px] shadow-2xl border-4 border-slate-800 ring-1 ring-slate-700/50 flex flex-col overflow-hidden relative">
-              
-              {/* Android Punch Hole & Speaker */}
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-slate-900 rounded-full z-50 flex items-center justify-between px-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-slate-950 ring-1 ring-slate-800" />
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
-              </div>
-
 
         {/* Status Bar */}
         <div className="h-8 px-6 flex items-center justify-between text-[11px] text-slate-400 font-medium z-40 bg-slate-950/80 backdrop-blur-sm pt-1">
@@ -371,138 +268,110 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Linear Progress Indicator (Animated) */}
+                {/* Linear Progress Indicator */}
                 <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-3">
-                  <motion.div
-                    className="bg-indigo-500 h-full rounded-full"
-                    initial={false}
-                    animate={{
+                  <div
+                    className="bg-indigo-500 h-full transition-all duration-300 rounded-full"
+                    style={{
                       width: `${((currentIndex + 1) / activeQuestions.length) * 100}%`,
                     }}
-                    transition={{ duration: 0.35, ease: 'easeOut' }}
                   />
                 </div>
 
-                {/* Animated Question Card sliding in and out */}
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={currentQ.id}
-                    initial={{ opacity: 0, x: 50, scale: 0.98 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: -50, scale: 0.98 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className="space-y-2.5"
-                  >
-                    {/* Chips */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        {currentQ.categoryName}
+                {/* Chips */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    {currentQ.categoryName}
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+                    {currentQ.difficulty}
+                  </span>
+                  {currentQ.type === 'find_the_bug' && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
+                      🐛 Bug Hunt
+                    </span>
+                  )}
+                </div>
+
+                {/* Title */}
+                <h3 className="text-xs sm:text-sm font-bold text-slate-100 leading-snug">
+                  {currentQ.title}
+                </h3>
+
+                {/* Code Block */}
+                {currentQ.codeSnippet && (
+                  <div className="mt-2.5 bg-slate-900 border border-slate-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono text-indigo-200">
+                    <pre className="leading-relaxed whitespace-pre">
+                      {currentQ.codeSnippet}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
+              {/* Options */}
+              <div className="space-y-2 my-auto">
+                {currentQ.options.map((opt, idx) => {
+                  let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
+                  let textClass = 'text-slate-200';
+                  let badgeClass = 'bg-slate-800 text-slate-300';
+
+                  if (selectedOption === idx) {
+                    borderClass = 'border-indigo-500 bg-indigo-500/15';
+                    badgeClass = 'bg-indigo-600 text-white';
+                  }
+
+                  if (isAnswerConfirmed) {
+                    if (idx === currentQ.correctAnswerIndex) {
+                      borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
+                      badgeClass = 'bg-emerald-600 text-white';
+                    } else if (selectedOption === idx) {
+                      borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
+                      badgeClass = 'bg-rose-600 text-white';
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      disabled={isAnswerConfirmed}
+                      onClick={() => setSelectedOption(idx)}
+                      className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer active:scale-[0.99]`}
+                    >
+                      <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
+                        {String.fromCharCode(65 + idx)}
                       </span>
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
-                        {currentQ.difficulty}
-                      </span>
-                      {currentQ.type === 'find_the_bug' && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
-                          🐛 Bug Hunt
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-100 leading-snug">
-                      {currentQ.title}
-                    </h3>
-
-                    {/* Code Block */}
-                    {currentQ.codeSnippet && (
-                      <div className="mt-2.5 bg-slate-900 border border-slate-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono text-indigo-200">
-                        <pre className="leading-relaxed whitespace-pre">
-                          {currentQ.codeSnippet}
-                        </pre>
-                      </div>
-                    )}
-
-                    {/* Options */}
-                    <div className="space-y-2 pt-1">
-                      {currentQ.options.map((opt, idx) => {
-                        let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
-                        let textClass = 'text-slate-200';
-                        let badgeClass = 'bg-slate-800 text-slate-300';
-
-                        if (selectedOption === idx) {
-                          borderClass = 'border-indigo-500 bg-indigo-500/15';
-                          badgeClass = 'bg-indigo-600 text-white';
-                        }
-
-                        if (isAnswerConfirmed) {
-                          if (idx === currentQ.correctAnswerIndex) {
-                            borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
-                            badgeClass = 'bg-emerald-600 text-white';
-                          } else if (selectedOption === idx) {
-                            borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
-                            badgeClass = 'bg-rose-600 text-white';
-                          }
-                        }
-
-                        return (
-                          <motion.button
-                            key={idx}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.2, delay: idx * 0.04 }}
-                            whileHover={!isAnswerConfirmed ? { scale: 1.01 } : undefined}
-                            whileTap={!isAnswerConfirmed ? { scale: 0.98 } : undefined}
-                            disabled={isAnswerConfirmed}
-                            onClick={() => setSelectedOption(idx)}
-                            className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer active:scale-[0.99]`}
-                          >
-                            <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
-                              {String.fromCharCode(65 + idx)}
-                            </span>
-                            <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
+                      <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Immediate Feedback Card */}
               <div className="space-y-2 pt-1">
-                <AnimatePresence>
-                  {isAnswerConfirmed && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
-                      className={`p-2.5 rounded-xl border text-[11px] ${
-                        selectedOption === currentQ.correctAnswerIndex
-                          ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
-                          : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 font-bold mb-1">
-                        {selectedOption === currentQ.correctAnswerIndex ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>¡Correcto! (+100 pts)</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Incorrecto</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-300 leading-normal">
-                        {currentQ.explanation}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
+                {isAnswerConfirmed && (
+                  <div className={`p-2.5 rounded-xl border text-[11px] ${
+                    selectedOption === currentQ.correctAnswerIndex
+                      ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                      : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+                  }`}>
+                    <div className="flex items-center gap-1.5 font-bold mb-1">
+                      {selectedOption === currentQ.correctAnswerIndex ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>¡Correcto! (+100 pts)</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Incorrecto</span>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-300 leading-normal">
+                      {currentQ.explanation}
+                    </p>
+                  </div>
+                )}
 
                 {/* Bottom Action Buttons */}
                 {!isAnswerConfirmed ? (
@@ -1002,11 +871,7 @@ export default function App() {
           </div>
         )}
 
-            </div>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 }
-

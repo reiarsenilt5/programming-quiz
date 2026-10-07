@@ -1,4 +1,6 @@
 import { CategoryInfo, Question } from '../types/quiz';
+import { SENIOR_FULLSTACK_QUESTIONS } from './seniorFullstackQuestions';
+import { DEVOPS_CLOUD_QUESTIONS } from './devopsCloudQuestions';
 
 export const CATEGORIES: CategoryInfo[] = [
   {
@@ -72,6 +74,22 @@ export const CATEGORIES: CategoryInfo[] = [
     color: '#f43f5e',
     description: 'Técnicas de prompting, Cursor/Copilot, alucinaciones y seguridad en código.',
     tag: 'AI Dev Tools',
+  },
+  {
+    id: 'senior_fullstack',
+    name: 'Fullstack Senior (React, Python, Laravel)',
+    icon: '🚀',
+    color: '#6366f1',
+    description: 'Top entrevistas senior 2026: React 19, Python 3.12+, Laravel 11, SQL y diseño de sistemas.',
+    tag: 'Senior Track 2026',
+  },
+  {
+    id: 'devops_cloud',
+    name: 'DevOps & Cloud (Linux, Docker, K8s)',
+    icon: '☁️',
+    color: '#0ea5e9',
+    description: 'Top entrevistas senior 2026: Linux internals, Docker, K8s, CI/CD, OTel y resiliencia.',
+    tag: 'Cloud & Infra 2026',
   },
 ];
 
@@ -519,5 +537,7 @@ function cambiarDimensiones(r: Rectangulo) {
     correctAnswerIndex: 0,
     explanation: "Proveer los tests unitarios o firmas de tipos como restricciones invariantes (Grounding) fuerza al modelo a verificar internamente que la nueva implementación sigue satisfaciendo el contrato. Mantener baja la temperatura (0.0 - 0.2) reduce la variabilidad.",
     proTip: "En herramientas como Cursor/Copilot: Incluye en el prompt los archivos de test (*.test.ts o *Test.kt) como contexto explícito."
-  }
+  },
+  ...SENIOR_FULLSTACK_QUESTIONS,
+  ...DEVOPS_CLOUD_QUESTIONS
 ];

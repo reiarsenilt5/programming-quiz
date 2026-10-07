@@ -9,7 +9,9 @@ enum class CategoryType(val id: String, val displayName: String) {
     SQL("sql", "SQL & Bases de Datos"),
     SOLID("solid", "Principios SOLID"),
     MODERN_FUNDAMENTALS("modern_fundamentals", "Fundamentos & Git"),
-    AI_ASSISTANCE("ai_assistance", "IA para Programadores");
+    AI_ASSISTANCE("ai_assistance", "IA para Programadores"),
+    SENIOR_FULLSTACK("senior_fullstack", "Fullstack Senior (React, Python, Laravel)"),
+    DEVOPS_CLOUD("devops_cloud", "DevOps & Cloud (Linux, Docker, K8s)");
 
     companion object {
         fun fromId(id: String): CategoryType =

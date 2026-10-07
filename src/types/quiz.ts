@@ -7,7 +7,9 @@ export type CategoryId =
   | 'sql'
   | 'solid'
   | 'modern_fundamentals'
-  | 'ai_assistance';
+  | 'ai_assistance'
+  | 'senior_fullstack'
+  | 'devops_cloud';
 
 export type DifficultyLevel = 'Junior' | 'Mid' | 'Senior';
 
