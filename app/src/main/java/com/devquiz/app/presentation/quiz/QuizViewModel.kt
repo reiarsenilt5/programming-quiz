@@ -33,7 +33,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     private val geminiModel: GenerativeModel by lazy {
         val apiKey = BuildConfig.GEMINI_API_KEY
         GenerativeModel(
-            modelName = "gemini-3.8-flash",
+            modelName = "gemini-1.5-flash",
             apiKey = apiKey.ifEmpty { "AI_KEY" }
         )
     }

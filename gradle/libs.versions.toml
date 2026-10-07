@@ -8,6 +8,7 @@ composeBom = "2024.02.02"
 coroutines = "1.8.0"
 kotlinxSerialization = "1.6.3"
 generativeAi = "0.2.2"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -20,6 +21,10 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
+# Room SQLite Database
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+
 # Kotlinx Coroutines & Serialization
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -31,3 +36,4 @@ google-generativeai = { group = "com.google.ai.client.generativeai", name = "gen
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+

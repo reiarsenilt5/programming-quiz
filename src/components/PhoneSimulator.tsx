@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, 
   RotateCcw, 
@@ -332,110 +333,138 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     </div>
                   </div>
 
-                  {/* Progress bar */}
+                  {/* Animated Progress bar */}
                   <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-3">
-                    <div
-                      className="bg-indigo-500 h-full transition-all duration-300 rounded-full"
-                      style={{
+                    <motion.div
+                      className="bg-indigo-500 h-full rounded-full"
+                      initial={false}
+                      animate={{
                         width: `${((currentIndex + 1) / activeQuestions.length) * 100}%`,
                       }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
                     />
                   </div>
 
-                  {/* Tags */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                      {currentQ.categoryName}
-                    </span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
-                      {currentQ.difficulty}
-                    </span>
-                    {currentQ.type === 'find_the_bug' && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
-                        🐛 Bug Hunt
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-xs font-bold text-slate-100 leading-snug">
-                    {currentQ.title}
-                  </h3>
-
-                  {/* Code block if any */}
-                  {currentQ.codeSnippet && (
-                    <div className="mt-2 bg-slate-900 border border-slate-800 rounded-xl p-2.5 overflow-x-auto text-[10px] font-mono text-indigo-200">
-                      <pre className="leading-relaxed whitespace-pre">
-                        {currentQ.codeSnippet}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-
-                {/* Options List */}
-                <div className="space-y-2 my-auto">
-                  {currentQ.options.map((opt, idx) => {
-                    let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
-                    let textClass = 'text-slate-200';
-                    let badgeClass = 'bg-slate-800 text-slate-300';
-
-                    if (selectedOption === idx) {
-                      borderClass = 'border-indigo-500 bg-indigo-500/15';
-                      badgeClass = 'bg-indigo-600 text-white';
-                    }
-
-                    if (isAnswerConfirmed) {
-                      if (idx === currentQ.correctAnswerIndex) {
-                        borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
-                        badgeClass = 'bg-emerald-600 text-white';
-                      } else if (selectedOption === idx) {
-                        borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
-                        badgeClass = 'bg-rose-600 text-white';
-                      }
-                    }
-
-                    return (
-                      <button
-                        key={idx}
-                        disabled={isAnswerConfirmed}
-                        onClick={() => setSelectedOption(idx)}
-                        className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer active:scale-[0.99]`}
-                      >
-                        <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
-                          {String.fromCharCode(65 + idx)}
+                  {/* Animated Question Card sliding in and out */}
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={currentQ.id}
+                      initial={{ opacity: 0, x: 45, scale: 0.98 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -45, scale: 0.98 }}
+                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      className="space-y-3"
+                    >
+                      {/* Tags */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          {currentQ.categoryName}
                         </span>
-                        <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
-                      </button>
-                    );
-                  })}
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+                          {currentQ.difficulty}
+                        </span>
+                        {currentQ.type === 'find_the_bug' && (
+                          <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
+                            🐛 Bug Hunt
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-xs font-bold text-slate-100 leading-snug">
+                        {currentQ.title}
+                      </h3>
+
+                      {/* Code block if any */}
+                      {currentQ.codeSnippet && (
+                        <div className="mt-2 bg-slate-900 border border-slate-800 rounded-xl p-2.5 overflow-x-auto text-[10px] font-mono text-indigo-200">
+                          <pre className="leading-relaxed whitespace-pre">
+                            {currentQ.codeSnippet}
+                          </pre>
+                        </div>
+                      )}
+
+                      {/* Options List */}
+                      <div className="space-y-2 pt-1">
+                        {currentQ.options.map((opt, idx) => {
+                          let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
+                          let textClass = 'text-slate-200';
+                          let badgeClass = 'bg-slate-800 text-slate-300';
+
+                          if (selectedOption === idx) {
+                            borderClass = 'border-indigo-500 bg-indigo-500/15';
+                            badgeClass = 'bg-indigo-600 text-white';
+                          }
+
+                          if (isAnswerConfirmed) {
+                            if (idx === currentQ.correctAnswerIndex) {
+                              borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
+                              badgeClass = 'bg-emerald-600 text-white';
+                            } else if (selectedOption === idx) {
+                              borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
+                              badgeClass = 'bg-rose-600 text-white';
+                            }
+                          }
+
+                          return (
+                            <motion.button
+                              key={idx}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.2, delay: idx * 0.04 }}
+                              whileHover={!isAnswerConfirmed ? { scale: 1.01 } : undefined}
+                              whileTap={!isAnswerConfirmed ? { scale: 0.98 } : undefined}
+                              disabled={isAnswerConfirmed}
+                              onClick={() => setSelectedOption(idx)}
+                              className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer`}
+                            >
+                              <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
+                                {String.fromCharCode(65 + idx)}
+                              </span>
+                              <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
 
                 {/* Feedback Box & Actions */}
                 <div className="space-y-2 pt-1">
-                  {isAnswerConfirmed && (
-                    <div className={`p-2.5 rounded-xl border text-[11px] ${
-                      selectedOption === currentQ.correctAnswerIndex
-                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
-                        : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
-                    }`}>
-                      <div className="flex items-center gap-1.5 font-bold mb-1">
-                        {selectedOption === currentQ.correctAnswerIndex ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>¡Respuesta Correcta! (+100 pts)</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Respuesta Incorrecta</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-300 leading-normal">
-                        {currentQ.explanation}
-                      </p>
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {isAnswerConfirmed && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className={`p-2.5 rounded-xl border text-[11px] ${
+                          selectedOption === currentQ.correctAnswerIndex
+                            ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                            : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 font-bold mb-1">
+                          {selectedOption === currentQ.correctAnswerIndex ? (
+                            <>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>¡Respuesta Correcta! (+100 pts)</span>
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                              <span>Respuesta Incorrecta</span>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-300 leading-normal">
+                          {currentQ.explanation}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
 
                   {/* Buttons */}
                   {!isAnswerConfirmed ? (

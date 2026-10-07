@@ -20,7 +20,10 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "GEMINI_API_KEY", "\"YOUR_GEMINI_KEY_HERE\"")
+        val geminiKey = System.getenv("GEMINI_API_KEY") 
+            ?: (project.findProperty("gemini.api.key") as? String)
+            ?: "YOUR_GEMINI_KEY_HERE"
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
 
     buildTypes {
@@ -62,6 +65,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
 
     // Coroutines & Serialization
     implementation(libs.kotlinx.coroutines.android)

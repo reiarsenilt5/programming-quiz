@@ -119,11 +119,12 @@ include(":app")`
     description: 'Versión de Gradle fijada en 8.3 para compatibilidad garantizada con AGP 8.3.',
     content: `distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
-distributionUrl=https\\://services.gradle.org/distributions/gradle-8.3-bin.zip
+distributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip
 networkTimeout=10000
 validateDistributionUrl=true
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists`
+
   },
   {
     path: 'app/src/main/AndroidManifest.xml',
@@ -514,6 +515,31 @@ interface QuestionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(questions: List<QuestionEntity>)
+}`
+  },
+  {
+    path: 'app/src/main/java/com/devquiz/app/data/local/QuizDatabase.kt',
+    name: 'QuizDatabase.kt',
+    category: 'model',
+    language: 'kotlin',
+    description: 'Room Database abstract class con soporte TypeConverters y DAO.',
+    content: `package com.devquiz.app.data.local
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.devquiz.app.data.local.dao.QuestionDao
+import com.devquiz.app.data.local.entity.Converters
+import com.devquiz.app.data.local.entity.QuestionEntity
+
+@Database(
+    entities = [QuestionEntity::class],
+    version = 1,
+    exportSchema = false
+)
+@TypeConverters(Converters::class)
+abstract class QuizDatabase : RoomDatabase() {
+    abstract fun questionDao(): QuestionDao
 }`
   },
 

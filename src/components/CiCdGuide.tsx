@@ -27,18 +27,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 🐘 Configurar Gradle Oficial
+      - name: 🐘 Configurar Gradle 8.4
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
 
-      - name: 🛡️ Auto-generar Gradle Wrapper si falta en el repo
+      - name: 🛡️ Preparar Gradle Wrapper
         run: |
-          if [ ! -f "gradlew" ]; then
-            echo "Aviso: gradlew no encontrado. Generando wrapper automáticamente con Gradle 8.3..."
-            gradle wrapper --gradle-version 8.3
+          if [ ! -f "gradlew" ] || [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Generando Gradle wrapper 8.4 bin..."
+            gradle wrapper --gradle-version 8.4 --distribution-type bin
           fi
           chmod +x gradlew
 
-      - name: ⚙️ Configurar local.properties seguro
+      - name: ⚙️ Configurar local.properties
         env:
           GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -49,13 +51,23 @@ jobs:
           fi
 
       - name: 🔨 Compilar APK Debug
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          if [ -f "./gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            ./gradlew assembleDebug --stacktrace --no-daemon
+          else
+            gradle assembleDebug --stacktrace --no-daemon
+          fi
+
+      - name: 🔍 Verificar generación de APK
+        run: |
+          echo "Buscando APK generado..."
+          ls -la app/build/outputs/apk/debug/ || true
 
       - name: 📦 Subir APK Debug como Artefacto Descargable
         uses: actions/upload-artifact@v4
         with:
           name: DevQuiz-Debug-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
 `;
 
