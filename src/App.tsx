@@ -29,9 +29,10 @@ import {
   ExternalLink,
   Save,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Target
 } from 'lucide-react';
-import { CategoryId, GameMode, Question, QuizUserAnswer } from './types/quiz';
+import { CategoryId, FailedQuestionRecord, GameMode, Question, QuizUserAnswer } from './types/quiz';
 import { CATEGORIES, QUESTIONS_DATA } from './data/questionsData';
 
 export default function App() {
@@ -49,6 +50,27 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState<QuizUserAnswer[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('modern_fundamentals');
   const [selectedMode, setSelectedMode] = useState<GameMode>('practice');
+
+  // Failed questions persistent state
+  const [failedQuestions, setFailedQuestions] = useState<FailedQuestionRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('devquiz_failed_questions');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      { questionId: 'mf-1', selectedOptionIndex: 1, timestamp: Date.now() - 3600000, failCount: 1 },
+      { questionId: 'sql-1', selectedOptionIndex: 0, timestamp: Date.now() - 7200000, failCount: 2 },
+    ];
+  });
+
+  // Sync failed questions to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('devquiz_failed_questions', JSON.stringify(failedQuestions));
+    } catch (e) {
+      console.error('Error saving failed questions', e);
+    }
+  }, [failedQuestions]);
 
   // Timer for Time Trial
   const [timeLeft, setTimeLeft] = useState(60);
@@ -119,11 +141,22 @@ export default function App() {
     setSelectedCategory(categoryId);
     setSelectedMode(mode);
 
-    let filtered = QUESTIONS_DATA.filter((q) => q.categoryId === categoryId);
-    if (mode === 'daily_challenge' || filtered.length === 0) {
+    let filtered: Question[] = [];
+    if (mode === 'failed_review') {
+      const failedIds = new Set(failedQuestions.map((f) => f.questionId));
+      filtered = QUESTIONS_DATA.filter((q) => failedIds.has(q.id));
+      if (filtered.length === 0) {
+        filtered = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random()).slice(0, 5);
+      }
+    } else if (mode === 'daily_challenge') {
       filtered = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random()).slice(0, 5);
     } else if (mode === 'time_trial') {
       filtered = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random());
+    } else {
+      filtered = QUESTIONS_DATA.filter((q) => q.categoryId === categoryId);
+      if (filtered.length === 0) {
+        filtered = [...QUESTIONS_DATA].slice(0, 5);
+      }
     }
 
     setActiveQuestions(filtered);
@@ -169,6 +202,27 @@ export default function App() {
         correct: (prev[currentQ.categoryId]?.correct || 0) + (isCorrect ? 1 : 0),
       },
     }));
+
+    // Record failure or remove mastered question
+    if (!isCorrect) {
+      setFailedQuestions((prev) => {
+        const existing = prev.find((f) => f.questionId === currentQ.id);
+        if (existing) {
+          return prev.map((f) =>
+            f.questionId === currentQ.id
+              ? { ...f, selectedOptionIndex: selectedOption, failCount: f.failCount + 1, timestamp: Date.now() }
+              : f
+          );
+        }
+        return [
+          ...prev,
+          { questionId: currentQ.id, selectedOptionIndex: selectedOption, timestamp: Date.now(), failCount: 1 },
+        ];
+      });
+    } else if (selectedMode === 'failed_review') {
+      // Correct in review mode: eliminate from failed list!
+      setFailedQuestions((prev) => prev.filter((f) => f.questionId !== currentQ.id));
+    }
 
     if (isCorrect) {
       setScore((prev) => prev + 100);
@@ -359,7 +413,38 @@ export default function App() {
                       🐛 Bug Hunt
                     </span>
                   )}
+                  {selectedMode === 'failed_review' && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      🎯 Repaso de Fallo
+                    </span>
+                  )}
                 </div>
+
+                {/* Banner de Repaso de Fallo si aplica */}
+                {selectedMode === 'failed_review' && (
+                  <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-2.5 mb-2.5 text-xs flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4 text-amber-400 shrink-0" />
+                      <div>
+                        <span className="font-bold text-amber-300 block text-[11px]">Pregunta Pendiente de Superar</span>
+                        {(() => {
+                          const failRecord = failedQuestions.find((f) => f.questionId === currentQ.id);
+                          if (failRecord && failRecord.selectedOptionIndex >= 0) {
+                            return (
+                              <span className="text-[10px] text-slate-300">
+                                En tu intento anterior elegiste la <strong className="text-rose-400">Opción {String.fromCharCode(65 + failRecord.selectedOptionIndex)}</strong>
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    </div>
+                    <span className="text-[9px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono font-bold shrink-0">
+                      {failedQuestions.length} por corregir
+                    </span>
+                  </div>
+                )}
 
                 {/* Title */}
                 <h3 className="text-xs sm:text-sm font-bold text-slate-100 leading-snug">
@@ -398,6 +483,9 @@ export default function App() {
                     }
                   }
 
+                  const prevFail = failedQuestions.find((f) => f.questionId === currentQ.id);
+                  const isPreviousWrong = selectedMode === 'failed_review' && prevFail?.selectedOptionIndex === idx;
+
                   return (
                     <button
                       key={idx}
@@ -408,7 +496,12 @@ export default function App() {
                       <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
+                      <span className={`text-[11px] leading-tight ${textClass} flex-1`}>{opt}</span>
+                      {isPreviousWrong && !isAnswerConfirmed && (
+                        <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30 font-semibold shrink-0">
+                          Tu fallo previo
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -417,28 +510,40 @@ export default function App() {
               {/* Immediate Feedback Card */}
               <div className="space-y-2 pt-1">
                 {isAnswerConfirmed && (
-                  <div className={`p-2.5 rounded-xl border text-[11px] ${
-                    selectedOption === currentQ.correctAnswerIndex
-                      ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
-                      : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
-                  }`}>
-                    <div className="flex items-center gap-1.5 font-bold mb-1">
-                      {selectedOption === currentQ.correctAnswerIndex ? (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>¡Correcto! (+100 pts)</span>
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                          <span>Incorrecto</span>
-                        </>
-                      )}
+                  <>
+                    {selectedMode === 'failed_review' && selectedOption === currentQ.correctAnswerIndex && (
+                      <div className="p-2.5 rounded-xl border bg-emerald-950/60 border-emerald-500/50 text-emerald-200 text-xs flex items-center gap-2 animate-in fade-in">
+                        <span className="text-base">🎉</span>
+                        <div>
+                          <span className="font-bold text-emerald-300 block text-[11px]">¡Concepto Dominado!</span>
+                          <span className="text-[10px] text-slate-300">Esta pregunta ha sido retirada automáticamente de tu lista de fallos pendientes.</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={`p-2.5 rounded-xl border text-[11px] ${
+                      selectedOption === currentQ.correctAnswerIndex
+                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                        : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+                    }`}>
+                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                        {selectedOption === currentQ.correctAnswerIndex ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>¡Correcto! (+100 pts)</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Incorrecto</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-300 leading-normal">
+                        {currentQ.explanation}
+                      </p>
                     </div>
-                    <p className="text-[10px] text-slate-300 leading-normal">
-                      {currentQ.explanation}
-                    </p>
-                  </div>
+                  </>
                 )}
 
                 {/* Bottom Action Buttons */}
@@ -544,6 +649,15 @@ export default function App() {
               </div>
 
               <div className="space-y-2 pt-2">
+                {userAnswers.some((a) => !a.isCorrect) && (
+                  <button
+                    onClick={() => startQuiz(selectedCategory, 'failed_review')}
+                    className="w-full bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-amber-950/40 active:scale-98"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Repasar Fallos de este Examen ({userAnswers.filter((a) => !a.isCorrect).length})</span>
+                  </button>
+                )}
                 <button
                   onClick={() => startQuiz(selectedCategory, selectedMode)}
                   className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-indigo-900/40"
@@ -584,38 +698,61 @@ export default function App() {
                 <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Modos de Juego
                 </h2>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-1.5">
                   <button
                     onClick={() => startQuiz(selectedCategory, 'practice')}
-                    className="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
+                    className="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-2 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
                   >
-                    <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                      <BookOpen className="w-4 h-4" />
+                    <div className="w-7 h-7 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1 group-hover:scale-110 transition">
+                      <BookOpen className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-200">Práctica</span>
-                    <span className="text-[9px] text-slate-400">Sin reloj</span>
+                    <span className="text-[10px] font-bold text-slate-200">Práctica</span>
+                    <span className="text-[8px] text-slate-400">Sin reloj</span>
                   </button>
 
                   <button
                     onClick={() => startQuiz(selectedCategory, 'time_trial')}
-                    className="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
+                    className="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-2 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
                   >
-                    <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                      <Clock className="w-4 h-4" />
+                    <div className="w-7 h-7 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1 group-hover:scale-110 transition">
+                      <Clock className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-200">Contrarreloj</span>
-                    <span className="text-[9px] text-slate-400">60s blitz</span>
+                    <span className="text-[10px] font-bold text-slate-200">Blitz 60s</span>
+                    <span className="text-[8px] text-slate-400">Contrarreloj</span>
                   </button>
 
                   <button
                     onClick={() => startQuiz(selectedCategory, 'daily_challenge')}
-                    className="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
+                    className="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-2 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
                   >
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                      <Calendar className="w-4 h-4" />
+                    <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1 group-hover:scale-110 transition">
+                      <Calendar className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-200">Diario</span>
-                    <span className="text-[9px] text-slate-400">5 retos</span>
+                    <span className="text-[10px] font-bold text-slate-200">Diario</span>
+                    <span className="text-[8px] text-slate-400">5 retos</span>
+                  </button>
+
+                  <button
+                    onClick={() => startQuiz(selectedCategory, 'failed_review')}
+                    className={`border p-2 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95 ${
+                      failedQuestions.length > 0
+                        ? 'bg-amber-950/30 hover:bg-amber-900/40 border-amber-500/40'
+                        : 'bg-slate-900 hover:bg-slate-850 border-slate-800'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center mb-1 group-hover:scale-110 transition ${
+                      failedQuestions.length > 0
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : 'bg-emerald-500/20 text-emerald-400'
+                    }`}>
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-200">Reintentar</span>
+                    <span className={`text-[8px] font-medium truncate max-w-full ${
+                      failedQuestions.length > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'
+                    }`}>
+                      {failedQuestions.length > 0 ? `${failedQuestions.length} pendientes` : '0 al día'}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -749,6 +886,103 @@ export default function App() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Banco de Errores Técnicos */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                        Banco de Errores Técnicos
+                      </h3>
+                      <p className="text-[10px] text-slate-400">
+                        {failedQuestions.length > 0
+                          ? `${failedQuestions.length} preguntas pendientes de superar`
+                          : '¡Todos los conceptos al día!'}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      failedQuestions.length > 0
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}
+                  >
+                    {failedQuestions.length} pendientes
+                  </span>
+                </div>
+
+                {failedQuestions.length > 0 ? (
+                  <>
+                    <button
+                      onClick={() => startQuiz(selectedCategory, 'failed_review')}
+                      className="w-full bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold py-2.5 px-3 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-950/40 active:scale-98"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Iniciar Sesión de Repaso ({failedQuestions.length} fallos)</span>
+                    </button>
+
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {failedQuestions.map((item) => {
+                        const q = QUESTIONS_DATA.find((x) => x.id === item.questionId);
+                        if (!q) return null;
+                        return (
+                          <div
+                            key={item.questionId}
+                            className="bg-slate-950/80 border border-slate-800/80 p-2.5 rounded-xl space-y-1.5 text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                {q.categoryName}
+                              </span>
+                              <span className="text-[9px] text-rose-400 font-semibold">
+                                Fallada {item.failCount} {item.failCount === 1 ? 'vez' : 'veces'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] font-medium text-slate-200 line-clamp-2 leading-tight">
+                              {q.title}
+                            </p>
+                            <div className="text-[10px] text-slate-400 pt-0.5 flex flex-col gap-0.5">
+                              <span className="text-rose-400">
+                                ✗ Tu error: {q.options[item.selectedOptionIndex] || `Opción ${String.fromCharCode(65 + item.selectedOptionIndex)}`}
+                              </span>
+                              <span className="text-emerald-400">
+                                ✓ Correcta: {q.options[q.correctAnswerIndex]}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        onClick={() => {
+                          setFailedQuestions([]);
+                          localStorage.removeItem('devquiz_failed_questions');
+                        }}
+                        className="text-[10px] text-slate-500 hover:text-rose-400 transition cursor-pointer underline"
+                      >
+                        Limpiar registro de fallos
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-slate-950/60 border border-slate-800/60 p-3 rounded-xl flex items-center gap-3">
+                    <span className="text-2xl">🎉</span>
+                    <div>
+                      <p className="text-xs font-bold text-slate-200">¡Excelente disciplina!</p>
+                      <p className="text-[10px] text-slate-400">
+                        No tienes preguntas pendientes en tu banco de errores. Cualquier fallo futuro se registrará aquí para que puedas repasarlo.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Badges / Medals */}

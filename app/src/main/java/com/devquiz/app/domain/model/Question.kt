@@ -30,7 +30,7 @@ enum class QuestionType {
 }
 
 enum class GameMode {
-    Practice, TimeTrial, DailyChallenge
+    Practice, TimeTrial, DailyChallenge, FailedReview
 }
 
 data class Question(

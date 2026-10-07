@@ -283,11 +283,114 @@ class ApiKeyManager(context: Context) {
 }`
   },
   {
+    path: 'app/src/main/java/com/devquiz/app/data/FailedQuestionsManager.kt',
+    name: 'FailedQuestionsManager.kt',
+    category: 'architecture',
+    language: 'kotlin',
+    description: 'Gestor persistente de preguntas falladas en SharedPreferences con historial de errores, reintentos y eliminación al acertar.',
+    content: `package com.devquiz.app.data
+
+import android.content.Context
+import android.content.SharedPreferences
+import org.json.JSONArray
+import org.json.JSONObject
+
+data class FailedQuestionItem(
+    val questionId: String,
+    val selectedOptionIndex: Int,
+    val timestamp: Long = System.currentTimeMillis(),
+    val failCount: Int = 1
+)
+
+class FailedQuestionsManager(context: Context) {
+    private val prefs: SharedPreferences = context.getSharedPreferences("devquiz_failed_prefs", Context.MODE_PRIVATE)
+
+    fun getFailedQuestions(): List<FailedQuestionItem> {
+        val jsonStr = prefs.getString(KEY_FAILED_LIST, "[]") ?: "[]"
+        val list = mutableListOf<FailedQuestionItem>()
+        try {
+            val arr = JSONArray(jsonStr)
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                list.add(
+                    FailedQuestionItem(
+                        questionId = obj.getString("questionId"),
+                        selectedOptionIndex = obj.optInt("selectedOptionIndex", -1),
+                        timestamp = obj.optLong("timestamp", System.currentTimeMillis()),
+                        failCount = obj.optInt("failCount", 1)
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return list
+    }
+
+    fun recordFailure(questionId: String, selectedOptionIndex: Int) {
+        val currentList = getFailedQuestions().toMutableList()
+        val existingIndex = currentList.indexOfFirst { it.questionId == questionId }
+        if (existingIndex >= 0) {
+            val existing = currentList[existingIndex]
+            currentList[existingIndex] = existing.copy(
+                selectedOptionIndex = selectedOptionIndex,
+                failCount = existing.failCount + 1,
+                timestamp = System.currentTimeMillis()
+            )
+        } else {
+            currentList.add(
+                FailedQuestionItem(
+                    questionId = questionId,
+                    selectedOptionIndex = selectedOptionIndex,
+                    timestamp = System.currentTimeMillis(),
+                    failCount = 1
+                )
+            )
+        }
+        saveList(currentList)
+    }
+
+    fun removeFailure(questionId: String) {
+        val currentList = getFailedQuestions().filter { it.questionId != questionId }
+        saveList(currentList)
+    }
+
+    fun clearAllFailures() {
+        prefs.edit().remove(KEY_FAILED_LIST).apply()
+    }
+
+    fun getFailedCount(): Int = getFailedQuestions().size
+
+    fun getFailedIds(): Set<String> = getFailedQuestions().map { it.questionId }.toSet()
+
+    fun getFailureDetails(questionId: String): FailedQuestionItem? {
+        return getFailedQuestions().find { it.questionId == questionId }
+    }
+
+    private fun saveList(list: List<FailedQuestionItem>) {
+        val arr = JSONArray()
+        for (item in list) {
+            val obj = JSONObject()
+            obj.put("questionId", item.questionId)
+            obj.put("selectedOptionIndex", item.selectedOptionIndex)
+            obj.put("timestamp", item.timestamp)
+            obj.put("failCount", item.failCount)
+            arr.put(obj)
+        }
+        prefs.edit().putString(KEY_FAILED_LIST, arr.toString()).apply()
+    }
+
+    companion object {
+        private const val KEY_FAILED_LIST = "failed_questions_list"
+    }
+}`
+  },
+  {
     path: 'app/src/main/java/com/devquiz/app/MainActivity.kt',
     name: 'MainActivity.kt',
     category: 'ui',
     language: 'kotlin',
-    description: 'Punto de entrada Activity con DevQuizTheme y MainScreen con barra inferior.',
+    description: 'Punto de entrada Activity con DevQuizTheme y MainScreen con soporte para Repaso de Errores y Blitz.',
     content: `package com.devquiz.app
 
 import android.os.Bundle
@@ -321,7 +424,8 @@ class MainActivity : ComponentActivity() {
                             ResultScreen(
                                 state = uiState,
                                 onRestart = { viewModel.loadQuiz("all", uiState.gameMode) },
-                                onGoHome = { viewModel.resetToHome() }
+                                onGoHome = { viewModel.resetToHome() },
+                                onReviewFailed = { viewModel.loadFailedQuiz() }
                             )
                         }
                         uiState.questions.isNotEmpty() -> {
@@ -340,6 +444,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onStartBlitz = {
                                     viewModel.loadQuiz("all", GameMode.TimeTrial)
+                                },
+                                onStartFailedReview = {
+                                    viewModel.loadFailedQuiz()
                                 }
                             )
                         }
@@ -348,6 +455,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
 }`
   },
   {
@@ -897,7 +1005,8 @@ fun MainScreen(
     viewModel: QuizViewModel,
     streakDays: Int = 5,
     onCategorySelected: (CategoryType, GameMode) -> Unit,
-    onStartBlitz: () -> Unit
+    onStartBlitz: () -> Unit,
+    onStartFailedReview: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(MainNavTab.HOME) }
 
@@ -948,9 +1057,9 @@ fun MainScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (selectedTab) {
-                MainNavTab.HOME -> HomeContent(onCategorySelected = onCategorySelected)
-                MainNavTab.BLITZ -> HomeContent(onCategorySelected = onCategorySelected)
-                MainNavTab.STATS -> StatsScreen(viewModel = viewModel, streakDays = streakDays)
+                MainNavTab.HOME -> HomeContent(onCategorySelected = onCategorySelected, failedCount = viewModel.getFailedCount(), onStartFailedReview = onStartFailedReview)
+                MainNavTab.BLITZ -> HomeContent(onCategorySelected = onCategorySelected, failedCount = viewModel.getFailedCount(), onStartFailedReview = onStartFailedReview)
+                MainNavTab.STATS -> StatsScreen(viewModel = viewModel, streakDays = streakDays, onStartFailedReview = onStartFailedReview)
                 MainNavTab.SETTINGS -> SettingsScreen(apiKeyManager = viewModel.apiKeyManager)
             }
         }
@@ -958,14 +1067,19 @@ fun MainScreen(
 }
 
 @Composable
-fun HomeContent(onCategorySelected: (CategoryType, GameMode) -> Unit) {
+fun HomeContent(
+    onCategorySelected: (CategoryType, GameMode) -> Unit,
+    failedCount: Int = 0,
+    onStartFailedReview: () -> Unit = {}
+) {
     LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Text("MODOS DE JUEGO", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 GameModeCard("Práctica", "Sin reloj", "📖", Color(0xFF6366F1), Modifier.weight(1f)) { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.Practice) }
-                GameModeCard("Contrarreloj", "60s blitz", "⏱", Color(0xFFF43F5E), Modifier.weight(1f)) { onCategorySelected(CategoryType.SQL, GameMode.TimeTrial) }
+                GameModeCard("Blitz 60s", "Contrarreloj", "⏱", Color(0xFFF43F5E), Modifier.weight(1f)) { onCategorySelected(CategoryType.SQL, GameMode.TimeTrial) }
                 GameModeCard("Diario", "5 retos", "📅", Color(0xFF10B981), Modifier.weight(1f)) { onCategorySelected(CategoryType.SOLID, GameMode.DailyChallenge) }
+                GameModeCard("Reintentar", if (failedCount > 0) "$failedCount pendientes" else "0 al día", "🎯", if (failedCount > 0) Color(0xFFF59E0B) else Color(0xFF10B981), Modifier.weight(1f)) { onStartFailedReview() }
             }
         }
         item {

@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
                             ResultScreen(
                                 state = uiState,
                                 onRestart = { viewModel.loadQuiz("all", uiState.gameMode) },
-                                onGoHome = { viewModel.resetToHome() }
+                                onGoHome = { viewModel.resetToHome() },
+                                onReviewFailed = { viewModel.loadFailedQuiz() }
                             )
                         }
                         uiState.questions.isNotEmpty() -> {
@@ -52,6 +53,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onStartBlitz = {
                                     viewModel.loadQuiz("all", GameMode.TimeTrial)
+                                },
+                                onStartFailedReview = {
+                                    viewModel.loadFailedQuiz()
                                 }
                             )
                         }

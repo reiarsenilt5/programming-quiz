@@ -16,7 +16,9 @@ data class QuizUiState(
     val userAnswers: List<UserAnswerRecord> = emptyList(),
     val aiExplanationText: String? = null,
     val isAiLoading: Boolean = false,
-    val aiError: String? = null
+    val aiError: String? = null,
+    val previousWrongOptionIndex: Int? = null,
+    val justMasteredQuestion: Boolean = false
 ) {
     val currentQuestion: Question?
         get() = questions.getOrNull(currentIndex)

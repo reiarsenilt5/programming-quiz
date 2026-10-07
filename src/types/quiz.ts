@@ -17,7 +17,14 @@ export type DifficultyLevel = 'Junior' | 'Mid' | 'Senior';
 
 export type QuestionType = 'multiple_choice' | 'find_the_bug' | 'true_false';
 
-export type GameMode = 'practice' | 'time_trial' | 'daily_challenge';
+export type GameMode = 'practice' | 'time_trial' | 'daily_challenge' | 'failed_review';
+
+export interface FailedQuestionRecord {
+  questionId: string;
+  selectedOptionIndex: number;
+  timestamp: number;
+  failCount: number;
+}
 
 export interface Question {
   id: string;

@@ -23,7 +23,8 @@ import com.devquiz.app.presentation.quiz.QuizUiState
 fun ResultScreen(
     state: QuizUiState,
     onRestart: () -> Unit,
-    onGoHome: () -> Unit
+    onGoHome: () -> Unit,
+    onReviewFailed: () -> Unit = {}
 ) {
     val total = state.questions.size
     val correct = state.userAnswers.count { it.isCorrect }
@@ -190,6 +191,29 @@ fun ResultScreen(
                             )
                         }
                     }
+                }
+            }
+
+            val wrongCount = state.userAnswers.count { !it.isCorrect }
+            if (wrongCount > 0) {
+                Button(
+                    onClick = onReviewFailed,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.Black
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Repasar Fallos de este Examen ($wrongCount)",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
                 }
             }
 

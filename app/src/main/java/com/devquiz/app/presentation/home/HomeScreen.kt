@@ -84,7 +84,8 @@ fun MainScreen(
     viewModel: QuizViewModel,
     streakDays: Int = 5,
     onCategorySelected: (CategoryType, GameMode) -> Unit,
-    onStartBlitz: () -> Unit
+    onStartBlitz: () -> Unit,
+    onStartFailedReview: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(MainNavTab.HOME) }
 
@@ -182,14 +183,26 @@ fun MainScreen(
         ) {
             when (selectedTab) {
                 MainNavTab.HOME -> {
-                    HomeContent(onCategorySelected = onCategorySelected)
+                    HomeContent(
+                        onCategorySelected = onCategorySelected,
+                        failedCount = viewModel.getFailedCount(),
+                        onStartFailedReview = onStartFailedReview
+                    )
                 }
                 MainNavTab.BLITZ -> {
                     // Blitz inicia automáticamente el quiz via onStartBlitz()
-                    HomeContent(onCategorySelected = onCategorySelected)
+                    HomeContent(
+                        onCategorySelected = onCategorySelected,
+                        failedCount = viewModel.getFailedCount(),
+                        onStartFailedReview = onStartFailedReview
+                    )
                 }
                 MainNavTab.STATS -> {
-                    StatsScreen(viewModel = viewModel, streakDays = streakDays)
+                    StatsScreen(
+                        viewModel = viewModel,
+                        streakDays = streakDays,
+                        onStartFailedReview = onStartFailedReview
+                    )
                 }
                 MainNavTab.SETTINGS -> {
                     SettingsScreen(apiKeyManager = viewModel.apiKeyManager)
@@ -201,7 +214,9 @@ fun MainScreen(
 
 @Composable
 fun HomeContent(
-    onCategorySelected: (CategoryType, GameMode) -> Unit
+    onCategorySelected: (CategoryType, GameMode) -> Unit,
+    failedCount: Int = 0,
+    onStartFailedReview: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier
@@ -222,7 +237,7 @@ fun HomeContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 GameModeCard(
                     title = "Práctica",
@@ -247,6 +262,14 @@ fun HomeContent(
                     color = Color(0xFF10B981),
                     modifier = Modifier.weight(1f),
                     onClick = { onCategorySelected(CategoryType.SOLID, GameMode.DailyChallenge) }
+                )
+                GameModeCard(
+                    title = "Reintentar",
+                    subtitle = if (failedCount > 0) "$failedCount pendientes" else "0 al día",
+                    emoji = "🎯",
+                    color = if (failedCount > 0) Color(0xFFF59E0B) else Color(0xFF10B981),
+                    modifier = Modifier.weight(1f),
+                    onClick = onStartFailedReview
                 )
             }
         }

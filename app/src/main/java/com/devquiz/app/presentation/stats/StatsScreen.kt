@@ -21,11 +21,14 @@ import com.devquiz.app.presentation.quiz.QuizViewModel
 @Composable
 fun StatsScreen(
     viewModel: QuizViewModel,
-    streakDays: Int = 5
+    streakDays: Int = 5,
+    onStartFailedReview: () -> Unit = {}
 ) {
     val totalAnswered = viewModel.getTotalAnswered()
     val totalCorrect = viewModel.getTotalCorrect()
     val accuracy = if (totalAnswered > 0) (totalCorrect * 100) / totalAnswered else 0
+    val failedCount = viewModel.getFailedCount()
+    val failedQuestionsList = viewModel.getFailedQuestionsWithDetails()
 
     Column(
         modifier = Modifier
@@ -148,6 +151,177 @@ fun StatsScreen(
                             color = MaterialTheme.colorScheme.primary,
                             trackColor = MaterialTheme.colorScheme.surfaceVariant
                         )
+                    }
+                }
+            }
+        }
+
+        // Banco de Errores Técnicos
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = CardDefaults.outlinedCardBorder()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFF59E0B).copy(alpha = 0.18f),
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFBBF24),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                "Banco de Errores Técnicos",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                if (failedCount > 0) "$failedCount preguntas por corregir" else "Sin errores pendientes",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (failedCount > 0) Color(0xFFF59E0B).copy(alpha = 0.2f) else Color(0xFF10B981).copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            "$failedCount pendientes",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (failedCount > 0) Color(0xFFFBBF24) else Color(0xFF34D399),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                if (failedCount > 0) {
+                    Button(
+                        onClick = onStartFailedReview,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Iniciar Repaso Interactivo ($failedCount fallos)",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        failedQuestionsList.take(5).forEach { (q, item) ->
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.background,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            q.category.displayName,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Text(
+                                            "Fallada ${item.failCount} vez",
+                                            fontSize = 9.sp,
+                                            color = Color(0xFFF87171)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        q.title,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 2
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    val wrongOpt = q.options.getOrNull(item.selectedOptionIndex)
+                                    if (wrongOpt != null) {
+                                        Text(
+                                            "✗ Tu error: $wrongOpt",
+                                            fontSize = 10.sp,
+                                            color = Color(0xFFF87171)
+                                        )
+                                    }
+                                    Text(
+                                        "✓ Correcta: ${q.options[q.correctAnswerIndex]}",
+                                        fontSize = 10.sp,
+                                        color = Color(0xFF34D399)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { viewModel.failedQuestionsManager.clearAllFailures() }) {
+                            Text("Limpiar registro de fallos", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                        }
+                    }
+                } else {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🎉", fontSize = 24.sp, modifier = Modifier.padding(end = 10.dp))
+                            Column {
+                                Text(
+                                    "¡Excelente disciplina!",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    "No tienes preguntas pendientes en tu banco de errores. Cualquier fallo se registrará aquí para repasarlo.",
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }

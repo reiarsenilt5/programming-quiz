@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.devquiz.app.data.ApiKeyManager
+import com.devquiz.app.data.FailedQuestionItem
+import com.devquiz.app.data.FailedQuestionsManager
 import com.devquiz.app.domain.model.CategoryType
 import com.devquiz.app.domain.model.DifficultyLevel
 import com.devquiz.app.domain.model.GameMode
@@ -29,6 +31,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
     val apiKeyManager = ApiKeyManager(application)
+    val failedQuestionsManager = FailedQuestionsManager(application)
     private val statsPrefs = application.getSharedPreferences("devquiz_stats", Context.MODE_PRIVATE)
 
     private var timerJob: Job? = null
@@ -129,12 +132,51 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                     userAnswers = emptyList(),
                     aiExplanationText = null,
                     isAiLoading = false,
-                    aiError = null
+                    aiError = null,
+                    previousWrongOptionIndex = null,
+                    justMasteredQuestion = false
                 )
             }
 
             if (mode == GameMode.TimeTrial) {
                 startTimer()
+            }
+        }
+    }
+
+    fun loadFailedQuiz() {
+        viewModelScope.launch {
+            if (allQuestionsCache.isEmpty()) {
+                withContext(Dispatchers.IO) {
+                    loadAllQuestionsFromAssets()
+                }
+            }
+
+            val failedIds = failedQuestionsManager.getFailedIds()
+            val filtered = allQuestionsCache.filter { it.id in failedIds }
+
+            if (filtered.isNotEmpty()) {
+                val firstQ = filtered.firstOrNull()
+                val prevWrong = firstQ?.let { failedQuestionsManager.getFailureDetails(it.id)?.selectedOptionIndex }
+
+                _uiState.update {
+                    it.copy(
+                        questions = filtered,
+                        currentIndex = 0,
+                        selectedOptionIndex = null,
+                        isAnswerConfirmed = false,
+                        score = 0,
+                        gameMode = GameMode.FailedReview,
+                        timeRemainingSeconds = 0,
+                        isGameOver = false,
+                        userAnswers = emptyList(),
+                        aiExplanationText = null,
+                        isAiLoading = false,
+                        aiError = null,
+                        previousWrongOptionIndex = prevWrong,
+                        justMasteredQuestion = false
+                    )
+                }
             }
         }
     }
@@ -169,7 +211,11 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
             is QuizUiEvent.DismissAiDialog -> _uiState.update { it.copy(aiExplanationText = null, aiError = null, isAiLoading = false) }
             is QuizUiEvent.RestartQuiz -> {
                 val mode = _uiState.value.gameMode
-                loadQuiz("all", mode)
+                if (mode == GameMode.FailedReview) {
+                    loadFailedQuiz()
+                } else {
+                    loadQuiz("all", mode)
+                }
             }
         }
     }
@@ -187,7 +233,9 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 userAnswers = emptyList(),
                 aiExplanationText = null,
                 isAiLoading = false,
-                aiError = null
+                aiError = null,
+                previousWrongOptionIndex = null,
+                justMasteredQuestion = false
             )
         }
     }
@@ -200,6 +248,13 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         val isCorrect = selectedIdx == currentQ.correctAnswerIndex
         val updatedAnswers = state.userAnswers + UserAnswerRecord(currentQ, selectedIdx, isCorrect)
 
+        // Registrar fallo o superación
+        if (!isCorrect) {
+            failedQuestionsManager.recordFailure(currentQ.id, selectedIdx)
+        } else if (state.gameMode == GameMode.FailedReview) {
+            failedQuestionsManager.removeFailure(currentQ.id)
+        }
+
         // Persist stats
         recordAnswerStat(currentQ.category.id, isCorrect)
 
@@ -208,7 +263,8 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 isAnswerConfirmed = true,
                 score = if (isCorrect) it.score + 100 else it.score,
                 streak = if (isCorrect) it.streak + 1 else 0,
-                userAnswers = updatedAnswers
+                userAnswers = updatedAnswers,
+                justMasteredQuestion = isCorrect && state.gameMode == GameMode.FailedReview
             )
         }
     }
@@ -235,6 +291,15 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         return Pair(total, correct)
     }
 
+    fun getFailedCount(): Int = failedQuestionsManager.getFailedCount()
+    fun getFailedQuestionsWithDetails(): List<Pair<Question, FailedQuestionItem>> {
+        val failed = failedQuestionsManager.getFailedQuestions()
+        return failed.mapNotNull { item ->
+            val q = allQuestionsCache.find { it.id == item.questionId }
+            if (q != null) Pair(q, item) else null
+        }
+    }
+
     private fun moveToNextQuestion() {
         val state = _uiState.value
         val nextIdx = state.currentIndex + 1
@@ -243,6 +308,11 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
             timerJob?.cancel()
             _uiState.update { it.copy(isGameOver = true) }
         } else {
+            val nextQ = state.questions.getOrNull(nextIdx)
+            val prevWrong = if (state.gameMode == GameMode.FailedReview && nextQ != null) {
+                failedQuestionsManager.getFailureDetails(nextQ.id)?.selectedOptionIndex
+            } else null
+
             _uiState.update {
                 it.copy(
                     currentIndex = nextIdx,
@@ -250,7 +320,9 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                     isAnswerConfirmed = false,
                     aiExplanationText = null,
                     aiError = null,
-                    isAiLoading = false
+                    isAiLoading = false,
+                    previousWrongOptionIndex = prevWrong,
+                    justMasteredQuestion = false
                 )
             }
         }

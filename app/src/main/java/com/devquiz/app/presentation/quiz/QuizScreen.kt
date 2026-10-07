@@ -160,6 +160,57 @@ fun QuizScreen(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
+                if (state.gameMode == GameMode.FailedReview) {
+                    Surface(
+                        color = Color(0xFFF59E0B).copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            "🎯 Repaso",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFBBF24),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            if (state.gameMode == GameMode.FailedReview) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFF59E0B).copy(alpha = 0.15f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            tint = Color(0xFFFBBF24),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                "Modo Repaso de Errores",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                color = Color(0xFFFBBF24)
+                            )
+                            state.previousWrongOptionIndex?.let { wrongIdx ->
+                                val wrongOpt = currentQuestion.options.getOrNull(wrongIdx)
+                                Text(
+                                    "En tu intento anterior elegiste la Opción ${('A' + wrongIdx)}${if (wrongOpt != null) ": \"$wrongOpt\"" else ""}",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             Text(
@@ -203,6 +254,8 @@ fun QuizScreen(
                     else -> MaterialTheme.colorScheme.surface
                 }
 
+                val isPreviousWrong = state.gameMode == GameMode.FailedReview && state.previousWrongOptionIndex == index
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -238,6 +291,49 @@ fun QuizScreen(
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onBackground
                         )
+                        if (isPreviousWrong && !state.isAnswerConfirmed) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFEF4444).copy(alpha = 0.2f),
+                                modifier = Modifier.padding(start = 6.dp)
+                            ) {
+                                Text(
+                                    "Tu fallo previo",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFF87171),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (state.justMasteredQuestion) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF10B981).copy(alpha = 0.2f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("🎉", fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                        Column {
+                            Text(
+                                "¡Concepto Dominado!",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                color = Color(0xFF34D399)
+                            )
+                            Text(
+                                "Esta pregunta ha sido eliminada automáticamente de tu lista de fallos pendientes.",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }
