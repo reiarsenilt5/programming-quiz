@@ -20,9 +20,16 @@ android {
             useSupportLibrary = true
         }
 
+        val localProps = java.util.Properties().apply {
+            val file = rootProject.file("local.properties")
+            if (file.exists()) {
+                file.inputStream().use { load(it) }
+            }
+        }
         val geminiKey = System.getenv("GEMINI_API_KEY") 
             ?: (project.findProperty("gemini.api.key") as? String)
-            ?: "YOUR_GEMINI_KEY_HERE"
+            ?: localProps.getProperty("gemini.api.key")
+            ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
 

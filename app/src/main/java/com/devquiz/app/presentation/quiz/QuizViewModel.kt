@@ -1,9 +1,10 @@
 package com.devquiz.app.presentation.quiz
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.devquiz.app.BuildConfig
+import com.devquiz.app.data.ApiKeyManager
 import com.devquiz.app.domain.model.CategoryType
 import com.devquiz.app.domain.model.DifficultyLevel
 import com.devquiz.app.domain.model.GameMode
@@ -27,16 +28,11 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
+    val apiKeyManager = ApiKeyManager(application)
+    private val statsPrefs = application.getSharedPreferences("devquiz_stats", Context.MODE_PRIVATE)
+
     private var timerJob: Job? = null
     private var allQuestionsCache: List<Question> = emptyList()
-
-    private val geminiModel: GenerativeModel by lazy {
-        val apiKey = BuildConfig.GEMINI_API_KEY
-        GenerativeModel(
-            modelName = "gemini-1.5-flash",
-            apiKey = apiKey.ifEmpty { "AI_KEY" }
-        )
-    }
 
     init {
         loadAllQuestionsFromAssets()
@@ -130,7 +126,10 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                     gameMode = mode,
                     timeRemainingSeconds = if (mode == GameMode.TimeTrial) 60 else 0,
                     isGameOver = false,
-                    userAnswers = emptyList()
+                    userAnswers = emptyList(),
+                    aiExplanationText = null,
+                    isAiLoading = false,
+                    aiError = null
                 )
             }
 
@@ -167,11 +166,29 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
             is QuizUiEvent.ConfirmAnswer -> confirmCurrentAnswer()
             is QuizUiEvent.NextQuestion -> moveToNextQuestion()
             is QuizUiEvent.RequestAiExplanation -> fetchAiExplanation()
-            is QuizUiEvent.DismissAiDialog -> _uiState.update { it.copy(aiExplanationText = null, aiError = null) }
+            is QuizUiEvent.DismissAiDialog -> _uiState.update { it.copy(aiExplanationText = null, aiError = null, isAiLoading = false) }
             is QuizUiEvent.RestartQuiz -> {
                 val mode = _uiState.value.gameMode
                 loadQuiz("all", mode)
             }
+        }
+    }
+
+    fun resetToHome() {
+        timerJob?.cancel()
+        _uiState.update {
+            it.copy(
+                questions = emptyList(),
+                currentIndex = 0,
+                selectedOptionIndex = null,
+                isAnswerConfirmed = false,
+                score = 0,
+                isGameOver = false,
+                userAnswers = emptyList(),
+                aiExplanationText = null,
+                isAiLoading = false,
+                aiError = null
+            )
         }
     }
 
@@ -183,6 +200,9 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         val isCorrect = selectedIdx == currentQ.correctAnswerIndex
         val updatedAnswers = state.userAnswers + UserAnswerRecord(currentQ, selectedIdx, isCorrect)
 
+        // Persist stats
+        recordAnswerStat(currentQ.category.id, isCorrect)
+
         _uiState.update {
             it.copy(
                 isAnswerConfirmed = true,
@@ -191,6 +211,28 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 userAnswers = updatedAnswers
             )
         }
+    }
+
+    private fun recordAnswerStat(categoryId: String, isCorrect: Boolean) {
+        val total = statsPrefs.getInt("total_answered", 0) + 1
+        val correct = statsPrefs.getInt("total_correct", 0) + (if (isCorrect) 1 else 0)
+        val catTotal = statsPrefs.getInt("cat_${categoryId}_total", 0) + 1
+        val catCorrect = statsPrefs.getInt("cat_${categoryId}_correct", 0) + (if (isCorrect) 1 else 0)
+
+        statsPrefs.edit()
+            .putInt("total_answered", total)
+            .putInt("total_correct", correct)
+            .putInt("cat_${categoryId}_total", catTotal)
+            .putInt("cat_${categoryId}_correct", catCorrect)
+            .apply()
+    }
+
+    fun getTotalAnswered(): Int = statsPrefs.getInt("total_answered", 0)
+    fun getTotalCorrect(): Int = statsPrefs.getInt("total_correct", 0)
+    fun getCategoryStats(catId: String): Pair<Int, Int> {
+        val total = statsPrefs.getInt("cat_${catId}_total", 0)
+        val correct = statsPrefs.getInt("cat_${catId}_correct", 0)
+        return Pair(total, correct)
     }
 
     private fun moveToNextQuestion() {
@@ -206,7 +248,9 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                     currentIndex = nextIdx,
                     selectedOptionIndex = null,
                     isAnswerConfirmed = false,
-                    aiExplanationText = null
+                    aiExplanationText = null,
+                    aiError = null,
+                    isAiLoading = false
                 )
             }
         }
@@ -215,30 +259,72 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
     private fun fetchAiExplanation() {
         val currentQ = _uiState.value.currentQuestion ?: return
         val selectedIdx = _uiState.value.selectedOptionIndex
+        val apiKey = apiKeyManager.getGeminiApiKey()
+
+        if (apiKey.isEmpty()) {
+            _uiState.update {
+                it.copy(
+                    isAiLoading = false,
+                    aiExplanationText = null,
+                    aiError = "Clave de Gemini no configurada.\n\nPara activar el Tutor de IA en tu dispositivo, ingresa tu clave gratuita de Google AI Studio en la pestaña 'Ajustes' de la app (o inclúyela como secreto GEMINI_API_KEY al compilar el APK)."
+                )
+            }
+            return
+        }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isAiLoading = true, aiError = null) }
+            _uiState.update { it.copy(isAiLoading = true, aiError = null, aiExplanationText = null) }
             try {
+                val generativeModel = GenerativeModel(
+                    modelName = "gemini-1.5-flash",
+                    apiKey = apiKey
+                )
+
                 val prompt = """
-                    Actúa como un Senior Android & Software Architect.
-                    Explica de forma didáctica esta pregunta de examen técnico:
+                    Actúa como un Senior Software Architect y Tutor Técnico.
+                    Explica de forma didáctica esta pregunta de examen técnico para desarrolladores:
                     Categoría: ${currentQ.category.displayName}
                     Pregunta: "${currentQ.title}"
                     Código: ${currentQ.codeSnippet ?: "N/A"}
-                    Respuesta del usuario: ${selectedIdx?.let { currentQ.options.getOrNull(it) } ?: "Ninguna"}
+                    Respuesta seleccionada: ${selectedIdx?.let { currentQ.options.getOrNull(it) } ?: "Ninguna"}
                     Respuesta Correcta: ${currentQ.options[currentQ.correctAnswerIndex]}
-                    Explicación breve: ${currentQ.explanation}
+                    Explicación técnica: ${currentQ.explanation}
 
-                    Estructura tu respuesta en 3 secciones concisas:
-                    1. ¿Por qué es correcta?
-                    2. Concepto o trampa común.
-                    3. Pro-Tip para entrevistas técnicas.
+                    Estructura tu respuesta en exactamente 3 secciones concisas en español:
+                    1. ¿Por qué es la respuesta correcta?
+                    2. Trampa conceptual o error común en entrevistas.
+                    3. Pro-Tip para entornos de producción.
                 """.trimIndent()
 
-                val response = geminiModel.generateContent(prompt)
-                _uiState.update { it.copy(isAiLoading = false, aiExplanationText = response.text) }
+                val response = withContext(Dispatchers.IO) {
+                    generativeModel.generateContent(prompt)
+                }
+
+                val text = response.text
+                if (text.isNullOrBlank()) {
+                    throw IllegalStateException("El Tutor no retornó texto. Por favor reintenta.")
+                }
+
+                _uiState.update {
+                    it.copy(isAiLoading = false, aiExplanationText = text, aiError = null)
+                }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isAiLoading = false, aiError = e.localizedMessage ?: "Error de conexión") }
+                e.printStackTrace()
+                val friendlyError = when {
+                    e is java.net.UnknownHostException || e is java.io.IOException ->
+                        "Sin conexión a internet. Verifica que tu teléfono tenga Wi-Fi o datos móviles activos para consultar a Gemini."
+                    e.message?.contains("API_KEY_INVALID", ignoreCase = true) == true ||
+                    e.message?.contains("API key not valid", ignoreCase = true) == true ->
+                        "La clave de Gemini no es válida. Ve a la pestaña 'Ajustes' en la app y escribe una clave válida de Google AI Studio."
+                    e.message?.contains("RESOURCE_EXHAUSTED", ignoreCase = true) == true ||
+                    e.message?.contains("quota", ignoreCase = true) == true ->
+                        "Se ha excedido el límite temporal de solicitudes a Gemini. Espera unos segundos y vuelve a intentar."
+                    else ->
+                        "Error al consultar al Tutor de IA: ${e.localizedMessage ?: e.message ?: "Fallo de comunicación"}"
+                }
+                _uiState.update {
+                    it.copy(isAiLoading = false, aiError = friendlyError, aiExplanationText = null)
+                }
             }
         }
     }

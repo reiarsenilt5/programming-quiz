@@ -27,20 +27,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 🐘 Configurar Gradle 8.4
+      - name: 🐘 Configurar Gradle Oficial
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.4'
 
-      - name: 🛡️ Preparar Gradle Wrapper
+      - name: 🛡️ Auto-generar Gradle Wrapper si falta en el repo
         run: |
-          if [ ! -f "gradlew" ] || [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "Generando Gradle wrapper 8.4 bin..."
-            gradle wrapper --gradle-version 8.4 --distribution-type bin
+          if [ ! -f "gradlew" ]; then
+            echo "Aviso: gradlew no encontrado. Generando wrapper automáticamente con Gradle 8.3..."
+            gradle wrapper --gradle-version 8.3
           fi
           chmod +x gradlew
 
-      - name: ⚙️ Configurar local.properties
+      - name: ⚙️ Configurar local.properties seguro
         env:
           GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -51,23 +49,13 @@ jobs:
           fi
 
       - name: 🔨 Compilar APK Debug
-        run: |
-          if [ -f "./gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            ./gradlew assembleDebug --stacktrace --no-daemon
-          else
-            gradle assembleDebug --stacktrace --no-daemon
-          fi
-
-      - name: 🔍 Verificar generación de APK
-        run: |
-          echo "Buscando APK generado..."
-          ls -la app/build/outputs/apk/debug/ || true
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: 📦 Subir APK Debug como Artefacto Descargable
         uses: actions/upload-artifact@v4
         with:
           name: DevQuiz-Debug-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 `;
 
@@ -222,6 +210,78 @@ export default function CiCdGuide() {
               Puedes descargar el ZIP con el botón verde arriba, descomprimirlo en tu carpeta local, hacer <code className="text-emerald-400 font-mono">git push</code> y listo.
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Guía Exclusiva: Dónde configurar la Clave de GEMINI API */}
+      <div className="bg-gradient-to-r from-purple-950/40 via-slate-900 to-indigo-950/40 border border-purple-500/40 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
+            <Zap className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white">
+              ¿Dónde y cómo colocar la clave de GEMINI para el Tutor de IA?
+            </h3>
+            <p className="text-xs text-purple-200">
+              Tienes 2 opciones para que el Tutor funcione en tu dispositivo físico sin fallar:
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          {/* Opción 1: En el teléfono */}
+          <div className="bg-slate-950/70 border border-slate-800 p-4 rounded-xl space-y-2.5">
+            <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
+              <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs">1</span>
+              <span>En la app instalada (Sin recompilar)</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Abre <strong>DevQuiz</strong> en tu celular físico:
+            </p>
+            <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
+              <li>Toca el botón <strong>Ajustes</strong> en la barra inferior.</li>
+              <li>En la sección <strong>Tutor de IA (Google Gemini)</strong>, pega tu clave (<code className="text-indigo-300 font-mono">AIzaSy...</code>).</li>
+              <li>Presiona <strong>Guardar Clave</strong>. Se almacena localmente en tu teléfono.</li>
+            </ol>
+            <div className="text-[11px] text-emerald-400 pt-1 font-medium">
+              ✓ Funciona de inmediato sin necesidad de volver a compilar el APK.
+            </div>
+          </div>
+
+          {/* Opción 2: En GitHub Actions */}
+          <div className="bg-slate-950/70 border border-slate-800 p-4 rounded-xl space-y-2.5">
+            <div className="flex items-center gap-2 text-purple-400 font-bold text-sm">
+              <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-xs">2</span>
+              <span>Al compilar en GitHub Actions (APK listo)</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Para que el APK ya venga configurado de fábrica:
+            </p>
+            <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
+              <li>En tu repositorio de GitHub, ve a <strong>Settings</strong> ➔ <strong>Secrets and variables</strong> ➔ <strong>Actions</strong>.</li>
+              <li>Haz clic en <strong>New repository secret</strong>.</li>
+              <li>Nombre: <code className="text-purple-300 font-mono font-bold">GEMINI_API_KEY</code></li>
+              <li>Valor: Tu clave de Gemini (<code className="text-purple-300 font-mono">AIzaSy...</code>).</li>
+            </ol>
+            <div className="text-[11px] text-purple-300 pt-1 font-medium">
+              ✓ El flujo inyecta automáticamente la clave en el archivo APK generado.
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+          <span className="text-slate-300">
+            ¿Cómo obtener tu clave gratuita de Google Gemini?
+          </span>
+          <a
+            href="https://aistudio.google.com/apikey"
+            target="_blank"
+            rel="noreferrer"
+            className="text-indigo-400 hover:text-indigo-300 font-semibold underline inline-flex items-center gap-1"
+          >
+            Google AI Studio (Gratis) ↗
+          </a>
         </div>
       </div>
 

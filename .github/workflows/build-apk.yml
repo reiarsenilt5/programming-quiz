@@ -45,6 +45,8 @@ jobs:
           fi
 
       - name: 🔨 Compilar APK Debug
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: 🏷️ Preparar APK con versión para Release

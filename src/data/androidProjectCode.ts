@@ -188,64 +188,161 @@ import dagger.hilt.android.HiltAndroidApp
 class DevQuizApp : Application()`
   },
   {
+    path: 'app/src/main/java/com/devquiz/app/ui/theme/Theme.kt',
+    name: 'Theme.kt',
+    category: 'ui',
+    language: 'kotlin',
+    description: 'Tema oscuro permanente idéntico a la demo web con tokens Material 3.',
+    content: `package com.devquiz.app.ui.theme
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+
+val DarkBackground = Color(0xFF090D16)
+val DarkSurface = Color(0xFF0F172A)
+val DarkSurfaceVariant = Color(0xFF1E293B)
+val IndigoPrimary = Color(0xFF6366F1)
+val PurpleAccent = Color(0xFF8B5CF6)
+val RoseBlitz = Color(0xFFF43F5E)
+val TextPrimary = Color(0xFFF8FAFC)
+val TextSecondary = Color(0xFF94A3B8)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = IndigoPrimary,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF312E81),
+    onPrimaryContainer = Color(0xFFE0E7FF),
+    secondary = PurpleAccent,
+    background = DarkBackground,
+    onBackground = TextPrimary,
+    surface = DarkSurface,
+    onSurface = TextPrimary,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = TextSecondary,
+    outline = Color(0xFF334155),
+    error = RoseBlitz
+)
+
+@Composable
+fun DevQuizTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = DarkColorScheme,
+        content = content
+    )
+}`
+  },
+  {
+    path: 'app/src/main/java/com/devquiz/app/data/ApiKeyManager.kt',
+    name: 'ApiKeyManager.kt',
+    category: 'architecture',
+    language: 'kotlin',
+    description: 'Gestor seguro de clave Gemini API en SharedPreferences locales con fallback a BuildConfig.',
+    content: `package com.devquiz.app.data
+
+import android.content.Context
+import android.content.SharedPreferences
+import com.devquiz.app.BuildConfig
+
+class ApiKeyManager(context: Context) {
+    private val prefs: SharedPreferences = context.getSharedPreferences("devquiz_prefs", Context.MODE_PRIVATE)
+
+    fun getGeminiApiKey(): String {
+        val userKey = getUserSavedKey()
+        if (userKey.isNotEmpty()) {
+            return userKey
+        }
+        val buildKey = BuildConfig.GEMINI_API_KEY.trim()
+        if (buildKey.isNotEmpty() && buildKey != "YOUR_GEMINI_KEY_HERE") {
+            return buildKey
+        }
+        return ""
+    }
+
+    fun getUserSavedKey(): String = prefs.getString(KEY_GEMINI, "")?.trim() ?: ""
+
+    fun saveGeminiApiKey(key: String) {
+        prefs.edit().putString(KEY_GEMINI, key.trim()).apply()
+    }
+
+    fun clearUserKey() {
+        prefs.edit().remove(KEY_GEMINI).apply()
+    }
+
+    fun hasValidKey(): Boolean = getGeminiApiKey().isNotEmpty()
+
+    fun isConfiguredViaBuildConfig(): Boolean {
+        val buildKey = BuildConfig.GEMINI_API_KEY.trim()
+        return buildKey.isNotEmpty() && buildKey != "YOUR_GEMINI_KEY_HERE"
+    }
+
+    companion object {
+        private const val KEY_GEMINI = "gemini_api_key"
+    }
+}`
+  },
+  {
     path: 'app/src/main/java/com/devquiz/app/MainActivity.kt',
     name: 'MainActivity.kt',
     category: 'ui',
     language: 'kotlin',
-    description: 'Punto de entrada Activity que enlaza Jetpack Compose con el ViewModel de Hilt.',
+    description: 'Punto de entrada Activity con DevQuizTheme y MainScreen con barra inferior.',
     content: `package com.devquiz.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.devquiz.app.presentation.home.HomeScreen
+import com.devquiz.app.domain.model.GameMode
+import com.devquiz.app.presentation.home.MainScreen
 import com.devquiz.app.presentation.quiz.QuizScreen
 import com.devquiz.app.presentation.quiz.QuizViewModel
 import com.devquiz.app.presentation.result.ResultScreen
-import dagger.hilt.android.AndroidEntryPoint
+import com.devquiz.app.ui.theme.DevQuizTheme
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: QuizViewModel by viewModels()
+    private val viewModel by lazy { QuizViewModel(application) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val uiState by viewModel.uiState.collectAsState()
+            DevQuizTheme {
+                val uiState by viewModel.uiState.collectAsState()
 
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                when {
-                    uiState.isGameOver -> {
-                        ResultScreen(
-                            state = uiState,
-                            onRestart = { viewModel.loadQuiz("all", uiState.gameMode) },
-                            onGoHome = { viewModel.loadQuiz("all", uiState.gameMode) }
-                        )
-                    }
-                    uiState.questions.isNotEmpty() -> {
-                        QuizScreen(
-                            state = uiState,
-                            onEvent = viewModel::onEvent,
-                            onNavigateBack = { finish() }
-                        )
-                    }
-                    else -> {
-                        HomeScreen(
-                            onCategorySelected = { category, mode ->
-                                viewModel.loadQuiz(category.id, mode)
-                            }
-                        )
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    when {
+                        uiState.isGameOver -> {
+                            ResultScreen(
+                                state = uiState,
+                                onRestart = { viewModel.loadQuiz("all", uiState.gameMode) },
+                                onGoHome = { viewModel.resetToHome() }
+                            )
+                        }
+                        uiState.questions.isNotEmpty() -> {
+                            QuizScreen(
+                                state = uiState,
+                                onEvent = viewModel::onEvent,
+                                onNavigateBack = { viewModel.resetToHome() }
+                            )
+                        }
+                        else -> {
+                            MainScreen(
+                                viewModel = viewModel,
+                                streakDays = uiState.streak,
+                                onCategorySelected = { category, mode ->
+                                    viewModel.loadQuiz(category.id, mode)
+                                },
+                                onStartBlitz = {
+                                    viewModel.loadQuiz("all", GameMode.TimeTrial)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -756,16 +853,14 @@ class QuizViewModel @Inject constructor(
 }`
   },
 
-  // 5. JETPACK COMPOSE SCREENS
   {
     path: 'app/src/main/java/com/devquiz/app/presentation/home/HomeScreen.kt',
     name: 'HomeScreen.kt',
     category: 'ui',
     language: 'kotlin',
-    description: 'Pantalla principal con Material Design 3, selector de modos, racha y categorías.',
+    description: 'Pantalla principal con Material 3, NavigationBar inferior con 4 pestañas y soporte para Blitz 60s.',
     content: `package com.devquiz.app.presentation.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -774,164 +869,254 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.devquiz.app.domain.model.CategoryType
 import com.devquiz.app.domain.model.GameMode
+import com.devquiz.app.presentation.quiz.QuizViewModel
+import com.devquiz.app.presentation.settings.SettingsScreen
+import com.devquiz.app.presentation.stats.StatsScreen
+
+enum class MainNavTab(val title: String, val icon: ImageVector) {
+    HOME("Inicio", Icons.Default.Home),
+    BLITZ("Blitz 60s", Icons.Default.Bolt),
+    STATS("Estadísticas", Icons.Default.BarChart),
+    SETTINGS("Ajustes", Icons.Default.Settings)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+fun MainScreen(
+    viewModel: QuizViewModel,
     streakDays: Int = 5,
-    accuracyPercent: Int = 84,
-    onCategorySelected: (CategoryType, GameMode) -> Unit
+    onCategorySelected: (CategoryType, GameMode) -> Unit,
+    onStartBlitz: () -> Unit
 ) {
+    var selectedTab by remember { mutableStateOf(MainNavTab.HOME) }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text("DevQuiz", fontWeight = FontWeight.Bold)
-                        Text("Master Modern Coding", style = MaterialTheme.typography.bodySmall)
+                        Text("DevQuiz", fontWeight = FontWeight.ExtraBold)
+                        Text("Master Modern Coding", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
                 actions = {
-                    // Chip de Racha (Streak)
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = Color(0xFFF59E0B).copy(alpha = 0.18f),
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
                             Text("🔥", modifier = Modifier.padding(end = 4.dp))
-                            Text(
-                                "\${streakDays} días",
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            Text("\${streakDays} días", fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24), fontSize = 12.sp)
                         }
                     }
                 }
             )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Sección: Selector de Modos de Juego
-            item {
-                Text(
-                    "Modos de Juego",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    GameModeCard(
-                        title = "Práctica",
-                        subtitle = "Sin límite",
-                        icon = Icons.Default.MenuBook,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.Practice) }
-                    )
-                    GameModeCard(
-                        title = "Contrarreloj",
-                        subtitle = "60 Segundos",
-                        icon = Icons.Default.Timer,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.TimeTrial) }
-                    )
-                    GameModeCard(
-                        title = "Diario",
-                        subtitle = "5 Retos",
-                        icon = Icons.Default.CalendarToday,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onCategorySelected(CategoryType.AI_ASSISTANCE, GameMode.DailyChallenge) }
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 8.dp,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
+                MainNavTab.values().forEach { tab ->
+                    val isSelected = selectedTab == tab
+                    val tabColor = if (tab == MainNavTab.BLITZ) Color(0xFFF43F5E) else MaterialTheme.colorScheme.primary
+
+                    NavigationBarItem(
+                        selected = isSelected,
+                        onClick = {
+                            if (tab == MainNavTab.BLITZ) onStartBlitz() else selectedTab = tab
+                        },
+                        icon = { Icon(tab.icon, contentDescription = tab.title, tint = if (isSelected) tabColor else MaterialTheme.colorScheme.outline) },
+                        label = { Text(tab.title, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) tabColor else MaterialTheme.colorScheme.outline, fontSize = 11.sp) }
                     )
                 }
             }
-
-            // Sección: Categorías
-            item {
-                Text(
-                    "Categorías de Conocimiento",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            items(CategoryType.entries) { category ->
-                CategoryRowItem(
-                    category = category,
-                    onClick = { onCategorySelected(category, GameMode.Practice) }
-                )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            when (selectedTab) {
+                MainNavTab.HOME -> HomeContent(onCategorySelected = onCategorySelected)
+                MainNavTab.BLITZ -> HomeContent(onCategorySelected = onCategorySelected)
+                MainNavTab.STATS -> StatsScreen(viewModel = viewModel, streakDays = streakDays)
+                MainNavTab.SETTINGS -> SettingsScreen(apiKeyManager = viewModel.apiKeyManager)
             }
         }
     }
 }
 
 @Composable
-fun GameModeCard(
-    title: String,
-    subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier.clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+fun HomeContent(onCategorySelected: (CategoryType, GameMode) -> Unit) {
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        item {
+            Text("MODOS DE JUEGO", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                GameModeCard("Práctica", "Sin reloj", "📖", Color(0xFF6366F1), Modifier.weight(1f)) { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.Practice) }
+                GameModeCard("Contrarreloj", "60s blitz", "⏱", Color(0xFFF43F5E), Modifier.weight(1f)) { onCategorySelected(CategoryType.SQL, GameMode.TimeTrial) }
+                GameModeCard("Diario", "5 retos", "📅", Color(0xFF10B981), Modifier.weight(1f)) { onCategorySelected(CategoryType.SOLID, GameMode.DailyChallenge) }
+            }
+        }
+        item {
+            Text("CATEGORÍAS TÉCNICAS (13)", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+        }
+        items(CategoryType.values().toList()) { category ->
+            Card(
+                modifier = Modifier.fillMaxWidth().clickable { onCategorySelected(category, GameMode.Practice) },
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder()
+            ) {
+                Row(modifier = Modifier.padding(14.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(category.displayName, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), fontSize = 13.sp)
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun CategoryRowItem(
-    category: CategoryType,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(category.displayName, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-            Icon(Icons.Default.ChevronRight, contentDescription = null)
+fun GameModeCard(title: String, subtitle: String, emoji: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Card(modifier = modifier.clickable { onClick() }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(14.dp), border = CardDefaults.outlinedCardBorder()) {
+        Column(modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(emoji, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text(subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}`
+  },
+  {
+    path: 'app/src/main/java/com/devquiz/app/presentation/settings/SettingsScreen.kt',
+    name: 'SettingsScreen.kt',
+    category: 'ui',
+    language: 'kotlin',
+    description: 'Pantalla de configuración para guardar la clave de Gemini en SharedPreferences y ver guía de CI/CD.',
+    content: `package com.devquiz.app.presentation.settings
+
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.devquiz.app.data.ApiKeyManager
+
+@Composable
+fun SettingsScreen(apiKeyManager: ApiKeyManager) {
+    val context = LocalContext.current
+    var inputKey by remember { mutableStateOf(apiKeyManager.getUserSavedKey()) }
+    val hasKey = apiKeyManager.hasValidKey()
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Configuración", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+
+        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), border = CardDefaults.outlinedCardBorder()) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Tutor de IA (Gemini)", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Surface(shape = RoundedCornerShape(20.dp), color = if (hasKey) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f)) {
+                        Text(if (hasKey) "● Activo" else "○ Clave Pendiente", color = if (hasKey) Color(0xFF34D399) else Color(0xFFFBBF24), fontSize = 11.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                    }
+                }
+                Text("Ingresa tu clave de Google AI Studio para activar explicaciones técnicas en tu teléfono:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                OutlinedTextField(
+                    value = inputKey,
+                    onValueChange = { inputKey = it },
+                    label = { Text("Clave Gemini API") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                Button(
+                    onClick = {
+                        apiKeyManager.saveGeminiApiKey(inputKey)
+                        Toast.makeText(context, "Clave guardada exitosamente", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Guardar Clave en Teléfono")
+                }
+            }
+        }
+    }
+}`
+  },
+  {
+    path: 'app/src/main/java/com/devquiz/app/presentation/stats/StatsScreen.kt',
+    name: 'StatsScreen.kt',
+    category: 'ui',
+    language: 'kotlin',
+    description: 'Pantalla de estadísticas con dominio técnico, aciertos y medallas.',
+    content: `package com.devquiz.app.presentation.stats
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.devquiz.app.presentation.quiz.QuizViewModel
+
+@Composable
+fun StatsScreen(viewModel: QuizViewModel, streakDays: Int = 5) {
+    val total = viewModel.getTotalAnswered()
+    val correct = viewModel.getTotalCorrect()
+    val accuracy = if (total > 0) (correct * 100) / total else 0
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Estadísticas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Total", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                    Text("$total", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Precisión", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                    Text("$accuracy%", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
+                }
+            }
+            Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Racha", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                    Text("🔥 $streakDays", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B))
+                }
+            }
         }
     }
 }`

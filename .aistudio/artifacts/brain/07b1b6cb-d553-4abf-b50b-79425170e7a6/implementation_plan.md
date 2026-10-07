@@ -1,69 +1,131 @@
-# Plan de Implementación: Top 100 Preguntas de Entrevistas Técnicas Senior 2026 (2 Nuevos Quizzes)
+# Plan de Implementación: Barra de Navegación Inferior, Tema Oscuro y Tutor de IA con Gemini en Dispositivo Físico
 
-Plan estructurado para diseñar, categorizar e integrar **100 preguntas avanzadas de entrevistas técnicas senior** organizadas en dos nuevos quizzes especializados de 50 preguntas cada uno, cubriendo escenarios reales de producción, depuración de código crítico y decisiones de arquitectura, con sincronización total entre la versión Web (React/TypeScript) y la aplicación móvil Android (Kotlin/Jetpack Compose).
-
----
-
-## 1. Visión y Objetivos de los 2 Nuevos Quizzes
-
-### Quiz 1: Fullstack Senior 2026 (`senior_fullstack`)
-* **Nombre mostrado**: *Fullstack Senior 2026 (React, Python, Laravel & SQL)*
-* **Volumen**: 50 preguntas exclusivas y de alta dificultad.
-* **Núcleo temático**:
-  1. **React 19 & Frontend Moderno (12 preguntas)**: React Compiler, Server Actions, Server Components vs Client Components, fugas en `useEffect` y cierres asíncronos (`stale closures`), concurrencia (`useTransition`, `useDeferredValue`), reconciliación virtual DOM vs render directo, microfrontends y hydration mismatches.
-  2. **Python Moderno Backend & Async (13 preguntas)**: Python 3.13 free-threaded build (no-GIL), `asyncio` event loop blocking con operaciones síncronas, generadores/iteradores y consumo de memoria (`yield`), FastAPI inyección de dependencias (`Depends`), Pydantic v2 validación en Rust, decoradores con preservación de metadatos (`functools.wraps`), profiling de memoria.
-  3. **Laravel 11 & PHP Moderno (13 preguntas)**: Laravel 11 lean skeleton, ciclo de vida del Service Container (Singletons con state leaks en Laravel Octane/FrankenPHP), Eloquent N+1 con subqueries complejas y lazy loading en producción, bloqueos atómicos en Redis para queues (`withoutOverlapping`), transacciones anidadas y deadlocks en base de datos.
-  4. **SQL Avanzado & Arquitectura de Datos (12 preguntas)**: Window functions complejas (`ROW_NUMBER`, `DENSE_RANK`, `LAG`/`LEAD`), optimización con `EXPLAIN (ANALYZE, BUFFERS)` (Index Only Scan vs Bitmap Heap Scan), niveles de aislamiento de transacciones (Read Committed vs Repeatable Read vs Serializable, phantom reads), particionamiento de tablas y control de bloat con PostgreSQL MVCC/VACUUM.
-
-### Quiz 2: DevOps & Cloud Architecture 2026 (`devops_cloud`)
-* **Nombre mostrado**: *DevOps & Cloud Architecture 2026 (Linux, K8s & CI/CD)*
-* **Volumen**: 50 preguntas exclusivas y de alta dificultad.
-* **Núcleo temático**:
-  1. **Linux Internals & Incident Response (13 preguntas)**: Triage en vivo bajo caída (`strace`, `lsof`, `tcpdump`, `htop`, `dmesg`), gestión de memoria en kernel (Page Cache, Swappiness, OOM Killer y `oom_score_adj`), descriptores de archivos (`ulimit`, `file-max`), señales de procesos (`SIGTERM`, `SIGKILL`, `SIGINT`), sockets y TIME_WAIT tuning (`sysctl`).
-  2. **Docker & Containers Seguros (12 preguntas)**: Multi-stage builds con imágenes distroless, cgroups v2 y asignación estricta de CPU/Memory quotas, problema del PID 1 (zombie processes y signal handling con `tini`), ataques de contenedor con privilegios y namespaces de Linux, caching de capas y SBOM generation.
-  3. **Kubernetes & Orquestación Cloud-Native (13 preguntas)**: Ciclo de vida de Pods y políticas de QoS (Guaranteed, Burstable, BestEffort), probes críticas (`liveness`, `readiness`, `startup`), cero tiempo de inactividad en RollingUpdates (`preStop` hooks y graceful shutdown), Ingress controllers, Network Policies, autoscaling horizontal con KEDA vs HPA.
-  4. **CI/CD, Seguridad & Arquitectura de Resiliencia (12 preguntas)**: Pipelines modernos de GitHub Actions / GitLab CI, escaneo de vulnerabilidades en artefactos (Trivy, Cosign signing), estrategias de despliegue (Canary, Blue/Green con Service Mesh), resiliencia de microservicios (Circuit Breakers con Sentinel/Resilience4j, Exponential Backoff con Jitter), observabilidad y OpenTelemetry (trazas distribuidas, métricas y spans).
+Plan arquitectónico integral para corregir la ausencia de la barra de navegación inferior en el APK de Android, homogeneizar el diseño con el modo oscuro de la demo web, e integrar el Tutor de IA (Gemini) en el dispositivo físico con soporte dual para API Key (en pantalla de Ajustes y en compilación CI/CD) y retroalimentación visual de errores de red o cuota.
 
 ---
 
-## 2. Especificación Técnica de las Preguntas
+### Decisiones Críticas Confirmadas
 
-Cada pregunta incluirá:
-* **Título claro del problema**: Enunciado directo simulando la pregunta formulada por un Staff/Principal Engineer en una ronda técnica.
-* **Snippet de código o comando real**: Ejemplos concisos en Python, PHP/Laravel, JavaScript/React, SQL, Bash o YAML de Kubernetes según aplique.
-* **Opciones precisas**: 4 alternativas técnicas con distractores plausibles que capturan los errores más comunes de desarrolladores Mid/Junior.
-* **Explicación técnica profunda**: Detalle paso a paso del porqué de la respuesta correcta y la razón por la cual fallan las alternativas.
-* **Pro-Tip de Entrevista**: Consejo táctico de alto valor ("Qué busca escuchar el entrevistador" o "Buenas prácticas recomendadas en producción").
-
----
-
-## 3. Plan de Integración en el Código
-
-### Fase 1: Actualización de Modelos y Tipos
-1. **Web (`src/types/quiz.ts` y `src/data/questionsData.ts`)**:
-   * Registrar las dos nuevas categorías en `CATEGORIES` con iconos, colores y metadatos visuales.
-   * Añadir el banco completo de las 100 preguntas estructuradas y tipadas.
-2. **Android Native (`com.devquiz.app.domain.model.Question.kt`)**:
-   * Extender el enum `CategoryType`:
-     ```kotlin
-     SENIOR_FULLSTACK("senior_fullstack", "Fullstack Senior 2026"),
-     DEVOPS_CLOUD("devops_cloud", "DevOps & Cloud 2026")
-     ```
-   * Actualizar el repositorio local o data source nativo de Android en `androidProjectCode.ts` para que la app Android compilada contenga las 100 nuevas preguntas sin necesidad de backend externo.
-
-### Fase 2: Experiencia de Usuario en la App
-1. **Filtros y navegación**: Asegurar que las tarjetas de las nuevas categorías se muestren con insignias destacadas ("🔥 Top 50 Senior" y "☁️ Top 50 DevOps").
-2. **Selector de preguntas en el Quiz**: Soporte fluido tanto para sesiones completas de 50 preguntas como para tandas de práctica rápida (10 preguntas aleatorias) y modo contrarreloj.
-
-### Fase 3: Verificación y Compilación
-1. Ejecutar `lint_applet` para garantizar que no existan errores de tipos o sintaxis en TypeScript.
-2. Ejecutar `compile_applet` para confirmar la compilación exitosa de la aplicación web.
-3. Verificar la compatibilidad del código Kotlin para que GitHub Actions CI continúe generando la APK sin ninguna regresión.
+> [!IMPORTANT]
+> **Decisiones confirmadas con el usuario en Fase 1:**
+> - **Clave de Gemini API**: Configurable de forma dual: directamente en la nueva pantalla de **Ajustes** de la app instalada (almacenada en `SharedPreferences` local) y mediante variable de compilación `GEMINI_API_KEY` en Gradle / GitHub Actions Secrets para generar el APK preconfigurado.
+> - **Estilo Visual**: **Modo Oscuro Permanente** idéntico al de la demo web (`#090D16` / `#0F172A`), con colores de superficie oscuros, acentos índigo/púrpura y tipografía contrastante sin depender del tema claro u oscuro del sistema del teléfono.
+> - **Pestaña Blitz 60s en Navegación**: Inicia directamente la partida rápida contrarreloj de 60 segundos con temporizador activo y preguntas aleatorias de alta velocidad.
 
 ---
 
-## 4. Criterios de Aceptación
-* [ ] Las categorías `senior_fullstack` y `devops_cloud` aparecen activas en la interfaz web y móvil.
-* [ ] 50 preguntas rigurosas de Fullstack Senior (React, Python, Laravel, SQL) integradas con snippets y explicaciones.
-* [ ] 50 preguntas rigurosas de DevOps & Cloud (Linux, Docker, K8s, CI/CD) integradas con snippets y explicaciones.
-* [ ] La aplicación compila limpiamente sin advertencias ni errores.
+## 1. Visión General y Diagnóstico del Problema
+
+### Causa Raíz Identificada en el Dispositivo Físico
+1. **Ausencia de NavigationBar en Android Compose**: El archivo `HomeScreen.kt` tenía un `Scaffold` con únicamente `topBar` y `LazyColumn`, omitiendo el parámetro `bottomBar`. Por eso, en la pantalla del móvil físico (Captura 2), la lista de categorías se extiende hasta el borde inferior sin mostrar los botones de Inicio, Blitz 60s, Estadísticas y Ajustes.
+2. **Inconsistencia de Tema (Fondo Blanco)**: En `MainActivity.kt` se utilizaba el `MaterialTheme` predeterminado sin un esquema de color oscuro forzado (`darkColorScheme`), por lo que en teléfonos configurados con tema claro del sistema se mostraba con fondo blanco y tarjetas grises descoloridas en lugar de la estética cyberpunk/moderna de la demo.
+3. **Fallo Silencioso del Tutor de IA**:
+   - `BuildConfig.GEMINI_API_KEY` tenía por defecto `"YOUR_GEMINI_KEY_HERE"`. Al invocar a Gemini sin una clave válida, la llamada arrojaba una excepción.
+   - En `QuizScreen.kt`, el diálogo de IA se abría únicamente con la condición `if (state.aiExplanationText != null || state.isAiLoading)`. Cuando ocurría una excepción, `isAiLoading` pasaba a `false` y `aiError` se llenaba, pero el diálogo **nunca se mostraba**, generando la sensación de que el botón no respondía.
+   - No existía una pantalla en la app para que el usuario pudiera escribir o pegar su clave de Gemini API sin recompilar el código.
+
+---
+
+## 2. Experiencia de Usuario y Diseño Visual
+
+### A. Paleta de Color y Tema Oscuro Forzado (Jetpack Compose & Web)
+* **Background Canvas**: `#090D16` (Deep Space Navy).
+* **Surface Containers**: `#0F172A` (Slate 900) con bordes suaves `#1E293B` (Slate 800).
+* **Primary Accent**: `#6366F1` (Indigo 500) y gradientes púrpura `#8B5CF6`.
+* **Secondary / Blitz**: `#F43F5E` (Rose 500) para modos contrarreloj.
+* **Success / Streak**: `#10B981` (Emerald 500) y `#F59E0B` (Amber 500) para rachas de días.
+* **Text Hierarchy**: Blanco de alto contraste `#F8FAFC` para titulares y `#94A3B8` para subtítulos y metadatos.
+
+### B. Barra de Navegación Inferior (`NavigationBar`)
+* Cuatro destinos ergonómicos con altura estándar de 64dp y respeto de `navigationBarsPadding()` para no colisionar con los botones del sistema de Android:
+  1. **Inicio** (`Icons.Default.Home`): Vista principal con banner de racha, modos de juego y las categorías técnicas con badges temáticos.
+  2. **Blitz 60s** (`Icons.Default.Bolt` o `Timer`): Lanza de forma instantánea una sesión de 60 segundos con cuenta regresiva en vivo.
+  3. **Estadísticas** (`Icons.Default.BarChart`): Métricas de precisión, total de preguntas respondidas, racha actual y porcentaje de dominio por categoría técnica.
+  4. **Ajustes** (`Icons.Default.Settings`): Gestión de clave Gemini API (con enlace a Google AI Studio para obtenerla gratis), indicador de conectividad y estado del modelo.
+
+### C. Experiencia del Tutor de IA y Retroalimentación Visual
+* **Botón en QuizScreen**: Destacado con icono de chispas `✨ Tutor de IA` disponible tras responder la pregunta.
+* **Modal / BottomSheet con Estados Visuales Claros**:
+  - **Estado Cargando**: Indicador de progreso circular con mensaje *"Analizando la pregunta con Gemini 1.5 Flash..."*.
+  - **Estado Exitoso**: Tarjeta estructurada en tres secciones limpias: *1. ¿Por qué es la opción correcta?*, *2. Trampa común / Error frecuente*, *3. Pro-Tip de entrevista técnica*.
+  - **Estado de Error Visual (Sin Fallo Silencioso)**:
+    - Si no hay conexión o falla la red: Alerta visual roja/ámbar *"Sin conexión a internet. Revisa tu red Wi-Fi o datos móviles"*, con botón `Reintentar`.
+    - Si la clave no está configurada o es inválida: Alerta informativa *"Clave de Gemini API no configurada o expirada"*, con un botón directo `Configurar Clave en Ajustes` o campo rápido para pegarla en el momento.
+
+---
+
+## 3. Decisiones de Producto y Arquitectura Técnica
+
+### Decisión 1: Almacenamiento y Prioridad de la Clave Gemini (Dual Strategy)
+* **Enfoque**: `ApiKeyRepository` basado en `SharedPreferences` de Android con fallback a `BuildConfig.GEMINI_API_KEY`.
+* **Prioridad**:
+  1. Si el usuario ingresó una clave en la pantalla de **Ajustes**, se usa esa clave guardada en el dispositivo.
+  2. Si no hay clave en Ajustes, se utiliza la clave inyectada en tiempo de compilación (`BuildConfig.GEMINI_API_KEY`).
+  3. Si ninguna existe o es la cadena por defecto `"YOUR_GEMINI_KEY_HERE"`, la app no se cuelga; muestra amigablemente el aviso para ingresarla.
+
+### Decisión 2: Scaffold Unificado y Navegación de Estados
+* En lugar de múltiples actividades complejas, se estructura `MainScreen` en Compose con un `Scaffold` que aloja la `NavigationBar` persistentemente en la pantalla raíz, intercambiando el contenido según la pestaña seleccionada (`Home`, `Stats`, `Settings`).
+* Al pulsar `Blitz 60s`, se conmuta el flujo al examen en modo `TimeTrial`.
+
+```
+┌────────────────────────────────────────────────────────┐
+│                      MainActivity                      │
+└───────────────────────────┬────────────────────────────┘
+                            │
+               ┌────────────┴────────────┐
+               ▼                         ▼
+      ¿En Quiz o Resultado?        ¿En Navegación Principal?
+               │                         │
+     ┌─────────┴─────────┐               ▼
+     │  QuizScreen       │       ┌───────────────────────┐
+     │  - Pregunta/Timer │       │ Scaffold              │
+     │  - Tutor IA Modal │       │ - TopAppBar           │
+     │  ResultScreen     │       │ - Content Switcher    │
+     └───────────────────┘       │   ├── HomeScreen      │
+                                 │   ├── StatsScreen     │
+                                 │   └── SettingsScreen  │
+                                 │ - NavigationBar       │
+                                 │   (Inicio/Blitz/Stats/│
+                                 │    Ajustes)           │
+                                 └───────────────────────┘
+```
+
+---
+
+## 4. Plan de Modificaciones de Código
+
+### Paso 1: Módulo de Configuración y Clave API en Android
+* Crear `ApiKeyManager.kt` para lectura/escritura en `SharedPreferences`.
+* Actualizar `QuizViewModel.kt` para:
+  - Instanciar dinámicamente `GenerativeModel` con la clave activa (de Ajustes o BuildConfig).
+  - Manejar excepciones de red (`IOException`, `UnknownHostException`, `ServerException`) y emitir mensajes de error localizados y claros.
+
+### Paso 2: Nuevas Pantallas y Componentes en Compose
+* **`SettingsScreen.kt`**:
+  - Campo de texto seguro para ingresar la clave Gemini (`AIzaSy...`).
+  - Botón "Guardar Clave" con confirmación visual.
+  - Indicador de estado: Clave configurada / Clave pendiente.
+  - Guía explicativa con enlace a Google AI Studio (`aistudio.google.com/apikey`).
+  - Información de versión y repositorio.
+* **`StatsScreen.kt`**:
+  - Resumen de partidas, porcentaje de aciertos global y desglose por cada una de las tecnologías.
+* **Actualización de `HomeScreen.kt`**:
+  - Integrar la barra de navegación inferior con Material 3 `NavigationBar` y `NavigationBarItem`.
+  - Aplicar tema oscuro consistente con la demo.
+
+### Paso 3: Corrección en `QuizScreen.kt` para el Tutor de IA
+* Modificar el diálogo/hoja de Tutor IA para que soporte los tres estados: Carga, Éxito y **Error Visual**.
+* Si hay error, mostrar tarjeta roja con icono de advertencia, descripción comprensible y botón de reintento.
+
+### Paso 4: Sincronización en Simulador Web y Guía CI/CD
+* Actualizar `src/data/androidProjectCode.ts` para que el código Kotlin exportable refleje exactamente estos cambios.
+* Actualizar `src/components/CiCdGuide.tsx` indicando claramente dónde y cómo configurar el secret `GEMINI_API_KEY` en el repositorio de GitHub para que el APK generado por GitHub Actions ya incluya la clave.
+
+---
+
+## 5. Verificación y Criterios de Aceptación
+* [ ] La barra inferior (Inicio, Blitz 60s, Estadísticas, Ajustes) está visible en el dispositivo físico con navegación fluida.
+* [ ] La interfaz utiliza el modo oscuro nativo idéntico al de la demo web.
+* [ ] La pantalla de Ajustes permite ingresar y guardar la clave de Gemini API sin necesidad de recompilar la app.
+* [ ] El Tutor de IA responde de forma interactiva en la app nativa y, si no hay clave o falla la conexión, muestra un mensaje de error visual amigable sin crashear.
+* [ ] La compilación y linteo se ejecutan limpiamente.

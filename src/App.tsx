@@ -22,7 +22,14 @@ import {
   VolumeX,
   Smartphone,
   ShieldCheck,
-  Check
+  Check,
+  Eye,
+  EyeOff,
+  Key,
+  ExternalLink,
+  Save,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { CategoryId, GameMode, Question, QuizUserAnswer } from './types/quiz';
 import { CATEGORIES, QUESTIONS_DATA } from './data/questionsData';
@@ -75,6 +82,19 @@ export default function App() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // Gemini API Key management in Settings
+  const [customApiKey, setCustomApiKey] = useState(() => {
+    try {
+      return localStorage.getItem('gemini_api_key') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [showApiKeyText, setShowApiKeyText] = useState(false);
+  const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
+  const [isTestingKey, setIsTestingKey] = useState(false);
+  const [keyTestResult, setKeyTestResult] = useState<{ valid: boolean; message: string } | null>(null);
 
   // Timer Tick Effect
   useEffect(() => {
@@ -201,19 +221,65 @@ export default function App() {
           explanation: currentQ.explanation,
           category: currentQ.categoryName,
           difficulty: currentQ.difficulty,
+          customApiKey: customApiKey || undefined
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Error de conexión con el tutor virtual.');
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.details || data.error || 'Error de conexión con el tutor virtual.');
       }
 
-      const data = await response.json();
       setAiExplanation(data.explanation);
     } catch (err: any) {
       setAiError(err.message || 'No se pudo obtener la explicación de IA.');
     } finally {
       setIsAiLoading(false);
+    }
+  };
+
+  const handleSaveApiKey = () => {
+    try {
+      localStorage.setItem('gemini_api_key', customApiKey.trim());
+      setKeySaveMessage('¡Clave guardada exitosamente en este navegador!');
+      setKeyTestResult(null);
+      setTimeout(() => setKeySaveMessage(null), 4000);
+    } catch (e) {
+      setKeySaveMessage('No se pudo guardar en almacenamiento local.');
+    }
+  };
+
+  const handleClearApiKey = () => {
+    try {
+      localStorage.removeItem('gemini_api_key');
+      setCustomApiKey('');
+      setKeySaveMessage('Clave personal eliminada. Usando configuración por defecto.');
+      setKeyTestResult(null);
+      setTimeout(() => setKeySaveMessage(null), 3000);
+    } catch (e) {
+      setCustomApiKey('');
+    }
+  };
+
+  const handleTestApiKey = async () => {
+    setIsTestingKey(true);
+    setKeyTestResult(null);
+    try {
+      const response = await fetch('/api/verify-gemini-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: customApiKey }),
+      });
+      const data = await response.json();
+      if (response.ok && data.valid) {
+        setKeyTestResult({ valid: true, message: data.message || '¡Clave válida y conectada con Gemini!' });
+      } else {
+        setKeyTestResult({ valid: false, message: data.error || 'La clave proporcionada no es válida o fue rechazada.' });
+      }
+    } catch (e: any) {
+      setKeyTestResult({ valid: false, message: e.message || 'Error al conectar con el servidor de pruebas.' });
+    } finally {
+      setIsTestingKey(false);
     }
   };
 
@@ -713,6 +779,144 @@ export default function App() {
             <div className="space-y-4 pt-1 animate-in fade-in duration-200">
               <h2 className="text-base font-bold text-white">Configuración</h2>
 
+              {/* Gemini AI Key Configuration Box */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5 shadow-lg shadow-purple-950/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-sm text-white block">Tutor de IA (Google Gemini)</span>
+                      <span className="text-[10px] text-purple-300">Modelos Gemini 1.5 / 2.5 Flash</span>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
+                    customApiKey ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-300'
+                  }`}>
+                    {customApiKey ? '● Clave Personal' : '● Servidor Activo'}
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Ingresa tu clave de API de Gemini para usar tu cuota personal o probarla antes de compilar en tu celular físico:
+                </p>
+
+                {/* API Key Input */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <input
+                      type={showApiKeyText ? 'text' : 'password'}
+                      placeholder="Pega tu clave Gemini aquí (AIzaSy...)"
+                      value={customApiKey}
+                      onChange={(e) => {
+                        setCustomApiKey(e.target.value);
+                        setKeySaveMessage(null);
+                        setKeyTestResult(null);
+                      }}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-10 py-2.5 text-xs text-slate-100 font-mono placeholder:text-slate-600 focus:outline-none focus:border-purple-500 transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKeyText(!showApiKeyText)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1 cursor-pointer"
+                    >
+                      {showApiKeyText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveApiKey}
+                      className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2 px-3 rounded-xl transition text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-purple-950/40 active:scale-98"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>Guardar Clave</span>
+                    </button>
+
+                    <button
+                      onClick={handleTestApiKey}
+                      disabled={isTestingKey}
+                      className="bg-slate-800 hover:bg-slate-750 disabled:opacity-50 text-slate-200 font-medium py-2 px-3 rounded-xl transition text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 active:scale-98"
+                    >
+                      {isTestingKey ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
+                          <span>Probando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Probar Conexión</span>
+                        </>
+                      )}
+                    </button>
+
+                    {customApiKey && (
+                      <button
+                        onClick={handleClearApiKey}
+                        className="bg-slate-800 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 font-medium py-2 px-2.5 rounded-xl transition text-xs cursor-pointer border border-slate-700"
+                        title="Limpiar clave"
+                      >
+                        Limpiar
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Feedback Messages */}
+                  {keySaveMessage && (
+                    <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-[11px] text-emerald-300 flex items-center gap-1.5 animate-in fade-in">
+                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>{keySaveMessage}</span>
+                    </div>
+                  )}
+
+                  {keyTestResult && (
+                    <div className={`p-2.5 rounded-xl text-[11px] flex items-center gap-1.5 animate-in fade-in ${
+                      keyTestResult.valid
+                        ? 'bg-emerald-950/40 border border-emerald-500/30 text-emerald-300'
+                        : 'bg-rose-950/40 border border-rose-500/30 text-rose-300'
+                    }`}>
+                      {keyTestResult.valid ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      )}
+                      <span>{keyTestResult.message}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Link to AI Studio */}
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">¿No tienes clave de Gemini?</span>
+                  <a
+                    href="https://aistudio.google.com/apikey"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-purple-400 hover:text-purple-300 font-semibold underline inline-flex items-center gap-1"
+                  >
+                    Crear en Google AI Studio (Gratis) <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Guía APK & GitHub Actions */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                  <Key className="w-4 h-4" />
+                  <span>Para que funcione en tu celular físico:</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  1. <strong>En la app de tu teléfono</strong>: Ve a la pestaña Ajustes e introduce tu clave exactamente igual que aquí.
+                </p>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  2. <strong>Al compilar el APK</strong>: En tu repositorio de GitHub, añade un secreto llamado <code className="text-indigo-300 font-mono bg-slate-950 px-1 py-0.5 rounded">GEMINI_API_KEY</code> en <em>Settings ➔ Secrets and variables ➔ Actions</em>. El APK generado incluirá la clave automáticamente.
+                </p>
+              </div>
+
+              {/* Other settings */}
               <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-800 text-xs">
                 <div className="p-3.5 flex items-center justify-between">
                   <div>
@@ -735,21 +939,11 @@ export default function App() {
 
                 <div className="p-3.5 flex items-center justify-between">
                   <div>
-                    <span className="font-semibold text-slate-200 block">Tutor de IA Integrado</span>
-                    <span className="text-[10px] text-slate-400">Google Gemini 3.8 Flash</span>
-                  </div>
-                  <span className="text-emerald-400 font-semibold text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                    Activo
-                  </span>
-                </div>
-
-                <div className="p-3.5 flex items-center justify-between">
-                  <div>
                     <span className="font-semibold text-slate-200 block">Base de Datos Local</span>
                     <span className="text-[10px] text-slate-400">Room SQLite (Offline)</span>
                   </div>
                   <span className="text-indigo-400 font-mono text-[10px]">
-                    v1.0 (7 Cat.)
+                    13 Categorías (150+ Preguntas)
                   </span>
                 </div>
               </div>
@@ -853,8 +1047,40 @@ export default function App() {
                     </p>
                   </div>
                 ) : aiError ? (
-                  <div className="text-rose-400 text-xs p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl">
-                    {aiError}
+                  <div className="space-y-3">
+                    <div className="text-rose-300 text-xs p-3.5 bg-rose-950/40 border border-rose-500/30 rounded-xl space-y-1.5">
+                      <div className="flex items-center gap-1.5 font-bold text-rose-400">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>Aviso del Tutor de IA</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed">{aiError}</p>
+                    </div>
+
+                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] text-slate-300 space-y-1">
+                      <span className="font-semibold text-white block">Posibles soluciones:</span>
+                      <p>• Comprueba tu conexión a internet (Wi-Fi o datos).</p>
+                      <p>• Configura o verifica tu clave gratuita en la pestaña <strong>Ajustes</strong>.</p>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={requestAiExplanation}
+                        className="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-xs py-2 rounded-xl font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-purple-950/40"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Reintentar</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAiModal(false);
+                          setInQuiz(false);
+                          setActiveTab('settings');
+                        }}
+                        className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-2 rounded-xl font-medium cursor-pointer border border-slate-700"
+                      >
+                        Ir a Ajustes
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="whitespace-pre-line font-sans text-[11px] text-slate-200">

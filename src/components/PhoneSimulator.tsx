@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, 
   RotateCcw, 
@@ -18,7 +17,16 @@ import {
   Loader2,
   X,
   Volume2,
-  Share2
+  Share2,
+  Home,
+  Zap,
+  BarChart3,
+  Settings,
+  ExternalLink,
+  Save,
+  AlertTriangle,
+  RefreshCw,
+  Key
 } from 'lucide-react';
 import { CategoryId, GameMode, Question, QuizUserAnswer } from '../types/quiz';
 import { CATEGORIES, QUESTIONS_DATA } from '../data/questionsData';
@@ -28,8 +36,9 @@ interface PhoneSimulatorProps {
 }
 
 export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
-  // App screen state
+  // App navigation state
   const [currentScreen, setCurrentScreen] = useState<'home' | 'quiz' | 'result'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'stats' | 'settings'>('home');
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('modern_fundamentals');
   const [selectedMode, setSelectedMode] = useState<GameMode>('practice');
 
@@ -41,6 +50,10 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
   const [score, setScore] = useState(0);
   const [userAnswers, setUserAnswers] = useState<QuizUserAnswer[]>([]);
   
+  // Stats tracking
+  const [totalAnswered, setTotalAnswered] = useState(24);
+  const [totalCorrect, setTotalCorrect] = useState(20);
+
   // Timer for Time Trial
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -53,6 +66,11 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
+
+  // Gemini Settings state
+  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [savedKeyFeedback, setSavedKeyFeedback] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Timer tick effect
   useEffect(() => {
@@ -79,10 +97,8 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
 
     let filtered = QUESTIONS_DATA.filter((q) => q.categoryId === categoryId);
     if (mode === 'daily_challenge' || filtered.length === 0) {
-      // Pick 5 varied questions across all categories
       filtered = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random()).slice(0, 5);
     } else if (mode === 'time_trial') {
-      // Randomize all questions for rapid answering
       filtered = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random());
     }
 
@@ -93,6 +109,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
     setScore(0);
     setUserAnswers([]);
     setAiExplanation(null);
+    setAiError(null);
     setCurrentScreen('quiz');
 
     if (mode === 'time_trial') {
@@ -118,10 +135,12 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
 
     setUserAnswers((prev) => [...prev, answerRecord]);
     setIsAnswerConfirmed(true);
+    setTotalAnswered((prev) => prev + 1);
 
     if (isCorrect) {
       setScore((prev) => prev + 100);
       setStreakDays((prev) => prev + 1);
+      setTotalCorrect((prev) => prev + 1);
     }
   };
 
@@ -133,6 +152,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
       setSelectedOption(null);
       setIsAnswerConfirmed(false);
       setAiExplanation(null);
+      setAiError(null);
       setShowAiModal(false);
     }
   };
@@ -163,17 +183,21 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
           explanation: currentQ.explanation,
           category: currentQ.categoryName,
           difficulty: currentQ.difficulty,
+          customApiKey: geminiApiKey || undefined
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Error al conectar con el tutor de IA');
+        throw new Error('Error de conexión con el Tutor Gemini. Verifica tu conexión de red o clave API.');
       }
 
       const data = await response.json();
+      if (data.error) {
+        throw new Error(data.details || data.error);
+      }
       setAiExplanation(data.explanation);
     } catch (err: any) {
-      setAiError(err.message || 'No se pudo obtener la explicación del tutor.');
+      setAiError(err.message || 'No se pudo obtener la respuesta del Tutor de IA.');
     } finally {
       setIsAiLoading(false);
     }
@@ -193,10 +217,10 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
         </div>
 
         {/* Screen Bezel Frame */}
-        <div className="w-full h-full bg-slate-950 rounded-[40px] overflow-hidden flex flex-col relative text-slate-100 select-none">
+        <div className="w-full h-full bg-[#090D16] rounded-[40px] overflow-hidden flex flex-col relative text-slate-100 select-none">
           
           {/* Android Status Bar */}
-          <div className="h-9 px-6 flex items-center justify-between text-[11px] text-slate-400 font-medium z-40 bg-slate-950/90 backdrop-blur-sm">
+          <div className="h-9 px-6 flex items-center justify-between text-[11px] text-slate-400 font-medium z-40 bg-[#090D16]/95 backdrop-blur-sm">
             <span>09:41</span>
             <div className="flex items-center gap-1.5">
               <span>5G</span>
@@ -207,103 +231,298 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
           </div>
 
           {/* Screen Content */}
-          <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col">
+          <div className="flex-1 overflow-y-auto px-4 pb-2 flex flex-col">
             
-            {/* 1. HOME SCREEN */}
+            {/* 1. HOME & TABS VIEW */}
             {currentScreen === 'home' && (
-              <div className="space-y-4 pt-1 animate-in fade-in duration-200">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                      DevQuiz
-                    </h1>
-                    <p className="text-[11px] text-slate-400">Master Modern Coding</p>
-                  </div>
-                  {/* Streak Chip */}
-                  <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded-full text-amber-300 text-xs font-semibold">
-                    <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{streakDays} días</span>
-                  </div>
-                </div>
-
-                {/* Game Modes */}
-                <div>
-                  <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    Modos de Juego
-                  </h2>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      onClick={() => startQuiz(selectedCategory, 'practice')}
-                      className="bg-slate-900 hover:bg-slate-800/90 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
-                    >
-                      <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                        <BookOpen className="w-4 h-4" />
+              <div className="flex-1 flex flex-col justify-between">
+                
+                {/* TAB 1: INICIO */}
+                {currentTab === 'home' && (
+                  <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                          DevQuiz
+                        </h1>
+                        <p className="text-[11px] text-slate-400">Master Modern Coding</p>
                       </div>
-                      <span className="text-[11px] font-bold text-slate-200">Práctica</span>
-                      <span className="text-[9px] text-slate-400">Sin reloj</span>
-                    </button>
-
-                    <button
-                      onClick={() => startQuiz(selectedCategory, 'time_trial')}
-                      className="bg-slate-900 hover:bg-slate-800/90 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
-                    >
-                      <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                        <Clock className="w-4 h-4" />
+                      {/* Streak Chip */}
+                      <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 rounded-full text-amber-300 text-xs font-semibold">
+                        <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span>{streakDays} días</span>
                       </div>
-                      <span className="text-[11px] font-bold text-slate-200">Contrarreloj</span>
-                      <span className="text-[9px] text-slate-400">60s blitz</span>
-                    </button>
+                    </div>
 
-                    <button
-                      onClick={() => startQuiz(selectedCategory, 'daily_challenge')}
-                      className="bg-slate-900 hover:bg-slate-800/90 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
-                    >
-                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                        <Calendar className="w-4 h-4" />
+                    {/* Game Modes */}
+                    <div>
+                      <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        MODOS DE JUEGO
+                      </h2>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => startQuiz(selectedCategory, 'practice')}
+                          className="bg-slate-900 hover:bg-slate-800/90 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                            <BookOpen className="w-4 h-4" />
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-200">Práctica</span>
+                          <span className="text-[9px] text-slate-400">Sin reloj</span>
+                        </button>
+
+                        <button
+                          onClick={() => startQuiz(selectedCategory, 'time_trial')}
+                          className="bg-slate-900 hover:bg-slate-800/90 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                            <Clock className="w-4 h-4" />
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-200">Contrarreloj</span>
+                          <span className="text-[9px] text-slate-400">60s blitz</span>
+                        </button>
+
+                        <button
+                          onClick={() => startQuiz(selectedCategory, 'daily_challenge')}
+                          className="bg-slate-900 hover:bg-slate-800/90 border border-slate-800 p-2.5 rounded-2xl flex flex-col items-center text-center transition cursor-pointer group active:scale-95"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-200">Diario</span>
+                          <span className="text-[9px] text-slate-400">5 retos</span>
+                        </button>
                       </div>
-                      <span className="text-[11px] font-bold text-slate-200">Diario</span>
-                      <span className="text-[9px] text-slate-400">5 variadas</span>
-                    </button>
-                  </div>
-                </div>
+                    </div>
 
-                {/* Categories */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      Categorías (7)
-                    </h2>
-                    <span className="text-[10px] text-indigo-400 font-medium">Room Database</span>
-                  </div>
-                  <div className="space-y-2">
-                    {CATEGORIES.map((cat) => (
-                      <div
-                        key={cat.id}
-                        onClick={() => startQuiz(cat.id, 'practice')}
-                        className="bg-slate-900/90 hover:bg-slate-850 border border-slate-800/80 p-3 rounded-2xl flex items-center justify-between cursor-pointer transition active:scale-[0.98] group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl p-1 bg-slate-950 rounded-xl border border-slate-800/60">
-                            {cat.icon}
-                          </span>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-slate-100">{cat.name}</span>
-                              <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono">
-                                {cat.tag}
+                    {/* Categories */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          CATEGORÍAS TÉCNICAS ({CATEGORIES.length})
+                        </h2>
+                        <span className="text-[10px] text-indigo-400 font-medium">Room Offline</span>
+                      </div>
+                      <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                        {CATEGORIES.map((cat) => (
+                          <div
+                            key={cat.id}
+                            onClick={() => startQuiz(cat.id, 'practice')}
+                            className="bg-slate-900/90 hover:bg-slate-800 border border-slate-800/80 p-3 rounded-2xl flex items-center justify-between cursor-pointer transition active:scale-[0.98] group"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl p-1 bg-slate-950 rounded-xl border border-slate-800/60">
+                                {cat.icon}
                               </span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-slate-100">{cat.name}</span>
+                                  <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono">
+                                    {cat.tag}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
+                                  {cat.description}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
-                              {cat.description}
-                            </p>
+                            <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: ESTADÍSTICAS */}
+                {currentTab === 'stats' && (
+                  <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+                    <h2 className="text-base font-extrabold text-white">Estadísticas</h2>
+                    
+                    {/* Summary row */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-center">
+                        <span className="text-[10px] text-slate-400 block">Total</span>
+                        <span className="text-xl font-extrabold text-indigo-400">{totalAnswered}</span>
+                        <span className="text-[9px] text-slate-500 block">Preguntas</span>
+                      </div>
+                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-center">
+                        <span className="text-[10px] text-slate-400 block">Precisión</span>
+                        <span className="text-xl font-extrabold text-emerald-400">
+                          {totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0}%
+                        </span>
+                        <span className="text-[9px] text-slate-500 block">{totalCorrect} correctas</span>
+                      </div>
+                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-center">
+                        <span className="text-[10px] text-slate-400 block">Racha</span>
+                        <span className="text-xl font-extrabold text-amber-400">🔥 {streakDays}</span>
+                        <span className="text-[9px] text-slate-500 block">Días seguidos</span>
+                      </div>
+                    </div>
+
+                    {/* Dominio por categoría */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+                      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Dominio Técnico
+                      </h3>
+                      <div className="space-y-2 text-xs">
+                        {CATEGORIES.slice(0, 6).map((cat, i) => {
+                          const pct = [85, 75, 90, 65, 80, 70][i % 6];
+                          return (
+                            <div key={cat.id} className="space-y-1">
+                              <div className="flex justify-between text-[11px]">
+                                <span className="text-slate-300 font-medium truncate max-w-[190px]">
+                                  {cat.name}
+                                </span>
+                                <span className="text-indigo-400 font-bold">{pct}%</span>
+                              </div>
+                              <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-indigo-500 h-full rounded-full transition-all duration-500" 
+                                  style={{ width: `${pct}%` }} 
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Logros */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
+                      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                        Logros Desbloqueados
+                      </h3>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
+                          <span className="text-xl">🎯</span>
+                          <span className="text-[10px] font-bold block mt-1 text-slate-200">Junior Ready</span>
+                        </div>
+                        <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
+                          <span className="text-xl">⚡</span>
+                          <span className="text-[10px] font-bold block mt-1 text-slate-200">Blitz Runner</span>
+                        </div>
+                        <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
+                          <span className="text-xl">🤖</span>
+                          <span className="text-[10px] font-bold block mt-1 text-slate-200">AI Tutor Pro</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: AJUSTES */}
+                {currentTab === 'settings' && (
+                  <div className="space-y-3.5 pt-1 animate-in fade-in duration-200">
+                    <h2 className="text-base font-extrabold text-white">Configuración</h2>
+
+                    {/* Gemini AI Key Card */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                            <Sparkles className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-white block">Tutor Gemini 1.5 Flash</span>
+                            <span className="text-[10px] text-slate-400">Google AI Studio API</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition" />
+                        <span className="text-emerald-400 font-semibold text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                          ● Activo
+                        </span>
                       </div>
-                    ))}
+
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Ingresa tu clave de Gemini API si deseas usar tu propia cuota o probarla en el teléfono:
+                      </p>
+
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <input
+                            type="password"
+                            placeholder="AIzaSy..."
+                            value={geminiApiKey}
+                            onChange={(e) => {
+                              setGeminiApiKey(e.target.value);
+                              setSavedKeyFeedback(null);
+                            }}
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSavedKeyFeedback('¡Clave guardada en el dispositivo!');
+                              setTimeout(() => setSavedKeyFeedback(null), 3000);
+                            }}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-1.5 px-3 rounded-xl transition text-[11px] flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Save className="w-3.5 h-3.5" />
+                            <span>Guardar Clave</span>
+                          </button>
+                        </div>
+
+                        {savedKeyFeedback && (
+                          <p className="text-[10px] text-emerald-400 font-medium">
+                            {savedKeyFeedback}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+                        <span>¿No tienes clave? Consíguela gratis en </span>
+                        <a 
+                          href="https://aistudio.google.com/apikey" 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-indigo-400 font-medium underline inline-flex items-center gap-0.5"
+                        >
+                          Google AI Studio <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* CI/CD Hint */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-xs space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-indigo-400 font-bold text-[11px]">
+                        <Key className="w-3.5 h-3.5" />
+                        <span>Clave en compilación APK</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-relaxed">
+                        Al compilar en GitHub Actions, agrega el secreto <code className="text-indigo-300 font-mono">GEMINI_API_KEY</code> en tu repositorio para que el APK venga listo sin escribir nada.
+                      </p>
+                    </div>
+
+                    {/* Sound Settings */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-200 block">Efectos de Sonido</span>
+                        <span className="text-[10px] text-slate-400">Sonido de acierto/error</span>
+                      </div>
+                      <button
+                        onClick={() => setSoundEnabled(!soundEnabled)}
+                        className={`w-10 h-6 rounded-full transition-colors relative cursor-pointer ${
+                          soundEnabled ? 'bg-indigo-600' : 'bg-slate-800'
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${
+                            soundEnabled ? 'left-5' : 'left-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* App info */}
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[10px] text-slate-500 font-mono text-center">
+                      DevQuiz Android 1.0.0 (Jetpack Compose & Gemini)
+                    </div>
                   </div>
-                </div>
+                )}
+
               </div>
             )}
 
@@ -315,7 +534,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                   <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                     <button
                       onClick={() => setCurrentScreen('home')}
-                      className="text-slate-400 hover:text-white p-1"
+                      className="text-slate-400 hover:text-white p-1 cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -333,138 +552,110 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     </div>
                   </div>
 
-                  {/* Animated Progress bar */}
+                  {/* Progress bar */}
                   <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-3">
-                    <motion.div
-                      className="bg-indigo-500 h-full rounded-full"
-                      initial={false}
-                      animate={{
+                    <div
+                      className="bg-indigo-500 h-full transition-all duration-300 rounded-full"
+                      style={{
                         width: `${((currentIndex + 1) / activeQuestions.length) * 100}%`,
                       }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
                     />
                   </div>
 
-                  {/* Animated Question Card sliding in and out */}
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={currentQ.id}
-                      initial={{ opacity: 0, x: 45, scale: 0.98 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -45, scale: 0.98 }}
-                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                      className="space-y-3"
-                    >
-                      {/* Tags */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                          {currentQ.categoryName}
+                  {/* Tags */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      {currentQ.categoryName}
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+                      {currentQ.difficulty}
+                    </span>
+                    {currentQ.type === 'find_the_bug' && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
+                        🐛 Bug Hunt
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-xs font-bold text-slate-100 leading-snug">
+                    {currentQ.title}
+                  </h3>
+
+                  {/* Code block if any */}
+                  {currentQ.codeSnippet && (
+                    <div className="mt-2 bg-slate-900 border border-slate-800 rounded-xl p-2.5 overflow-x-auto text-[10px] font-mono text-indigo-200">
+                      <pre className="leading-relaxed whitespace-pre">
+                        {currentQ.codeSnippet}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+
+                {/* Options List */}
+                <div className="space-y-2 my-auto">
+                  {currentQ.options.map((opt, idx) => {
+                    let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
+                    let textClass = 'text-slate-200';
+                    let badgeClass = 'bg-slate-800 text-slate-300';
+
+                    if (selectedOption === idx) {
+                      borderClass = 'border-indigo-500 bg-indigo-500/15';
+                      badgeClass = 'bg-indigo-600 text-white';
+                    }
+
+                    if (isAnswerConfirmed) {
+                      if (idx === currentQ.correctAnswerIndex) {
+                        borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
+                        badgeClass = 'bg-emerald-600 text-white';
+                      } else if (selectedOption === idx) {
+                        borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
+                        badgeClass = 'bg-rose-600 text-white';
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        disabled={isAnswerConfirmed}
+                        onClick={() => setSelectedOption(idx)}
+                        className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer active:scale-[0.99]`}
+                      >
+                        <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
+                          {String.fromCharCode(65 + idx)}
                         </span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
-                          {currentQ.difficulty}
-                        </span>
-                        {currentQ.type === 'find_the_bug' && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
-                            🐛 Bug Hunt
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="text-xs font-bold text-slate-100 leading-snug">
-                        {currentQ.title}
-                      </h3>
-
-                      {/* Code block if any */}
-                      {currentQ.codeSnippet && (
-                        <div className="mt-2 bg-slate-900 border border-slate-800 rounded-xl p-2.5 overflow-x-auto text-[10px] font-mono text-indigo-200">
-                          <pre className="leading-relaxed whitespace-pre">
-                            {currentQ.codeSnippet}
-                          </pre>
-                        </div>
-                      )}
-
-                      {/* Options List */}
-                      <div className="space-y-2 pt-1">
-                        {currentQ.options.map((opt, idx) => {
-                          let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
-                          let textClass = 'text-slate-200';
-                          let badgeClass = 'bg-slate-800 text-slate-300';
-
-                          if (selectedOption === idx) {
-                            borderClass = 'border-indigo-500 bg-indigo-500/15';
-                            badgeClass = 'bg-indigo-600 text-white';
-                          }
-
-                          if (isAnswerConfirmed) {
-                            if (idx === currentQ.correctAnswerIndex) {
-                              borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
-                              badgeClass = 'bg-emerald-600 text-white';
-                            } else if (selectedOption === idx) {
-                              borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
-                              badgeClass = 'bg-rose-600 text-white';
-                            }
-                          }
-
-                          return (
-                            <motion.button
-                              key={idx}
-                              initial={{ opacity: 0, y: 8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.2, delay: idx * 0.04 }}
-                              whileHover={!isAnswerConfirmed ? { scale: 1.01 } : undefined}
-                              whileTap={!isAnswerConfirmed ? { scale: 0.98 } : undefined}
-                              disabled={isAnswerConfirmed}
-                              onClick={() => setSelectedOption(idx)}
-                              className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer`}
-                            >
-                              <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
-                                {String.fromCharCode(65 + idx)}
-                              </span>
-                              <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
-                            </motion.button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
+                        <span className={`text-[11px] leading-tight ${textClass}`}>{opt}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Feedback Box & Actions */}
                 <div className="space-y-2 pt-1">
-                  <AnimatePresence>
-                    {isAnswerConfirmed && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className={`p-2.5 rounded-xl border text-[11px] ${
-                          selectedOption === currentQ.correctAnswerIndex
-                            ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
-                            : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 font-bold mb-1">
-                          {selectedOption === currentQ.correctAnswerIndex ? (
-                            <>
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>¡Respuesta Correcta! (+100 pts)</span>
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                              <span>Respuesta Incorrecta</span>
-                            </>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-slate-300 leading-normal">
-                          {currentQ.explanation}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
+                  {isAnswerConfirmed && (
+                    <div className={`p-2.5 rounded-xl border text-[11px] ${
+                      selectedOption === currentQ.correctAnswerIndex
+                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                        : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
+                    }`}>
+                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                        {selectedOption === currentQ.correctAnswerIndex ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>¡Respuesta Correcta! (+100 pts)</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Respuesta Incorrecta</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-300 leading-normal">
+                        {currentQ.explanation}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Buttons */}
                   {!isAnswerConfirmed ? (
@@ -479,14 +670,14 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     <div className="flex gap-2">
                       <button
                         onClick={requestAiExplanation}
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-xl font-semibold text-xs transition cursor-pointer"
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-xl font-semibold text-xs transition cursor-pointer active:scale-98"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>Tutor IA</span>
+                        <span>Tutor de IA</span>
                       </button>
                       <button
                         onClick={handleNextQuestion}
-                        className="flex-1 flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl font-semibold text-xs transition cursor-pointer"
+                        className="flex-1 flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl font-semibold text-xs transition cursor-pointer active:scale-98"
                       >
                         <span>Siguiente</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -584,15 +775,58 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
             )}
           </div>
 
-          {/* Android Navigation Bar */}
-          <div className="h-6 flex items-center justify-center">
+          {/* Android Bottom Navigation Bar (Visible in Home Screen) */}
+          {currentScreen === 'home' && (
+            <nav className="h-14 border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-3 flex items-center justify-around z-40 shrink-0">
+              <button
+                onClick={() => setCurrentTab('home')}
+                className={`flex flex-col items-center gap-0.5 transition cursor-pointer ${
+                  currentTab === 'home' ? 'text-indigo-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                <span className="text-[10px]">Inicio</span>
+              </button>
+
+              <button
+                onClick={() => startQuiz(selectedCategory, 'time_trial')}
+                className="flex flex-col items-center gap-0.5 transition cursor-pointer text-rose-400 hover:text-rose-300 active:scale-95"
+              >
+                <Zap className="w-4 h-4 fill-rose-500/20" />
+                <span className="text-[10px] font-semibold">Blitz 60s</span>
+              </button>
+
+              <button
+                onClick={() => setCurrentTab('stats')}
+                className={`flex flex-col items-center gap-0.5 transition cursor-pointer ${
+                  currentTab === 'stats' ? 'text-indigo-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-[10px]">Estadísticas</span>
+              </button>
+
+              <button
+                onClick={() => setCurrentTab('settings')}
+                className={`flex flex-col items-center gap-0.5 transition cursor-pointer ${
+                  currentTab === 'settings' ? 'text-indigo-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                <span className="text-[10px]">Ajustes</span>
+              </button>
+            </nav>
+          )}
+
+          {/* Android Gesture Bar */}
+          <div className="h-4 flex items-center justify-center bg-slate-950">
             <div className="w-28 h-1 bg-slate-600 rounded-full" />
           </div>
         </div>
 
-        {/* AI Tutor BottomSheet / Modal */}
+        {/* AI Tutor BottomSheet / Modal con manejo visual de estados y errores */}
         {showAiModal && (
-          <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md rounded-[48px] z-50 p-5 flex flex-col justify-end animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md rounded-[48px] z-50 p-4 flex flex-col justify-end animate-in fade-in duration-200">
             <div className="bg-slate-900 border border-purple-500/40 rounded-3xl p-4 shadow-2xl max-h-[85%] flex flex-col text-left">
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2">
@@ -600,7 +834,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white">Tutor Gemini 3.8 Flash</h4>
+                    <h4 className="text-xs font-bold text-white">Tutor Gemini 1.5 Flash</h4>
                     <p className="text-[9px] text-purple-300">Explicación técnica en profundidad</p>
                   </div>
                 </div>
@@ -621,8 +855,29 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     </p>
                   </div>
                 ) : aiError ? (
-                  <div className="text-rose-400 text-xs p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl">
-                    {aiError}
+                  <div className="space-y-3">
+                    <div className="text-rose-300 text-xs p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl space-y-1.5">
+                      <div className="flex items-center gap-1.5 font-bold text-rose-400">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>Aviso del Tutor de IA</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed">{aiError}</p>
+                    </div>
+
+                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[10px] text-slate-400 space-y-1">
+                      <span className="text-slate-300 font-semibold block">¿Cómo solucionarlo?</span>
+                      <span>1. Verifica tu conexión a internet (Wi-Fi o datos).</span>
+                      <br />
+                      <span>2. En la pestaña Ajustes puedes ingresar tu clave gratuita de Google AI Studio.</span>
+                    </div>
+
+                    <button
+                      onClick={requestAiExplanation}
+                      className="w-full bg-purple-600 hover:bg-purple-500 text-white text-xs py-2 rounded-xl font-medium flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Reintentar Consulta</span>
+                    </button>
                   </div>
                 ) : (
                   <div className="whitespace-pre-line font-sans text-[11px] text-slate-200">
@@ -648,7 +903,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
           Simulador Nativo Pixel 9 Pro
         </span>
         <span>•</span>
-        <span>Material You 3</span>
+        <span>Material You 3 Dark</span>
       </div>
     </div>
   );

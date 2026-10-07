@@ -30,7 +30,42 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // API endpoint: Explain question with AI Tutor (Gemini 3.8 Flash)
+  // Endpoint de verificación de clave de Gemini API
+  app.post('/api/verify-gemini-key', async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      const keyToTest = apiKey?.trim() || process.env.GEMINI_API_KEY;
+
+      if (!keyToTest) {
+        return res.status(400).json({ valid: false, error: 'No se proporcionó ninguna clave API.' });
+      }
+
+      const testAi = new GoogleGenAI({
+        apiKey: keyToTest,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' },
+        },
+      });
+
+      const testResponse = await testAi.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: 'Test connection: responde OK',
+      });
+
+      if (testResponse.text) {
+        return res.json({ valid: true, message: '¡Clave de Gemini API verificada con éxito!' });
+      }
+      return res.status(400).json({ valid: false, error: 'No se recibió respuesta válida del modelo.' });
+    } catch (error: any) {
+      console.error('Error verificando clave:', error);
+      return res.status(400).json({
+        valid: false,
+        error: error?.message || 'Error al validar la clave con Google AI Studio.',
+      });
+    }
+  });
+
+  // API endpoint: Explain question with AI Tutor (Gemini 2.5/3.8 Flash)
   app.post('/api/ai-explain', async (req, res) => {
     try {
       const {
@@ -41,7 +76,24 @@ async function startServer() {
         explanation,
         category,
         difficulty,
+        customApiKey
       } = req.body;
+
+      const activeKey = customApiKey?.trim() || process.env.GEMINI_API_KEY;
+      if (!activeKey) {
+        return res.status(400).json({
+          error: 'Clave de Gemini API no configurada. Por favor ingrésala en la pantalla de Ajustes.',
+        });
+      }
+
+      const client = new GoogleGenAI({
+        apiKey: activeKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      });
 
       const prompt = `Actúa como un Senior Staff Software Engineer y Mentor Técnico en la app "DevQuiz: Master Modern Coding".
 Tu objetivo es proporcionar una explicación técnica de nivel profesional sobre la siguiente pregunta:
@@ -62,8 +114,8 @@ Por favor, estructura tu respuesta con claridad pedagógica y markdown limpio:
 
 Sé conciso, riguroso y en español neutro profesional.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+      const response = await client.models.generateContent({
+        model: 'gemini-2.5-flash',
         contents: prompt,
       });
 

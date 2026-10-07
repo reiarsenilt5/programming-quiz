@@ -35,7 +35,8 @@ fun QuizScreen(
                 title = {
                     Text(
                         "${state.currentIndex + 1}/${state.questions.size}",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
@@ -45,44 +46,71 @@ fun QuizScreen(
                 },
                 actions = {
                     if (state.gameMode == GameMode.TimeTrial) {
-                        Text(
-                            "⏱ ${state.timeRemainingSeconds}s",
-                            fontWeight = FontWeight.Bold,
-                            color = if (state.timeRemainingSeconds <= 10) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (state.timeRemainingSeconds <= 10) 
+                                MaterialTheme.colorScheme.error.copy(alpha = 0.2f) 
+                            else 
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                             modifier = Modifier.padding(end = 16.dp)
-                        )
+                        ) {
+                            Text(
+                                "⏱ ${state.timeRemainingSeconds}s",
+                                fontWeight = FontWeight.Bold,
+                                color = if (state.timeRemainingSeconds <= 10) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                fontSize = 13.sp
+                            )
+                        }
                     }
                 }
             )
         },
         bottomBar = {
-            Surface(tonalElevation = 8.dp) {
+            Surface(
+                tonalElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (state.isAnswerConfirmed) {
-                        OutlinedButton(
+                        Button(
                             onClick = { onEvent(QuizUiEvent.RequestAiExplanation) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF7C3AED),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("✨ Explicar con IA")
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Tutor de IA", fontWeight = FontWeight.SemiBold)
                         }
                         Button(
                             onClick = { onEvent(QuizUiEvent.NextQuestion) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Siguiente ➔")
+                            Text("Siguiente ➔", fontWeight = FontWeight.SemiBold)
                         }
                     } else {
                         Button(
                             onClick = { onEvent(QuizUiEvent.ConfirmAnswer) },
                             enabled = state.selectedOptionIndex != null,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Comprobar Respuesta")
+                            Text("Comprobar Respuesta", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -102,95 +130,275 @@ fun QuizScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp))
+                    .clip(RoundedCornerShape(3.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AssistChip(onClick = {}, label = { Text(currentQuestion.difficulty.name) })
-                AssistChip(onClick = {}, label = { Text(currentQuestion.category.displayName) })
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        currentQuestion.category.displayName,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        currentQuestion.difficulty.name,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             Text(
                 text = currentQuestion.title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             currentQuestion.codeSnippet?.let { code ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E2E))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF020617))
                 ) {
                     Text(
                         text = code,
                         color = Color(0xFFCDD6F4),
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         modifier = Modifier.padding(14.dp)
                     )
                 }
             }
 
             currentQuestion.options.forEachIndexed { index, optionText ->
+                val isSelected = state.selectedOptionIndex == index
+                val isCorrectAnswer = index == currentQuestion.correctAnswerIndex
+
+                val borderColor = when {
+                    state.isAnswerConfirmed && isCorrectAnswer -> Color(0xFF10B981)
+                    state.isAnswerConfirmed && isSelected -> Color(0xFFEF4444)
+                    isSelected -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.outlineVariant
+                }
+
+                val containerColor = when {
+                    state.isAnswerConfirmed && isCorrectAnswer -> Color(0xFF10B981).copy(alpha = 0.15f)
+                    state.isAnswerConfirmed && isSelected -> Color(0xFFEF4444).copy(alpha = 0.15f)
+                    isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                    else -> MaterialTheme.colorScheme.surface
+                }
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(enabled = !state.isAnswerConfirmed) { onEvent(QuizUiEvent.SelectOption(index)) }
-                        .border(
-                            1.5.dp,
-                            if (state.selectedOptionIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                            RoundedCornerShape(12.dp)
-                        ),
+                        .clickable(enabled = !state.isAnswerConfirmed) { 
+                            onEvent(QuizUiEvent.SelectOption(index)) 
+                        }
+                        .border(1.5.dp, borderColor, RoundedCornerShape(12.dp)),
+                    colors = CardDefaults.cardColors(containerColor = containerColor),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("${('A' + index)}.", fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 12.dp))
-                        Text(optionText, modifier = Modifier.weight(1f))
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(26.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    "${('A' + index)}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            optionText,
+                            modifier = Modifier.weight(1f),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
             }
 
             if (state.isAnswerConfirmed) {
+                val isCorrect = state.selectedOptionIndex == currentQuestion.correctAnswerIndex
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = if (state.selectedOptionIndex == currentQuestion.correctAnswerIndex)
-                            Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                        containerColor = if (isCorrect) 
+                            Color(0xFF10B981).copy(alpha = 0.12f) 
+                        else 
+                            Color(0xFFEF4444).copy(alpha = 0.12f)
                     ),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            1.dp,
+                            if (isCorrect) Color(0xFF10B981).copy(alpha = 0.4f) else Color(0xFFEF4444).copy(alpha = 0.4f),
+                            RoundedCornerShape(12.dp)
+                        )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                if (isCorrect) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                contentDescription = null,
+                                tint = if (isCorrect) Color(0xFF10B981) else Color(0xFFEF4444),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (isCorrect) "¡Respuesta Correcta! (+100 pts)" else "Respuesta Incorrecta",
+                                fontWeight = FontWeight.Bold,
+                                color = if (isCorrect) Color(0xFF34D399) else Color(0xFFF87171),
+                                fontSize = 14.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = if (state.selectedOptionIndex == currentQuestion.correctAnswerIndex)
-                                "✅ ¡Correcto!" else "❌ Incorrecto",
-                            fontWeight = FontWeight.Bold
+                            currentQuestion.explanation,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(currentQuestion.explanation, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
-    if (state.aiExplanationText != null || state.isAiLoading) {
+    // Modal / Diálogo del Tutor de IA (Manejo visual robusto para carga, error y éxito)
+    if (state.isAiLoading || state.aiExplanationText != null || state.aiError != null) {
         AlertDialog(
             onDismissRequest = { onEvent(QuizUiEvent.DismissAiDialog) },
-            title = { Text("Tutor Virtual Gemini") },
+            icon = {
+                when {
+                    state.isAiLoading -> CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        strokeWidth = 3.dp,
+                        color = Color(0xFF8B5CF6)
+                    )
+                    state.aiError != null -> Icon(
+                        Icons.Default.Warning,
+                        contentDescription = "Error",
+                        tint = Color(0xFFF43F5E),
+                        modifier = Modifier.size(32.dp)
+                    )
+                    else -> Icon(
+                        Icons.Default.AutoAwesome,
+                        contentDescription = "Tutor IA",
+                        tint = Color(0xFF8B5CF6),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = when {
+                        state.isAiLoading -> "Consultando Tutor Gemini..."
+                        state.aiError != null -> "Aviso del Tutor de IA"
+                        else -> "Tutor Gemini 1.5 Flash"
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            },
             text = {
-                if (state.isAiLoading) {
-                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-                } else {
-                    Text(state.aiExplanationText ?: "")
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 380.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    when {
+                        state.isAiLoading -> {
+                            Text(
+                                "El modelo está analizando el código y elaborando la explicación técnica detallada para esta pregunta...",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        state.aiError != null -> {
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFF43F5E).copy(alpha = 0.12f)
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(1.dp, Color(0xFFF43F5E).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = state.aiError,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFFFECDD3),
+                                        lineHeight = 18.sp
+                                    )
+                                }
+                            }
+                        }
+                        state.aiExplanationText != null -> {
+                            Text(
+                                text = state.aiExplanationText,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { onEvent(QuizUiEvent.DismissAiDialog) }) {
-                    Text("Cerrar")
+                if (state.aiError != null) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { onEvent(QuizUiEvent.DismissAiDialog) }) {
+                            Text("Cerrar")
+                        }
+                        Button(
+                            onClick = { onEvent(QuizUiEvent.RequestAiExplanation) },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
+                        ) {
+                            Text("Reintentar")
+                        }
+                    }
+                } else if (!state.isAiLoading) {
+                    Button(
+                        onClick = { onEvent(QuizUiEvent.DismissAiDialog) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
+                    ) {
+                        Text("Entendido")
+                    }
+                }
+            },
+            dismissButton = {
+                if (state.isAiLoading) {
+                    TextButton(onClick = { onEvent(QuizUiEvent.DismissAiDialog) }) {
+                        Text("Cancelar")
+                    }
                 }
             }
         )

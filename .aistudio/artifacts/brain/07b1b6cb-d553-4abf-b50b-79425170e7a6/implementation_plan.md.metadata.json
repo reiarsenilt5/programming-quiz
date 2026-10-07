@@ -1,6 +1,6 @@
 {
-  "summary":  "Plan de implementación detallado para incorporar los 2 nuevos quizzes de máximo valor para desarrolladores Senior en 2026: 'Fullstack Senior (React, Python, Laravel, SQL)' y 'DevOps & Cloud (Linux, Docker, K8s, CI/CD)' con 100 preguntas reales de entrevistas técnicas de alto impacto, sincronizadas tanto en la aplicación web como en la versión Android nativa.",
-  "updatedAt":  "2026-10-07T21:01:43.716917409Z",
+  "summary":  "Plan de implementación para corregir la navegación inferior (Inicio, Blitz 60s, Estadísticas, Ajustes), aplicar el tema oscuro nativo idéntico al demo, e integrar el Tutor de IA con Google Gemini en el dispositivo físico, incluyendo configuración de clave en Ajustes y compilación, y manejo visual resiliente de errores de red y API.",
+  "updatedAt":  "2026-10-07T23:14:19.592421143Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
