@@ -354,6 +354,14 @@ export default function App() {
   };
 
   const currentQ = activeQuestions[currentIndex];
+  const activeCategoryObj = CATEGORIES.find((c) => c.id === selectedCategory);
+  const quizTitle = selectedMode === 'time_trial'
+    ? 'Blitz 60s'
+    : selectedMode === 'daily_challenge'
+    ? 'Desafío Diario'
+    : selectedMode === 'failed_review'
+    ? 'Repaso de Fallos'
+    : (activeCategoryObj?.name || currentQ?.categoryName || 'DevQuiz');
 
   return (
     <div className="min-h-screen bg-[#070A10] text-slate-100 flex items-center justify-center p-0 sm:p-4 font-sans select-none selection:bg-emerald-500 selection:text-slate-950">
@@ -385,21 +393,32 @@ export default function App() {
             <div className="flex-1 flex flex-col justify-between pt-3 pb-2 space-y-3.5 animate-in fade-in duration-150">
               {/* Quiz Header with safe margin and accessible touch target */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-300">
+                <div className="flex items-center justify-between text-xs text-slate-300 gap-2">
                   <button
                     onClick={exitQuiz}
-                    className="min-w-[44px] min-h-[44px] rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800/90 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                    className="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800/90 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer active:scale-95 shrink-0"
                     title="Salir del examen"
                     aria-label="Salir del examen"
                   >
                     <X className="w-5 h-5" />
                   </button>
-                  <div className="flex items-center gap-2">
+
+                  {/* Título de Quiz Centrado en una sola línea */}
+                  <div className="flex-1 min-w-0 text-center px-1">
+                    <span 
+                      className="text-xs font-semibold text-slate-200 tracking-tight truncate block"
+                      title={quizTitle}
+                    >
+                      {quizTitle}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="font-mono text-xs font-semibold text-slate-300 tracking-tight">
                       {currentIndex + 1} <span className="text-slate-500 font-normal">/</span> {activeQuestions.length}
                     </span>
                     {selectedMode === 'time_trial' && (
-                      <span className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold border ${
+                      <span className={`px-2 py-0.5 rounded-lg font-mono text-[10px] font-bold border ${
                         timeLeft <= 10 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse' : 'bg-slate-900 text-emerald-400 border-slate-800'
                       }`}>
                         ⏱ {timeLeft}s

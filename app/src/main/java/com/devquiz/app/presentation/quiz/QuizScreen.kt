@@ -36,10 +36,18 @@ fun QuizScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    val quizTitle = when (state.gameMode) {
+                        GameMode.TimeTrial -> "Blitz 60s"
+                        GameMode.DailyChallenge -> "Desafío Diario"
+                        GameMode.FailedReview -> "Repaso de Fallos"
+                        else -> currentQuestion.category.displayName
+                    }
                     Text(
-                        "${state.currentIndex + 1}/${state.questions.size}",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text = quizTitle,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 },
                 navigationIcon = {
@@ -51,22 +59,33 @@ fun QuizScreen(
                     }
                 },
                 actions = {
-                    if (state.gameMode == GameMode.TimeTrial) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (state.timeRemainingSeconds <= 10) 
-                                MaterialTheme.colorScheme.error.copy(alpha = 0.2f) 
-                            else 
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            modifier = Modifier.padding(end = 16.dp)
-                        ) {
-                            Text(
-                                "⏱ ${state.timeRemainingSeconds}s",
-                                fontWeight = FontWeight.Bold,
-                                color = if (state.timeRemainingSeconds <= 10) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                fontSize = 13.sp
-                            )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        Text(
+                            "${state.currentIndex + 1}/${state.questions.size}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (state.gameMode == GameMode.TimeTrial) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = if (state.timeRemainingSeconds <= 10) 
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.2f) 
+                                else 
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            ) {
+                                Text(
+                                    "⏱ ${state.timeRemainingSeconds}s",
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (state.timeRemainingSeconds <= 10) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
                     }
                 }
