@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.*
@@ -254,23 +256,28 @@ fun HomeContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(top = 8.dp)
+                    .height(IntrinsicSize.Max),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 GameModeCard(
                     title = "Práctica",
                     subtitle = "Sin reloj",
                     emoji = "📖",
                     color = Color(0xFF6366F1),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     onClick = { onCategorySelected(CategoryType.MODERN_FUNDAMENTALS, GameMode.Practice) }
                 )
                 GameModeCard(
-                    title = "Contrarreloj",
-                    subtitle = "60s blitz",
+                    title = "Blitz 60s",
+                    subtitle = "60 seg",
                     emoji = "⏱",
                     color = Color(0xFFF43F5E),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     onClick = { onCategorySelected(CategoryType.SQL, GameMode.TimeTrial) }
                 )
                 GameModeCard(
@@ -278,15 +285,19 @@ fun HomeContent(
                     subtitle = "5 retos",
                     emoji = "📅",
                     color = Color(0xFF10B981),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     onClick = { onCategorySelected(CategoryType.SOLID, GameMode.DailyChallenge) }
                 )
                 GameModeCard(
                     title = "Reintentar",
-                    subtitle = if (failedCount > 0) "$failedCount pendientes" else "0 al día",
+                    subtitle = if (failedCount > 0) "$failedCount retos" else "Al día",
                     emoji = "🎯",
                     color = if (failedCount > 0) Color(0xFFF59E0B) else Color(0xFF10B981),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     onClick = onStartFailedReview
                 )
             }
@@ -425,29 +436,41 @@ fun GameModeCard(
         border = CardDefaults.outlinedCardBorder()
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 10.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
                 color = color.copy(alpha = 0.15f),
-                modifier = Modifier.size(34.dp)
+                modifier = Modifier.size(32.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(emoji, fontSize = 18.sp)
+                    Text(emoji, fontSize = 16.sp)
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                title,
+                text = title,
                 fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                subtitle,
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = subtitle,
+                fontSize = 9.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

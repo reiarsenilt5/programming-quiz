@@ -756,7 +756,7 @@ export default function App() {
                       <Clock className="w-3.5 h-3.5" />
                     </div>
                     <span className="text-[10px] font-bold text-slate-200">Blitz 60s</span>
-                    <span className="text-[8px] text-slate-400">Contrarreloj</span>
+                    <span className="text-[8px] text-slate-400">60 seg</span>
                   </button>
 
                   <button
@@ -789,7 +789,7 @@ export default function App() {
                     <span className={`text-[8px] font-medium truncate max-w-full ${
                       failedQuestions.length > 0 ? 'text-amber-300 font-bold' : 'text-slate-400'
                     }`}>
-                      {failedQuestions.length > 0 ? `${failedQuestions.length} pendientes` : '0 al día'}
+                      {failedQuestions.length > 0 ? `${failedQuestions.length} retos` : 'Al día'}
                     </span>
                   </button>
                 </div>
