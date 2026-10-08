@@ -777,8 +777,11 @@ export default function App() {
                           {cat.icon}
                         </span>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs font-bold text-slate-100">{cat.name}</span>
+                            <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono font-medium">
+                              {QUESTIONS_DATA.filter((q) => q.categoryId === cat.id).length} preguntas
+                            </span>
                             <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono">
                               {cat.tag}
                             </span>

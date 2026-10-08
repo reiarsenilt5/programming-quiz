@@ -1,6 +1,6 @@
 {
-  "summary":  "Plan de implementación para la nueva funcionalidad 'Reintentar Fallidos / Repaso de Errores', con registro persistente de fallos, visualización del escenario donde falló el usuario, reintento interactivo con eliminación automática al acertar, integración con el Tutor de IA y sincronización en Web React y Android Compose.",
-  "updatedAt":  "2026-10-07T23:36:56.792970323Z",
+  "summary":  "Plan integral para expandir todos los cuestionarios técnicos a un mínimo de 20 preguntas cada uno (alcanzando más de 335 preguntas en total), enfocadas en estudiantes y perfiles junior, con una distribución equilibrada de predicción de código/bugs, sintaxis y casos de entrevistas, sincronizando tanto la web como los assets del APK Android.",
+  "updatedAt":  "2026-10-08T19:19:22.452255413Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

@@ -1,148 +1,176 @@
-# Plan de Implementación: Sesión y Registro de "Reintentar Fallidos" (Repaso de Errores con Tutor de IA)
+# Expansión Integral de Quizzes: Mínimo 20 Preguntas por Categoría (Enfoque Junior & Aprendizaje)
 
-Diseño y arquitectura para la nueva sesión de **Reintentar Fallidos**, que registra de forma persistente cada pregunta respondida incorrectamente por el usuario, expone el escenario exacto del error (qué opción eligió y por qué falló), permite resolverlas interactivamente eliminándolas al acertar, y habilita el Tutor de IA para asegurar el aprendizaje profundo tanto en la versión Web como en la aplicación nativa de Android (Kotlin/Jetpack Compose).
+Plan arquitectónico y pedagógico para garantizar que los 13 cuestionarios técnicos de DevQuiz cuenten con **al menos 20 preguntas cada uno**, diseñadas específicamente para principiantes y programadores junior, equilibrando predicción de salidas de código, corrección de errores comunes, conceptos sintácticos y casos reales de entrevistas técnicas iniciales.
 
----
-
-### Decisiones Críticas Confirmadas
+## Decisiones Críticas y Preferencias del Usuario
 
 > [!IMPORTANT]
-> **Decisiones confirmadas con el usuario en Fase 1:**
-> - **Ubicación de Acceso**: Integrado como un **nuevo Modo de Juego en Inicio** (con contador en vivo de fallos pendientes) y con acceso detallado en la pestaña de **Estadísticas**.
-> - **Comportamiento al Acertar**: Al reintentar la pregunta y responderla correctamente, se **elimina automáticamente de la lista de fallos** con retroalimentación visual de superación (*«¡Concepto Dominado!»*).
-> - **Presentación del Escenario**: **Modo interactivo completo** que muestra la pregunta, la opción fallada por el usuario (en rojo), la opción correcta (en verde), la explicación técnica paso a paso y el botón del **Tutor de IA (Gemini)** para consultar cualquier duda.
+> - **Nivel de Dificultad**: Todas las nuevas preguntas (161+ preguntas) estarán enfocadas en **Junior / Principiante**, con explicaciones detalladas paso a paso y consejos didácticos (`proTip`). Las preguntas avanzadas existentes se mantendrán para asegurar variedad sin afectar la accesibilidad para juniors.
+> - **Variedad de Formatos**: Distribución equitativa y balanceada entre:
+>   1. **Predicción de salidas & detección de bugs novatos** (`find_the_bug` / salida esperada).
+>   2. **Conceptos sintácticos esenciales y buenas prácticas fundamentales** (`multiple_choice`).
+>   3. **Casos prácticos de entrevistas técnicas para Juniors** (preguntas frecuentes de reclutamiento técnico).
+> - **Sincronización Total**: Se actualizarán tanto los módulos de TypeScript de la aplicación web React (`src/data/`) como el archivo `app/src/main/assets/questions.json` del proyecto Android nativo y `src/data/androidProjectCode.ts` para descargas ZIP.
 
 ---
 
-## 1. Visión General y Flujo de Usuario
+## 1. Visión General y Alcance del Contenido
 
-### El Problema Pedagógico
-Hasta ahora, cuando el usuario fallaba una pregunta, veía la retroalimentación breve en el momento, pero al avanzar o terminar el quiz no existía una sesión dedicada que conservara el histórico de errores acumulados. Esto impedía un ciclo de aprendizaje iterativo (repasar específicamente las debilidades técnicas).
-
-### La Solución: Sesión "Repaso de Errores"
-1. **Registro Automático Silencioso**: Cada vez que el usuario comete un error en cualquier modo (Práctica, Blitz 60s, Reto Diario), la pregunta y la opción seleccionada se registran de inmediato en el almacenamiento local persistente (`localStorage` en Web / `SharedPreferences` en Android).
-2. **Acceso Claro e Indicador Dinámico**:
-   - En **Inicio**, la tarjeta de Modos de Juego suma el modo **Reintentar Fallos** con un contador dinámico (ejemplo: *«3 pendientes»* o *«¡Al día! 0 fallos»*).
-   - En **Estadísticas**, se muestra el bloque de **Banco de Errores** con la lista de preguntas falladas organizadas por tecnología y botón para iniciar el repaso.
-   - En **Resultados**, si el examen tuvo errores, un botón directo invita a *«Repasar Fallos de este Examen»*.
-3. **Escenario de Aprendizaje Interactivo**:
-   - Al abrir una pregunta fallada, el usuario ve el contexto completo:
-     - Bloque de código y enunciado.
-     - Indicador visual: qué respondió erróneamente en el intento anterior.
-     - Opciones interactivas para responder nuevamente.
-     - Si acierta: animación de éxito, eliminación inmediata de la lista de fallos y actualización del contador.
-     - Si vuelve a fallar o solicita ayuda: tarjeta explicativa detallada + botón **Tutor de IA (Gemini)** para una explicación didáctica en 3 secciones.
-
----
-
-## 2. Experiencia de Usuario y Diseño Visual
-
-### A. Nueva Tarjeta de Modo en Pantalla de Inicio
-* **Título**: `Reintentar`
-* **Subtítulo Dinámico**: Si hay fallos: `X por corregir` (en color ámbar/rosa); si no hay fallos: `0 pendientes` (en color esmeralda).
-* **Iconografía**: Icono circular de reintento (`RotateCcw` / `Target` / `RefreshCw`) con contenedor estilizado.
-
-### B. Sección "Banco de Errores" en Pantalla de Estadísticas
-* Card con lista desplegable de todas las preguntas falladas pendientes de dominar:
-  - Etiqueta de tecnología (`Python`, `Docker`, `SQL`, etc.).
-  - Título resumido de la pregunta.
-  - Indicador de tu selección fallida vs respuesta correcta.
-  - Botón principal de acción: `Iniciar Sesión de Repaso (X preguntas)`.
-  - Botón secundario para limpiar o reiniciar el historial de fallos si el usuario lo desea.
-
-### C. Pantalla de Quiz en Modo Repaso de Errores
-* **Banner Superior**: `⚠️ Repasando Pregunta Fallada` con chip de dificultad y tecnología.
-* **Marcado Didáctico**: Destaca la opción que el usuario marcó erróneamente en el pasado para que analice la trampa conceptual antes de responder.
-* **Al Acertar**: Toast/Banner verde: `🎉 ¡Excelente! Pregunta dominada y retirada de tu lista de fallos`.
-* **Botón Tutor de IA**: Destacado en púrpura para consultar a Gemini en caso de duda residual.
+### Estado Actual vs Meta Requerida
+| Categoría | Preguntas Actuales | Preguntas Nuevas (Junior) | Total Final (Meta ≥ 20) |
+| :--- | :---: | :---: | :---: |
+| **Python Moderno** (`python`) | 2 | +18 | **20** |
+| **PHP 8+ & OOP** (`php`) | 2 | +18 | **20** |
+| **JavaScript Core** (`javascript`) | 2 | +18 | **20** |
+| **TypeScript Avanzado** (`typescript`) | 2 | +18 | **20** |
+| **React & Ecosystem** (`react`) | 1 | +19 | **20** |
+| **SQL & Bases de Datos** (`sql`) | 3 | +17 | **20** |
+| **Principios SOLID** (`solid`) | 3 | +17 | **20** |
+| **Fundamentos & Git** (`modern_fundamentals`) | 2 | +18 | **20** |
+| **IA para Programadores** (`ai_assistance`) | 2 | +18 | **20** |
+| **Fullstack Senior** (`senior_fullstack`) | 50 | 0 | **50** (cumple ≥ 20) |
+| **DevOps & Cloud** (`devops_cloud`) | 50 | 0 | **50** (cumple ≥ 20) |
+| **Sutilezas Pro** (`subtle_engineering`) | 30 | 0 | **30** (cumple ≥ 20) |
+| **Docker Mastery** (`docker_mastery`) | 25 | 0 | **25** (cumple ≥ 20) |
+| **TOTAL GLOBAL** | **174** | **+163** | **337 preguntas** |
 
 ---
 
-## 3. Arquitectura Técnica y Estrategia de Datos
+## 2. Experiencia de Usuario y Pedagogía Junior
+
+### Pilares Didácticos para Principiantes y Juniors:
+1. **Claridad Inmediata**: Código fuente conciso (de 4 a 12 líneas) enfocado en un solo concepto a la vez (ej. mutabilidad, scope, tipos primitivos vs referencia, async básico, SELECT/WHERE básico).
+2. **Explicación Paso a Paso (`explanation`)**:
+   - Por qué la respuesta correcta funciona así.
+   - Por qué las otras opciones son trampas comunes en las que suelen caer quienes están aprendiendo.
+3. **Consejo Profesional Junior (`proTip`)**:
+   - Una regla mnemotécnica o convención de la industria que el junior puede aplicar directamente en su trabajo diario o entrevista.
+4. **Distractores Educativos**: Las opciones incorrectas reflejan las confusiones más comunes de juniors (ej. confundir `==` con `===`, no saber que los strings son inmutables, olvidar `await`, etc.) y educan al usuario cuando falla.
+
+---
+
+## 3. Plan de Temarios por Categoría (18+ preguntas nuevas cada una)
+
+1. **Python Junior**:
+   - Variables, tipos básicos (`int`, `str`, `list`, `dict`), list comprehensions simples.
+   - Slicing de strings y listas (`[::-1]`, `[1:3]`).
+   - Diferencia entre `is` y `==`.
+   - Manejo de excepciones con `try/except/finally`.
+   - Funciones `*args` y `**kwargs`, funciones lambda simples.
+   - Scope local vs global y la palabra clave `global`.
+   - Métodos comunes de diccionarios (`.get()`, `.keys()`, `.items()`).
+   - Virtual environments (`venv`) y `pip requirements.txt`.
+
+2. **PHP Junior**:
+   - Variables con `$`, diferencia entre `echo` y `print`.
+   - Comparación débil `==` vs estricta `===` y `declare(strict_types=1)`.
+   - Arrays asociativos e indexados, funciones `array_map`, `count()`.
+   - Clases y POO básica: `public`, `private`, `protected`, constructores.
+   - Herencia básica y uso de `parent::__construct()`.
+   - Manejo de formularios GET vs POST, sanitización con `htmlspecialchars()`.
+   - Composer y autoloading de PSR-4.
+
+3. **JavaScript Junior**:
+   - `var`, `let`, `const` y temporal dead zone (TDZ).
+   - Coerción de tipos (`"5" + 2` vs `"5" - 2`).
+   - Métodos de arrays: `map`, `filter`, `reduce`, `find`, `includes`.
+   - Arrow functions vs funciones tradicionales (comportamiento de `this`).
+   - Promesas y `async/await` básico: manejo de `.catch()`.
+   - Desestructuración de objetos y arrays, operador spread/rest (`...`).
+   - Event Bubbling básico en el DOM y `addEventListener`.
+
+4. **TypeScript Junior**:
+   - Tipos primitivos (`string`, `number`, `boolean`, `any`, `unknown`, `never`).
+   - Interfaces vs Types: sintaxis y cuándo usar cada uno.
+   - Propiedades opcionales (`?`) y unión de tipos (`|`).
+   - Aserción de tipos (`as string`) y Type Narrowing con `typeof` / `instanceof`.
+   - Tipado de funciones (parámetros y retorno).
+   - Generics introductorios (`Array<T>`, funciones con `<T>`).
+   - Enums vs Union Types de cadenas literales.
+
+5. **React Junior**:
+   - Qué es JSX y reglas de tags cerrados / fragmentos (`<>...</>`).
+   - Props vs State (`useState`).
+   - Reglas de los Hooks (no condicionales, solo en el nivel superior).
+   - `useEffect`: array de dependencias (`[]` vs dependencias vs sin array).
+   - Renderizado de listas y la importancia de `key` única.
+   - Event handling (`onClick={() => handleClick()}`).
+   - Formularios controlados vs no controlados (`value` y `onChange`).
+   - Levantamiento de estado (Lifting State Up) básico.
+
+6. **SQL Junior**:
+   - Cláusulas fundamentales: `SELECT`, `FROM`, `WHERE`, `ORDER BY`, `LIMIT`.
+   - Diferencia entre `INNER JOIN` y `LEFT JOIN` con diagramas mentales claros.
+   - Funciones de agregación: `COUNT()`, `SUM()`, `AVG()` y la cláusula `GROUP BY`.
+   - Diferencia entre `WHERE` y `HAVING`.
+   - Claves primarias (`PRIMARY KEY`) vs claves foráneas (`FOREIGN KEY`).
+   - Comandos DDL vs DML (`SELECT`, `INSERT`, `UPDATE`, `DELETE` sin WHERE peligroso).
+   - Concepto de `NULL` y operadores `IS NULL` / `COALESCE`.
+
+7. **Principios SOLID Junior**:
+   - **S (SRP)**: Una clase con una sola responsabilidad (ej. factura no debe enviar emails ni guardar en BD).
+   - **O (OCP)**: Código abierto para extensión, cerrado para modificación (usar polimorfismo en vez de if/else infinitos).
+   - **L (LSP)**: Una subclase debe poder sustituir a su clase padre sin romper el programa (ej. Cuadrado y Rectángulo).
+   - **I (ISP)**: No forzar a una clase a implementar métodos que no usa (interfaces pequeñas).
+   - **D (DIP)**: Depender de abstracciones/interfaces, no de clases concretas (inyección de dependencias explicada de forma simple).
+
+8. **Fundamentos & Git Junior**:
+   - Comandos básicos: `git init`, `git add`, `git commit -m`, `git status`.
+   - Ramas: `git branch`, `git checkout -b` / `git switch -c`, `git merge`.
+   - Diferencia entre Git (control de versiones) y GitHub (plataforma de alojamiento).
+   - Resolver un conflicto de fusión básico (marcadores `<<<<<<<`, `=======`, `>>>>>>>`).
+   - Código HTTP: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Server Error).
+   - Verbos HTTP en APIs REST: `GET`, `POST`, `PUT`, `DELETE`.
+   - `.gitignore`: por qué no subir `node_modules/` o `.env`.
+
+9. **IA para Programadores Junior**:
+   - Prompting eficaz: dar contexto, especificar lenguaje y formato de salida.
+   - Alucinaciones de IA: por qué nunca copiar código sin leerlo y probarlo.
+   - Seguridad: jamás enviar claves API, contraseñas o datos de clientes a un LLM público.
+   - Uso de IA para explicar errores: "Explícame qué significa TypeError: undefined is not a function".
+   - Generación de tests unitarios y documentación usando asistentes de código.
+
+---
+
+## 4. Arquitectura de Datos y Estrategia de Implementación
 
 ```
-┌────────────────────────────────────────────────────────┐
-│               Flujo del Banco de Errores               │
-└───────────────────────────┬────────────────────────────┘
-                            │
-            Cualquier Quiz (Práctica / Blitz / Diario)
-                            │
-               ¿Respuesta Incorrecta?
-                            ▼
-      ┌───────────────────────────────────────────┐
-      │  FailedQuestionsManager (Persistencia)    │
-      │  - Guarda: questionId, wrongOptionIndex,  │
-      │    timestamp, failCount                   │
-      └─────────────────────┬─────────────────────┘
-                            │
-               ┌────────────┴────────────┐
-               ▼                         ▼
-      Inicio (Badge "3 fallos")    Estadísticas (Lista de errores)
-               │                         │
-               └────────────┬────────────┘
-                            │
-               Click: "Reintentar Fallos"
-                            ▼
-      ┌───────────────────────────────────────────┐
-      │  ReviewQuizSession                        │
-      │  - Carga solo las preguntas falladas      │
-      │  - Muestra el escenario del error         │
-      │  - Integra Tutor de IA (Gemini)           │
-      │                                           │
-      │  ¿Acertó al reintentar?                   │
-      │    SI ➔ Elimina de FailedQuestionsManager │
-      │    NO ➔ Mantiene en lista + Tutor de IA   │
-      └───────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        DATA SOURCES SYNCHRONIZATION                    │
+└────────────────────────────────────────────────────────────────────────┘
+                                    │
+           ┌────────────────────────┴────────────────────────┐
+           ▼                                                 ▼
+┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
+│        REACT WEB APPLICATION         │  │        ANDROID APK PROJECT           │
+├──────────────────────────────────────┤  ├──────────────────────────────────────┤
+│ src/data/questionsData.ts            │  │ app/src/main/assets/questions.json   │
+│ src/data/juniorExpandedQuestions.ts  │  │ (337+ preguntas estructuradas        │
+│ • Importación tipada modular         │  │  leídas por Room / Assets manager)   │
+│ • Componentes UI interactivos        │  │                                      │
+│ • Simulador y Estadísticas de test   │  │ src/data/androidProjectCode.ts       │
+│                                      │  │ (Espejo en ZIP exportable)           │
+└──────────────────────────────────────┘  └──────────────────────────────────────┘
 ```
 
-### Modelo de Datos (`FailedQuestionRecord`)
-```typescript
-export interface FailedQuestionRecord {
-  questionId: string;
-  selectedOptionIndex: number;
-  timestamp: number;
-  failCount: number;
-}
-```
+### Plan de Archivos a Modificar:
+1. **Nuevo Módulo Modular (`src/data/juniorExpandedQuestions.ts`)**:
+   - Alberga las 161+ preguntas nuevas para mantener el código limpio y mantenible sin sobrecargar un solo archivo gigante.
+2. **Actualización de `src/data/questionsData.ts`**:
+   - Importar y unir las nuevas preguntas a `QUESTIONS_DATA`.
+3. **Actualización de `app/src/main/assets/questions.json`**:
+   - Sincronizar el archivo JSON con las 337+ preguntas totales.
+4. **Actualización de `src/data/androidProjectCode.ts`**:
+   - Sincronizar el asset `questions.json` dentro del bundle de archivos exportables.
+5. **Verificación**:
+   - Validar con script de conteo que cada una de las 13 categorías tenga `>= 20` preguntas.
+   - Ejecutar `lint_applet` y `compile_applet`.
 
 ---
 
-## 4. Plan de Implementación de Archivos
+## 5. Criterio de Aceptación y Verificación
 
-### Fase 1: Capa Web (React / TypeScript)
-1. **Tipos & Persistencia (`src/types/quiz.ts` y `src/App.tsx`)**:
-   - Añadir `FailedQuestionRecord` a `src/types/quiz.ts`.
-   - Implementar `failedQuestions` en el estado de `App.tsx` sincronizado con `localStorage.getItem('devquiz_failed_questions')`.
-   - Modificar `handleConfirmAnswer()`: si `!isCorrect`, guardar la pregunta en `failedQuestions`; si ya existía, incrementar `failCount`.
-2. **Modo de Juego 'failed_review' en Inicio**:
-   - Añadir la 4ta tarjeta en la sección `Modos de Juego`:
-     - Título: *«Reintentar»*, subtítulo: *«{failedCount} pendientes»*.
-     - Al hacer clic, lanza el quiz filtrando únicamente las preguntas de `failedQuestions`.
-3. **Sección en Pestaña de Estadísticas**:
-   - Renderizar el bloque *«Banco de Errores Pendientes»* con desglose de preguntas falladas y botón *«Iniciar Repaso de Errores»*.
-4. **Lógica de Éxito en Reintento**:
-   - Si `selectedMode === 'failed_review'` y el usuario acierta la pregunta, removerla de `failedQuestions` y mostrar el banner verde *«¡Concepto Dominado!»*.
-
-### Fase 2: Capa Nativa Android (Kotlin & Jetpack Compose)
-1. **`FailedQuestionsManager.kt`**:
-   - Módulo en `app/src/main/java/com/devquiz/app/data/FailedQuestionsManager.kt` para almacenar en `SharedPreferences` la lista de preguntas falladas como JSON serializado.
-2. **`QuizViewModel.kt`**:
-   - Registrar fallos al confirmar respuestas incorrectas.
-   - Nuevo método `loadFailedQuestionsReview()` que filtra las preguntas de la base local según los IDs fallados.
-   - Eliminar de la lista de fallos cuando el usuario acierte una pregunta en modo revisión.
-3. **`HomeScreen.kt` / `MainScreen`**:
-   - Añadir tarjeta de *«Reintentar Fallidos»* en `Modos de Juego` con contador dinámico en tiempo real.
-4. **`StatsScreen.kt`**:
-   - Añadir card del *«Banco de Fallos Técnicos»* con lista de preguntas falladas y botón para iniciar el repaso interactivo.
-5. **Sincronización de `androidProjectCode.ts`**:
-   - Actualizar el repositorio de archivos Android descargables en ZIP y visibles en el explorador de código.
-
----
-
-## 5. Verificación y Criterios de Aceptación
-* [ ] Las respuestas incorrectas se guardan de forma persistente y no se pierden al recargar la app o cerrar el móvil.
-* [ ] La tarjeta de "Reintentar" aparece visible en los Modos de Juego con el contador de preguntas pendientes.
-* [ ] En Estadísticas se puede ver el historial de las preguntas en las que falló el usuario.
-* [ ] Al iniciar la sesión de repaso, el usuario puede ver su opción fallada anterior, responder interactivamente y pedir ayuda al Tutor de IA.
-* [ ] Al acertar una pregunta en la sesión de repaso, se elimina automáticamente de la lista de fallos.
-* [ ] Todo el código compila y pasa validación de tipos sin advertencias ni errores.
+1. **Condición de Terminación Estricta**: Cada categoría individual (13 en total) tiene $\ge 20$ preguntas verificadas por script.
+2. **Nivel Junior Asegurado**: Las nuevas preguntas cuentan con código claro, explicaciones didácticas paso a paso y consejos prácticos.
+3. **Distribución Balanceada**: Presencia equilibrada de bugs novatos, sintaxis y preguntas de entrevistas iniciales.
+4. **Cero Errores de Tipado o Compilación**: El proyecto compila sin errores (`tsc --noEmit` y `npm run build` exitosos).

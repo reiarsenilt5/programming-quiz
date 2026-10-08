@@ -3,6 +3,15 @@ import { SENIOR_FULLSTACK_QUESTIONS } from './seniorFullstackQuestions';
 import { DEVOPS_CLOUD_QUESTIONS } from './devopsCloudQuestions';
 import { SUBTLE_ENGINEERING_QUESTIONS } from './subtleEngineeringQuestions';
 import { DOCKER_MASTERY_QUESTIONS } from './dockerMasteryQuestions';
+import { JUNIOR_PYTHON_QUESTIONS } from './juniorPythonQuestions';
+import { JUNIOR_PHP_QUESTIONS } from './juniorPhpQuestions';
+import { JUNIOR_JAVASCRIPT_QUESTIONS } from './juniorJsQuestions';
+import { JUNIOR_TYPESCRIPT_QUESTIONS } from './juniorTsQuestions';
+import { JUNIOR_REACT_QUESTIONS } from './juniorReactQuestions';
+import { JUNIOR_SQL_QUESTIONS } from './juniorSqlQuestions';
+import { JUNIOR_SOLID_QUESTIONS } from './juniorSolidQuestions';
+import { JUNIOR_FUNDAMENTALS_QUESTIONS } from './juniorFundamentalsQuestions';
+import { JUNIOR_AI_QUESTIONS } from './juniorAiQuestions';
 
 export const CATEGORIES: CategoryInfo[] = [
   {
@@ -556,6 +565,15 @@ function cambiarDimensiones(r: Rectangulo) {
     explanation: "Proveer los tests unitarios o firmas de tipos como restricciones invariantes (Grounding) fuerza al modelo a verificar internamente que la nueva implementación sigue satisfaciendo el contrato. Mantener baja la temperatura (0.0 - 0.2) reduce la variabilidad.",
     proTip: "En herramientas como Cursor/Copilot: Incluye en el prompt los archivos de test (*.test.ts o *Test.kt) como contexto explícito."
   },
+  ...JUNIOR_PYTHON_QUESTIONS,
+  ...JUNIOR_PHP_QUESTIONS,
+  ...JUNIOR_JAVASCRIPT_QUESTIONS,
+  ...JUNIOR_TYPESCRIPT_QUESTIONS,
+  ...JUNIOR_REACT_QUESTIONS,
+  ...JUNIOR_SQL_QUESTIONS,
+  ...JUNIOR_SOLID_QUESTIONS,
+  ...JUNIOR_FUNDAMENTALS_QUESTIONS,
+  ...JUNIOR_AI_QUESTIONS,
   ...SENIOR_FULLSTACK_QUESTIONS,
   ...DEVOPS_CLOUD_QUESTIONS,
   ...SUBTLE_ENGINEERING_QUESTIONS,

@@ -351,6 +351,3065 @@
     "proTip": "En herramientas como Cursor/Copilot: Incluye en el prompt los archivos de test (*.test.ts o *Test.kt) como contexto explícito."
   },
   {
+    "id": "py-03",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Cuál es el resultado de este código al intentar modificar un elemento de una tupla?",
+    "codeLanguage": "python",
+    "codeSnippet": "coordenadas = (10, 20)\ncoordenadas[0] = 50\nprint(coordenadas)",
+    "options": [
+      "Imprime (50, 20) sin problema.",
+      "Lanza TypeError porque las tuplas son inmutables.",
+      "Convierte automáticamente la tupla en una lista [50, 20].",
+      "Imprime (10, 20) ignorando la asignación."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "En Python, las tuplas son estructuras inmutables. Una vez creadas, no se pueden modificar, reasignar sus índices ni eliminar elementos. Si necesitas modificar elementos, debes usar una lista [10, 20].",
+    "proTip": "Usa tuplas para datos fijos como coordenadas o pares clave-valor que no deban alterarse accidentalmente."
+  },
+  {
+    "id": "py-04",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia fundamental entre el operador `==` y el operador `is` en Python?",
+    "codeLanguage": "python",
+    "codeSnippet": "a = [1, 2, 3]\nb = [1, 2, 3]\nprint(a == b)\nprint(a is b)",
+    "options": [
+      "Ambos hacen exactamente lo mismo en cualquier tipo de dato.",
+      "`==` compara identidad en memoria física, mientras `is` compara igualdad de valores.",
+      "`==` compara igualdad de valores (contenido), mientras `is` compara identidad en memoria (mismo objeto).",
+      "`is` solo se usa con números enteros y floats."
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "`==` evalúa si el contenido de los dos objetos es igual (a == b es True). `is` verifica si ambas variables apuntan a la misma dirección de memoria física con id() (a is b es False porque son dos listas distintas en memoria).",
+    "proTip": "Para comparar con None, siempre usa \"if x is None:\" en lugar de \"if x == None:\"."
+  },
+  {
+    "id": "py-05",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué método es la forma segura recomendada para obtener un valor de un diccionario sin arriesgar un KeyError?",
+    "codeLanguage": "python",
+    "codeSnippet": "usuario = {\"nombre\": \"Ana\", \"edad\": 24}\n# ¿Cómo obtener \"email\" con valor por defecto \"no_tiene\"?",
+    "options": [
+      "usuario[\"email\"] ?: \"no_tiene\"",
+      "usuario.get(\"email\", \"no_tiene\")",
+      "usuario.fetch(\"email\", \"no_tiene\")",
+      "usuario.find(\"email\") or \"no_tiene\""
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El método .get(clave, default) busca la clave en el diccionario. Si no existe, devuelve el valor por defecto provisto (o None si no se especifica), evitando lanzar una excepción KeyError.",
+    "proTip": "Acceder con corchetes usuario[\"clave\"] solo se recomienda si estás 100% seguro de que la clave existe."
+  },
+  {
+    "id": "py-06",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es el resultado de la siguiente list comprehension básica?",
+    "codeLanguage": "python",
+    "codeSnippet": "numeros = [1, 2, 3, 4, 5]\npares = [x * 2 for x in numeros if x % 2 == 0]\nprint(pares)",
+    "options": [
+      "[2, 4, 6, 8, 10]",
+      "[4, 8]",
+      "[2, 4]",
+      "[4, 16]"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El filtro \"if x % 2 == 0\" selecciona los números pares (2 y 4). Luego, la expresión \"x * 2\" multiplica cada uno por 2, resultando en [4, 8].",
+    "proTip": "Las list comprehensions son más rápidas y legibles que combinar bucles for tradicionales con .append()."
+  },
+  {
+    "id": "py-07",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué ocurre al ejecutar este bloque de manejo de archivos sin contexto `with`?",
+    "codeLanguage": "python",
+    "codeSnippet": "archivo = open(\"datos.txt\", \"w\")\narchivo.write(\"Hola Mundo\")\n# ¿Qué falta aquí para una buena práctica?",
+    "options": [
+      "Falta llamar a archivo.close() o usar la sentencia \"with open(...) as archivo:\".",
+      "Python no permite escribir strings en modo \"w\".",
+      "Falta importar el módulo \"fileio\".",
+      "El método write lanza automáticamente un error si no se pasa un entero."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Dejar archivos abiertos puede provocar bloqueos del sistema de archivos y pérdida de datos en buffer si el proceso termina abruptamente. La sintaxis \"with open(...) as f:\" asegura que el archivo se cierre automáticamente incluso si ocurre un error.",
+    "proTip": "Siempre usa el Context Manager \"with open(...) as f:\" para cualquier archivo, socket o conexión."
+  },
+  {
+    "id": "py-08",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "En una entrevista técnica para Junior: ¿Para qué sirven `*args` y `**kwargs` en los parámetros de una función?",
+    "codeLanguage": "python",
+    "codeSnippet": "def procesar(*args, **kwargs):\n    pass",
+    "options": [
+      "*args recibe argumentos posicionales variables como tupla, y **kwargs argumentos con nombre (clave=valor) como diccionario.",
+      "*args es para números y **kwargs es exclusivamente para strings.",
+      "Son punteros de memoria como en C y C++.",
+      "*args obliga a que todos los argumentos sean del mismo tipo estricto."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "*args empaqueta cualquier cantidad de argumentos posicionales adicionales en una tupla, mientras que **kwargs empaqueta argumentos nombrados en un diccionario.",
+    "proTip": "El nombre puede ser cualquiera (ej. *valores), pero *args y **kwargs son la convención universal PEP 8."
+  },
+  {
+    "id": "py-09",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué imprime el siguiente slicing de cadenas en Python?",
+    "codeLanguage": "python",
+    "codeSnippet": "texto = \"Python\"\nprint(texto[::-1])",
+    "options": [
+      "\"P\"",
+      "\"nohtyP\"",
+      "Error de índice negativo",
+      "\"Python\""
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "La sintaxis de slicing [inicio:fin:paso] con paso -1 recorre la secuencia en orden inverso desde el final hasta el inicio, invirtiendo la cadena.",
+    "proTip": "Este truco funciona exactamente igual en cadenas, listas y tuplas."
+  },
+  {
+    "id": "py-10",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué bloque se ejecuta SIEMPRE en una estructura try/except/finally, ocurra o no una excepción?",
+    "codeLanguage": "python",
+    "codeSnippet": "try:\n    resultado = 10 / divisor\nexcept ZeroDivisionError:\n    print(\"Error\")\nfinally:\n    # ¿Cuándo se ejecuta esto?",
+    "options": [
+      "Solo si ocurre un ZeroDivisionError.",
+      "Solo si NO ocurre ningún error.",
+      "Siempre, ocurra o no un error, ideal para liberar recursos o cerrar conexiones.",
+      "Nunca, a menos que se llame explícitamente a finally()."
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "El bloque finally se ejecuta de manera garantizada tras salir del try o except, independientemente de si hubo error o si hubo un return previo.",
+    "proTip": "Usa finally para tareas de limpieza obligatorias como desconectar bases de datos o resetear banderas."
+  },
+  {
+    "id": "py-11",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se añade un nuevo elemento al final de una lista existente en Python?",
+    "codeLanguage": "python",
+    "codeSnippet": "frutas = [\"manzana\", \"banana\"]\n# ¿Cómo añadir \"naranja\"?",
+    "options": [
+      "frutas.push(\"naranja\")",
+      "frutas.add(\"naranja\")",
+      "frutas.append(\"naranja\")",
+      "frutas.insert_end(\"naranja\")"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "En Python las listas usan el método .append(elemento) para agregar un ítem al final. (.push() pertenece a JavaScript y .add() a conjuntos set).",
+    "proTip": "Si quieres agregar múltiples elementos a la vez desde otra lista, usa .extend(otra_lista) o el operador +=."
+  },
+  {
+    "id": "py-12",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué estructura de datos elimina duplicados automáticamente y no mantiene orden garantizado?",
+    "codeLanguage": "python",
+    "codeSnippet": "datos = [1, 2, 2, 3, 3, 3, 4]\nresultado = set(datos)\nprint(len(resultado))",
+    "options": [
+      "4",
+      "7",
+      "3",
+      "Error de conversión"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El tipo set almacena solo elementos únicos. Al convertir [1, 2, 2, 3, 3, 3, 4] a set, los duplicados se eliminan, quedando {1, 2, 3, 4}, cuya longitud es 4.",
+    "proTip": "Convertir una lista a set(lista) es la forma más rápida y común para eliminar duplicados en entrevistas técnicas."
+  },
+  {
+    "id": "py-13",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se formatea una cadena de texto de manera moderna y limpia en Python 3.6+?",
+    "codeLanguage": "python",
+    "codeSnippet": "nombre = \"Carlos\"\nedad = 22\n# ¿Cuál es el f-string correcto?",
+    "options": [
+      "f\"Hola, me llamo {nombre} y tengo {edad} años\"",
+      "\"Hola, me llamo %s y tengo %d años\" (nombre, edad)",
+      "\"Hola, me llamo {0} y tengo {1} años\".concat(nombre, edad)",
+      "str.format(\"Hola\", nombre, edad)"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los f-strings (cadenas literales precedidas por \"f\" o \"F\") permiten interpolar variables y expresiones Python directamente dentro de llaves {variable}.",
+    "proTip": "Los f-strings son más legibles y significativamente más rápidos que % o .format()."
+  },
+  {
+    "id": "py-14",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué error genera intentar concatenar un string con un entero mediante el operador `+`?",
+    "codeLanguage": "python",
+    "codeSnippet": "mensaje = \"Nivel: \" + 1\nprint(mensaje)",
+    "options": [
+      "Imprime \"Nivel: 1\" con coerción automática.",
+      "Lanza un TypeError: can only concatenate str (not \"int\") to str.",
+      "Convierte \"Nivel: \" a NaN.",
+      "Lanza un ValueError."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Python tiene tipado fuerte (strong typing) y no realiza coerción implícita de tipos como JavaScript. Para concatenar debes convertirlo explícitamente: str(1) o usar f\"Nivel: {1}\".",
+    "proTip": "Recuerda: Python es de tipado dinámico pero FUERTE. Nunca concatena números con texto automáticamente."
+  },
+  {
+    "id": "py-15",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la función del comando `pip install -r requirements.txt` en el flujo de trabajo de un desarrollador?",
+    "codeLanguage": "bash",
+    "codeSnippet": "pip install -r requirements.txt",
+    "options": [
+      "Instalar Python en el sistema operativo.",
+      "Instalar todas las librerías y dependencias externas listadas en el archivo requirements.txt.",
+      "Crear un archivo ejecutable .exe del proyecto.",
+      "Ejecutar las pruebas unitarias del proyecto."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El comando instala de forma automatizada todas las dependencias y versiones de paquetes que el proyecto necesita, garantizando reproducibilidad en otros entornos.",
+    "proTip": "Genera tu lista de dependencias con \"pip freeze > requirements.txt\" dentro de un entorno virtual activo."
+  },
+  {
+    "id": "py-16",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué hace la palabra reservada `break` dentro de un bucle `for` o `while`?",
+    "codeLanguage": "python",
+    "codeSnippet": "for n in range(10):\n    if n == 3:\n        break\n    print(n, end=\" \")",
+    "options": [
+      "Pasa inmediatamente a la siguiente iteración sin salir del bucle.",
+      "Termina e interrumpe inmediatamente el bucle completo.",
+      "Pausa la ejecución durante 3 segundos.",
+      "Reinicia el bucle desde cero."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`break` sale inmediatamente del bucle en ejecución. Para saltar solo la iteración actual y continuar con la siguiente, se utiliza `continue`.",
+    "proTip": "Imprime \"0 1 2 \" porque al llegar a 3 el bucle se detiene por completo."
+  },
+  {
+    "id": "py-17",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la forma correcta de definir una función constructora en una clase de Python?",
+    "codeLanguage": "python",
+    "codeSnippet": "class Persona:\n    # ¿Cómo definir el constructor?",
+    "options": [
+      "def constructor(self, nombre): self.nombre = nombre",
+      "def __init__(self, nombre): self.nombre = nombre",
+      "def Persona(self, nombre): self.nombre = nombre",
+      "def new(self, nombre): self.nombre = nombre"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "En Python, el método mágico especial `__init__` se ejecuta automáticamente al instanciar una clase. El primer parámetro siempre debe ser `self`, que referencia a la instancia creada.",
+    "proTip": "Nunca olvides incluir `self` como primer parámetro en los métodos de instancia de una clase."
+  },
+  {
+    "id": "py-18",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué devuelve la función `len()` cuando se le pasa un diccionario?",
+    "codeLanguage": "python",
+    "codeSnippet": "info = {\"id\": 1, \"nombre\": \"Dev\", \"activo\": True}\nprint(len(info))",
+    "options": [
+      "3 (la cantidad de pares clave-valor)",
+      "6 (sumando claves y valores)",
+      "El tamaño en bytes en memoria RAM",
+      "Lanza un TypeError porque los diccionarios no tienen longitud"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En los diccionarios de Python, `len(d)` devuelve el número de claves (o entradas clave-valor) almacenadas.",
+    "proTip": "Para comprobar si un diccionario está vacío de forma pythonica, usa \"if not info:\" en lugar de \"if len(info) == 0:\"."
+  },
+  {
+    "id": "py-19",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué este código genera un NameError al intentar modificar una variable global?",
+    "codeLanguage": "python",
+    "codeSnippet": "contador = 0\n\ndef incrementar():\n    contador += 1\n\nincrementar()",
+    "options": [
+      "Porque en Python las variables globales son de solo lectura permanente.",
+      "Porque Python asume que \"contador\" es una variable local no asignada antes de su uso; requiere la sentencia \"global contador\".",
+      "Porque las funciones en Python no pueden contener números.",
+      "Porque el operador += no existe en Python."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Al intentar asignar contador += 1 dentro de una función sin declarar \"global contador\", Python considera que \"contador\" es una variable local, arrojando UnboundLocalError / NameError.",
+    "proTip": "Como buena práctica de arquitectura limpia, evita modificar variables globales dentro de funciones; es mejor pasar el valor como parámetro y devolverlo."
+  },
+  {
+    "id": "py-20",
+    "categoryId": "python",
+    "categoryName": "Python Moderno",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve crear un entorno virtual con `python -m venv mi_entorno`?",
+    "codeLanguage": "bash",
+    "codeSnippet": "python -m venv .venv",
+    "options": [
+      "Para aislar las librerías y dependencias de este proyecto de la instalación global del sistema.",
+      "Para compilar el código Python en lenguaje máquina antes de ejecutarlo.",
+      "Para aumentar la velocidad de procesamiento de la CPU.",
+      "Para hacer copias de seguridad automáticas en la nube."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Un entorno virtual (venv) crea un directorio aislado que contiene su propio ejecutable de Python y sus propias librerías instaladas con pip, evitando colisiones de versiones entre diferentes proyectos.",
+    "proTip": "Siempre incluye la carpeta del entorno virtual (\".venv/\" o \"venv/\") en tu archivo .gitignore."
+  },
+  {
+    "id": "php-03",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia fundamental entre el operador `==` y `===` en PHP?",
+    "codeLanguage": "php",
+    "codeSnippet": "$a = \"10\";\n$b = 10;\nvar_dump($a == $b);\nvar_dump($a === $b);",
+    "options": [
+      "Ambos devuelven true siempre.",
+      "`==` compara solo el valor con coerción de tipos, mientras que `===` compara valor y tipo de dato estricto.",
+      "`===` es exclusivo de PHP 8 y no existe en versiones anteriores.",
+      "`==` evalúa referencias de punteros."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`==` realiza conversión de tipos (type juggling) antes de comparar, por lo que \"10\" == 10 es true. `===` compara estrictamente valor y tipo, por lo que string no es igual a integer y devuelve false.",
+    "proTip": "En código profesional y moderno siempre usa \"===\" y \"!==\" para evitar comportamientos inesperados de conversión automática."
+  },
+  {
+    "id": "php-04",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué error común ocurre al olvidar el símbolo `$` al declarar o usar una variable en PHP?",
+    "codeLanguage": "php",
+    "codeSnippet": "nombre = \"Juan\";\necho $nombre;",
+    "options": [
+      "PHP asume que \"nombre\" es una constante global o arroja un Error de Parse / Fatal Error.",
+      "Crea una variable global oculta en memoria.",
+      "Imprime \"Juan\" con una advertencia leve.",
+      "Convierte automáticamente la variable a un array."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En PHP todas las variables deben comenzar obligatoriamente con el signo de dólar ($). Escribir \"nombre = ...\" sin $ provoca un error sintáctico o intenta buscar una constante predefinida inexistente.",
+    "proTip": "Recuerda: solo las constantes (define() o const NOMBRE) van sin signo de dólar."
+  },
+  {
+    "id": "php-05",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se accede a un valor dentro de un array asociativo en PHP?",
+    "codeLanguage": "php",
+    "codeSnippet": "$usuario = [\n    \"email\" => \"dev@example.com\",\n    \"rol\" => \"junior\"\n];\n// ¿Cómo obtener el email?",
+    "options": [
+      "$usuario.email",
+      "$usuario->email",
+      "$usuario[\"email\"]",
+      "$usuario(\"email\")"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "En arrays asociativos de PHP se utilizan corchetes con la clave entre comillas: $usuario[\"email\"]. La flecha -> se reserva para propiedades de objetos e instancias de clases.",
+    "proTip": "Usa el operador null coalescing $usuario[\"email\"] ?? \"default\" para evitar advertencias de \"Undefined array key\"."
+  },
+  {
+    "id": "php-06",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es el operador de coalescencia nula (`??`) introducido en PHP y para qué se usa?",
+    "codeLanguage": "php",
+    "codeSnippet": "$colorFavorito = $_GET[\"color\"] ?? \"azul\";",
+    "options": [
+      "Es un operador ternario que devuelve el valor izquierdo si existe y no es null; si no, devuelve el valor derecho.",
+      "Comprueba si dos variables tienen el mismo nombre en memoria.",
+      "Es un operador de división especial para números flotantes.",
+      "Lanza una excepción si la variable es nula."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El operador $a ?? $b es equivalente a \"isset($a) ? $a : $b\". Si $_GET[\"color\"] no existe o es null, toma \"azul\" de forma segura sin emitir warnings.",
+    "proTip": "Es uno de los operadores más utilizados en controladores y vistas para valores por defecto."
+  },
+  {
+    "id": "php-07",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué este formulario procesa datos de forma insegura ante ataques XSS (Cross-Site Scripting)?",
+    "codeLanguage": "php",
+    "codeSnippet": "$comentario = $_POST[\"comentario\"];\necho \"<p>\" . $comentario . \"</p>\";",
+    "options": [
+      "Porque $_POST no puede imprimir strings en HTML.",
+      "Porque imprime el texto directamente sin escapar caracteres especiales con htmlspecialchars(), permitiendo inyección de scripts HTML/JS.",
+      "Porque falta cerrar el tag php con ?> obligatoriamente.",
+      "Porque el punto de concatenación (.) está obsoleto."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Si un usuario malicioso envía \"<script>alert(1)</script>\", el navegador ejecutará el script. La solución es escapar con htmlspecialchars($comentario, ENT_QUOTES, \"UTF-8\").",
+    "proTip": "En motores de plantillas modernos como Blade (Laravel) o Twig (Symfony), la sintaxis {{ $comentario }} escapa automáticamente."
+  },
+  {
+    "id": "php-08",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "En Programación Orientada a Objetos en PHP: ¿Qué visibilidad permite acceder a una propiedad desde la propia clase y desde sus clases hijas, pero NO desde fuera?",
+    "codeLanguage": "php",
+    "codeSnippet": "class Empleado {\n    // ¿Qué modificador usar aquí?\n    salario;\n}",
+    "options": [
+      "public",
+      "private",
+      "protected",
+      "static"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "El modificador `protected` hace que la propiedad o método sea accesible dentro de la clase actual y sus clases derivadas (herencia), pero inaccesible directamente desde instancias externas.",
+    "proTip": "`private` restringe el acceso estrictamente a la clase donde se declaró, ni siquiera sus hijas pueden acceder."
+  },
+  {
+    "id": "php-09",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué función nativa de PHP se utiliza para contar la cantidad de elementos en un array?",
+    "codeLanguage": "php",
+    "codeSnippet": "$tecnologias = [\"PHP\", \"MySQL\", \"Docker\", \"Git\"];\necho count($tecnologias);",
+    "options": [
+      "length($tecnologias)",
+      "size($tecnologias)",
+      "count($tecnologias)",
+      "$tecnologias.length()"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "En PHP se utiliza la función nativa count($array) (o sizeof($array)) para obtener el número de elementos de un array.",
+    "proTip": "En bucles for, guarda el count() en una variable antes del bucle para no recalcularlo en cada iteración."
+  },
+  {
+    "id": "php-10",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se concatenan dos cadenas de texto en PHP?",
+    "codeLanguage": "php",
+    "codeSnippet": "$saludo = \"Hola\" . \" \" . \"Mundo\";",
+    "options": [
+      "Usando el signo más (+)",
+      "Usando el punto (.)",
+      "Usando el símbolo ampersand (&)",
+      "Usando la flecha (->)"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El operador de concatenación en PHP es el punto (.). El operador (+) realiza operaciones aritméticas y forzará la conversión de los strings a números.",
+    "proTip": "También puedes usar comillas dobles con interpolación: \"$saludo $nombre\"."
+  },
+  {
+    "id": "php-11",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Cuál es el error en este método de clase al intentar acceder a una propiedad de la instancia?",
+    "codeLanguage": "php",
+    "codeSnippet": "class Usuario {\n    public string $nombre = \"Ana\";\n    public function saludar(): void {\n        echo \"Hola \" . $nombre;\n    }\n}",
+    "options": [
+      "En PHP no se pueden tipar los métodos con void.",
+      "Falta referenciar la propiedad de la instancia con $this->nombre.",
+      "El método saludar debe ser obligatorio que sea private.",
+      "Las cadenas no se pueden imprimir con echo dentro de una clase."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Dentro de un método de clase en PHP, las propiedades de la instancia no están en el scope local de la función; deben llamarse obligatoriamente a través de $this->propiedad.",
+    "proTip": "Nota que se escribe $this->nombre, SIN el signo de dólar delante del nombre de la propiedad."
+  },
+  {
+    "id": "php-12",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la función del archivo `composer.json` en un proyecto PHP moderno?",
+    "codeLanguage": "json",
+    "codeSnippet": "{\n    \"require\": {\n        \"php\": \"^8.2\",\n        \"guzzlehttp/guzzle\": \"^7.8\"\n    }\n}",
+    "options": [
+      "Configurar el servidor web Apache o Nginx.",
+      "Definir las dependencias, librerías externas y el mapa de autoloading del proyecto.",
+      "Compilar el código PHP a binario.",
+      "Almacenar las contraseñas de la base de datos de producción."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Composer es el gestor de paquetes estándar de la comunidad PHP. `composer.json` declara las librerías necesarias y las reglas de autocarga PSR-4.",
+    "proTip": "El archivo generado \"composer.lock\" guarda las versiones exactas instaladas y SIEMPRE debe subirse a Git."
+  },
+  {
+    "id": "php-13",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "En PHP 8.0+: ¿Qué ventaja ofrece la promoción de propiedades en el constructor (Constructor Property Promotion)?",
+    "codeLanguage": "php",
+    "codeSnippet": "class Producto {\n    public function __construct(\n        public string $nombre,\n        public float $precio\n    ) {}\n}",
+    "options": [
+      "Permite declarar y asignar propiedades de clase directamente en la firma del constructor sin código repetitivo.",
+      "Hace que las propiedades sean automáticamente globales en toda la aplicación.",
+      "Evita que las clases necesiten namespace.",
+      "Convierte el objeto automáticamente a JSON."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La promoción de propiedades en constructor de PHP 8 evita declarar la propiedad arriba, recibirla como argumento y hacer $this->prop = $prop; todo se hace en una sola línea en la firma.",
+    "proTip": "Es el estándar en Laravel 10+, Symfony 6+ y código moderno de PHP."
+  },
+  {
+    "id": "php-14",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se maneja una excepción en PHP para evitar que la aplicación se detenga con un error fatal 500?",
+    "codeLanguage": "php",
+    "codeSnippet": "try {\n    $resultado = dividir(10, 0);\n} catch (Exception $e) {\n    echo \"Ocurrió un error: \" . $e->getMessage();\n}",
+    "options": [
+      "Usando la estructura try ... catch.",
+      "Usando el prefijo @ delante de cada función.",
+      "Cambiando el nombre del archivo a .html.",
+      "Definiendo una variable $ignore_errors = true."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El bloque try ... catch captura las excepciones lanzadas por el código y permite recuperarse de forma elegante, registrar el error y mostrar un mensaje amigable al usuario.",
+    "proTip": "Nunca uses el operador \"@\" para silenciar errores; oculta bugs graves que luego son casi imposibles de depurar."
+  },
+  {
+    "id": "php-15",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué superglobal de PHP almacena la información de sesión persistente entre diferentes peticiones HTTP de un usuario?",
+    "codeLanguage": "php",
+    "codeSnippet": "session_start();\n$_SESSION[\"usuario_id\"] = 42;",
+    "options": [
+      "$_COOKIE",
+      "$_SESSION",
+      "$_ENV",
+      "$_SERVER"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "$_SESSION guarda datos en el servidor asociados a una cookie de identificación de sesión en el navegador (PHPSESSID). Requiere llamar a session_start() previamente.",
+    "proTip": "Nunca guardes contraseñas en texto plano o datos confidenciales de tarjetas de crédito en la sesión."
+  },
+  {
+    "id": "php-16",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la función `header(\"Location: /home\");` puede fallar con el error \"Headers already sent\"?",
+    "codeLanguage": "php",
+    "codeSnippet": "echo \"Cargando...\";\nheader(\"Location: /dashboard.php\");\nexit;",
+    "options": [
+      "Porque header() no admite rutas relativas.",
+      "Porque ya se envió salida HTML o espacios en blanco al navegador antes de enviar las cabeceras HTTP.",
+      "Porque la palabra \"Location\" debe estar en minúsculas.",
+      "Porque falta llamar a session_destroy()."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El protocolo HTTP exige que todas las cabeceras (headers) se envíen ANTES de cualquier contenido o cuerpo de respuesta. Cualquier echo, print o espacio en blanco previo bloquea el envío de nuevos headers.",
+    "proTip": "Siempre incluye un \"exit;\" o \"die();\" inmediatamente después de header(\"Location: ...\") para detener la ejecución."
+  },
+  {
+    "id": "php-17",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué estructura condicional introducida en PHP 8 es más estricta, devuelve un valor y no necesita `break`?",
+    "codeLanguage": "php",
+    "codeSnippet": "$mensaje = match ($rol) {\n    \"admin\" => \"Acceso Total\",\n    \"editor\" => \"Acceso Contenido\",\n    default => \"Acceso Básico\",\n};",
+    "options": [
+      "La expresión match",
+      "El operador switch moderno",
+      "El if ternario múltiple",
+      "El operador spaceship"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La expresión `match` de PHP 8 realiza comparaciones estrictas (===), devuelve directamente el valor de la rama coincidente y no sufre de caídas por falta de break como `switch`.",
+    "proTip": "Prefiere `match` sobre `switch` siempre que busques asignar un valor según una condición directa."
+  },
+  {
+    "id": "php-18",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué método mágico de PHP se ejecuta automáticamente cuando se intenta convertir un objeto a cadena de texto?",
+    "codeLanguage": "php",
+    "codeSnippet": "class Libro {\n    public string $titulo = \"Clean Code\";\n    public function __toString(): string {\n        return \"Libro: \" . $this->titulo;\n    }\n}\n$l = new Libro();\necho $l;",
+    "options": [
+      "__construct()",
+      "__toString()",
+      "__invoke()",
+      "__destruct()"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El método mágico __toString() define cómo debe comportarse y qué cadena debe retornar un objeto cuando es impreso mediante echo o concatenado con strings.",
+    "proTip": "Debe devolver obligatoriamente un string para evitar un TypeError."
+  },
+  {
+    "id": "php-19",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué función convierte un array asociativo de PHP en un string con formato JSON estándar?",
+    "codeLanguage": "php",
+    "codeSnippet": "$datos = [\"status\" => \"ok\", \"codigo\" => 200];\n$json = json_encode($datos);",
+    "options": [
+      "json_decode()",
+      "json_encode()",
+      "serialize()",
+      "array_to_json()"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "json_encode($valor) serializa arrays u objetos PHP a una cadena con formato JSON. Por el contrario, json_decode($str, true) parsea un string JSON a un array de PHP.",
+    "proTip": "En respuestas de APIs REST siempre acompaña json_encode() con el header header(\"Content-Type: application/json\")."
+  },
+  {
+    "id": "php-20",
+    "categoryId": "php",
+    "categoryName": "PHP 8+ & OOP",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve la directiva `declare(strict_types=1);` al inicio de un archivo PHP?",
+    "codeLanguage": "php",
+    "codeSnippet": "<?php\ndeclare(strict_types=1);\n\nfunction sumar(int $a, int $b): int {\n    return $a + $b;\n}",
+    "options": [
+      "Obliga a que las llamadas a funciones en ese archivo respeten los tipos exactos sin conversión implícita (ej. rechaza pasar \"5\" como int).",
+      "Impide el uso de variables con signo $ en ese script.",
+      "Convierte el archivo en código C++",
+      "Desactiva el recolector de basura de PHP para máxima velocidad."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Por defecto PHP intenta convertir tipos débilmente. Con strict_types=1 activado, pasar un tipo incorrecto lanza inmediatamente un TypeError, mejorando la robustez y calidad del software.",
+    "proTip": "Debe ser la primerísima instrucción del archivo PHP, inmediatamente después de la etiqueta <?php."
+  },
+  {
+    "id": "js-03",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia de alcance (scope) entre `var`, `let` y `const` en JavaScript moderno?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "if (true) {\n    var x = 1;\n    let y = 2;\n    const z = 3;\n}\nconsole.log(x); // ¿Qué ocurre aquí?",
+    "options": [
+      "`x` es accesible (scope de función/global), mientras que `let` y `const` tienen scope de bloque ({}) y no existen fuera del if.",
+      "Ninguna de las tres variables existe fuera del if.",
+      "Las tres variables son siempre globales en cualquier situación.",
+      "`const` puede ser reasignada pero `let` no."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`var` tiene scope de función o global e ignora bloques if/for. `let` y `const` tienen block scope (ámbito léxico dentro de las llaves {} donde fueron declaradas), evitando fugas de variables.",
+    "proTip": "Regla de oro moderna: usa siempre `const` por defecto; si necesitas reasignar el valor, usa `let`; nunca uses `var`."
+  },
+  {
+    "id": "js-04",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué imprime este clásico caso de coerción de tipos en JavaScript?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "console.log(\"5\" + 2);\nconsole.log(\"5\" - 2);",
+    "options": [
+      "\"52\" y 3",
+      "7 y 3",
+      "\"52\" y NaN",
+      "7 y NaN"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Con el operador `+`, si uno de los operandos es string, JavaScript realiza concatenación (\"5\" + 2 = \"52\"). Con el operador `-`, la única operación válida es matemática, por lo que convierte \"5\" al número 5 (5 - 2 = 3).",
+    "proTip": "Para sumar números asegurando el tipo, convierte explícitamente: Number(\"5\") + 2 o +\"5\" + 2."
+  },
+  {
+    "id": "js-05",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué método de Array crea un nuevo array transformando cada elemento según una función dada?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const numeros = [1, 2, 3];\nconst dobles = numeros.map(n => n * 2);",
+    "options": [
+      "forEach()",
+      "filter()",
+      "map()",
+      "push()"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "`.map()` itera sobre el array original y retorna un NUEVO array con los resultados de aplicar la función a cada elemento. `.forEach()` solo itera pero no devuelve nada (retorna undefined).",
+    "proTip": "Nunca uses .map() si no vas a usar el array resultante; usa .forEach() o for...of para efectos secundarios."
+  },
+  {
+    "id": "js-06",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué método de Array filtra elementos y retorna solo aquellos que cumplan una condición booleana?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const edades = [12, 18, 25, 15, 30];\nconst adultos = edades.filter(edad => edad >= 18);",
+    "options": [
+      "find()",
+      "filter()",
+      "some()",
+      "slice()"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`.filter()` evalúa cada elemento y devuelve un nuevo array conteniendo únicamente los elementos donde el callback devuelve true ([18, 25, 30]).",
+    "proTip": "Si solo necesitas el PRIMER elemento que coincida, usa .find(), que se detiene en la primera coincidencia."
+  },
+  {
+    "id": "js-07",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué reasignar una propiedad a un objeto declarado con `const` NO lanza un error?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const usuario = { nombre: \"Leo\" };\nusuario.nombre = \"Marta\"; // ¿Funciona?",
+    "options": [
+      "Porque const solo protege la referencia en memoria del objeto, no la mutación de sus propiedades internas.",
+      "Porque los objetos en JavaScript son inmutables por defecto.",
+      "Lanza un TypeError inmediato en la segunda línea.",
+      "Porque const solo aplica a números y strings."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`const` impide reasignar la variable a otro objeto (ej. usuario = {} daría error), pero el objeto al que apunta sigue siendo mutable. Para congelar propiedades se usa Object.freeze(usuario).",
+    "proTip": "En entrevistas para junior: Recuerda siempre que const = referencia constante, no valor inmutable."
+  },
+  {
+    "id": "js-08",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo funciona la desestructuración (destructuring) de objetos en JavaScript?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const persona = { nombre: \"Sofía\", pais: \"Colombia\", edad: 25 };\nconst { nombre, pais } = persona;",
+    "options": [
+      "Elimina esas propiedades del objeto persona original.",
+      "Crea variables locales con los nombres de las propiedades y sus valores correspondientes extraídos del objeto.",
+      "Convierte el objeto en un array indexado.",
+      "Copia el objeto en el LocalStorage."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El destructuring extrae propiedades de un objeto y las asigna a variables independientes del mismo nombre de forma limpia y directa.",
+    "proTip": "También puedes renombrar variables: const { nombre: alias } = persona; y asignar valores por defecto."
+  },
+  {
+    "id": "js-09",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el operador Spread (`...`) y para qué se usa comúnmente al clonar arrays?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const lista1 = [1, 2, 3];\nconst copia = [...lista1, 4];",
+    "options": [
+      "Expande los elementos de una colección iterable en un nuevo array sin mutar el original.",
+      "Une dos arrays modificando destructivamente lista1.",
+      "Es un operador de comparación que evalúa si un array contiene 3 elementos.",
+      "Convierte un array en una promesa asíncrona."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El operador spread (...) \"desempaqueta\" los elementos de un array existente. Permite crear copias superficiales (shallow copies) y agregar nuevos elementos de manera inmutable.",
+    "proTip": "Evita lista1.push(4) si trabajas con React o arquitectura inmutable; prefiere [...lista1, 4]."
+  },
+  {
+    "id": "js-10",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué diferencia clave tienen las funciones flecha (arrow functions) respecto al valor de `this`?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const obj = {\n    valor: 42,\n    normal: function() { return this.valor; },\n    flecha: () => this.valor\n};",
+    "options": [
+      "Las arrow functions tienen su propio `this` dinámico según quién las llama.",
+      "Las arrow functions heredan léxicamente el `this` del contexto en el que fueron creadas y no tienen su propio `this`.",
+      "Las funciones tradicionales no permiten el uso de `this`.",
+      "No hay ninguna diferencia en el manejo de `this`."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Las funciones flecha no enlazan su propio `this`, `arguments` ni `super`. Capturan el valor de `this` del entorno léxico contenedor.",
+    "proTip": "Por esta razón, nunca uses una arrow function como método de un objeto si necesitas acceder a las propiedades del propio objeto con this."
+  },
+  {
+    "id": "js-11",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué valor devuelve una función `async` en JavaScript de forma obligatoria y garantizada?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "async function obtenerDato() {\n    return \"Hola\";\n}",
+    "options": [
+      "El string directo \"Hola\"",
+      "Una Promesa (Promise) que se resuelve con \"Hola\"",
+      "undefined",
+      "Un objeto XMLHttpRequest"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Cualquier función declarada con `async` siempre devuelve automáticamente una Promesa. Si retornas un valor no promesa, JavaScript lo envuelve en Promise.resolve(valor).",
+    "proTip": "Para consumir su resultado debes usar `await obtenerDato()` o `.then(res => console.log(res))`. "
+  },
+  {
+    "id": "js-12",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué ocurre al intentar usar la palabra clave `await` fuera de una función `async` (en entornos sin top-level await)?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "function cargar() {\n    const res = await fetch(\"/api/datos\");\n    return res.json();\n}",
+    "options": [
+      "Funciona perfectamente sin advertencias.",
+      "Lanza un SyntaxError indicando que `await` solo es válido en funciones async.",
+      "Convierte automáticamente la función a un bucle infinito.",
+      "Pausa la CPU del ordenador durante 5 segundos."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`await` solo puede utilizarse dentro de funciones declaradas con la palabra reservada `async` (o en el nivel superior de módulos ES modernos que soporten top-level await).",
+    "proTip": "La solución es declarar la función como: `async function cargar() { ... }`."
+  },
+  {
+    "id": "js-13",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el Operador de Encadenamiento Opcional (`?.`) y cómo evita errores?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const calle = usuario?.direccion?.calle;",
+    "options": [
+      "Si usuario o direccion es null o undefined, devuelve undefined inmediatamente sin lanzar un TypeError.",
+      "Crea automáticamente el objeto direccion si no existía.",
+      "Lanza un error personalizado en la consola.",
+      "Es un operador para buscar en la base de datos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El optional chaining (?.) evalúa la propiedad de forma segura: si la referencia antes del ?. es null o undefined, la expresión se cortocircuita y devuelve undefined en lugar de romper la app con \"Cannot read property of undefined\".",
+    "proTip": "Combínalo con nullish coalescing: usuario?.direccion?.calle ?? \"Sin calle\"."
+  },
+  {
+    "id": "js-14",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia entre el operador `||` y el operador `??` (Nullish Coalescing)?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const a = 0 || 10;\nconst b = 0 ?? 10;\nconsole.log(a, b);",
+    "options": [
+      "`||` evalúa falsy (0, \"\", false son falsy y devuelven 10), mientras que `??` solo evalúa null o undefined (0 es un número válido y se preserva).",
+      "Ambos devuelven 10 en las dos variables.",
+      "Ambos devuelven 0 en las dos variables.",
+      "`??` solo funciona con booleanos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`||` comprueba valores \"falsy\" (0, false, \"\", NaN, null, undefined). `??` solo actúa si el valor es estrictamente `null` o `undefined`. Por tanto: 0 || 10 es 10, pero 0 ?? 10 es 0.",
+    "proTip": "Usa siempre `??` cuando manejes números (ej. cantidad: 0) o cadenas de texto vacías que son valores válidos."
+  },
+  {
+    "id": "js-15",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué error causa olvidar llamar a `event.preventDefault()` en el handler de envío (`onSubmit`) de un formulario en el navegador?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "formulario.addEventListener(\"submit\", (e) => {\n    // ¿Qué ocurre si no ponemos e.preventDefault()?\n    enviarPorAjax();\n});",
+    "options": [
+      "El navegador recarga la página por defecto y cancela la petición asíncrona.",
+      "El formulario se borra del DOM inmediatamente.",
+      "La función enviarPorAjax() se ejecuta 10 veces en paralelo.",
+      "El botón de submit se desactiva permanentemente."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El comportamiento por defecto del evento submit en navegadores web es recargar la página o navegar a la URL del atributo action. `e.preventDefault()` previene esa recarga permitiendo manejar el formulario por JavaScript/SPA.",
+    "proTip": "En SPAs (React, Vue, vanilla JS) la primera línea de tu handleSubmit casi siempre debe ser e.preventDefault()."
+  },
+  {
+    "id": "js-16",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué método moderno de `fetch()` convierte el cuerpo de una respuesta HTTP en un objeto JavaScript utilizable?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const res = await fetch(\"/api/productos\");\nconst datos = await res.json();",
+    "options": [
+      "res.parse()",
+      "res.json()",
+      "JSON.stringify(res)",
+      "res.toObject()"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`res.json()` es un método asíncrono que lee el flujo del cuerpo de la respuesta HTTP hasta el final y lo parsea como JSON, devolviendo una promesa con los datos.",
+    "proTip": "Recuerda que res.json() es asíncrono y requiere await: \"const datos = await res.json();\"."
+  },
+  {
+    "id": "js-17",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el hoisting en JavaScript y cómo afecta a las declaraciones con `var` frente a `let`/`const`?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "console.log(a); // ¿Qué pasa?\nvar a = 5;",
+    "options": [
+      "Lanza ReferenceError inmediato.",
+      "Imprime `undefined` porque la declaración de `var` es elevada (hoisted) e inicializada como undefined.",
+      "Imprime 5 directamente.",
+      "El código no compila."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Con `var`, la declaración se eleva al inicio del ámbito y se inicializa con undefined. Con `let` y `const`, también se elevan pero permanecen en la Zona Muerta Temporal (TDZ), por lo que acceder a ellas antes lanza ReferenceError.",
+    "proTip": "El hoisting con var era fuente constante de bugs; la TDZ de let/const ayuda a detectar variables usadas antes de su declaración."
+  },
+  {
+    "id": "js-18",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se comprueba si un array contiene al menos un elemento que cumpla una condición determinada?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "const notas = [4, 7, 2, 9];\nconst haySobresaliente = notas.some(nota => nota >= 9);",
+    "options": [
+      "notas.every(...)",
+      "notas.some(...)",
+      "notas.includes(...)",
+      "notas.has(...)"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`.some()` devuelve `true` si al menos un elemento satisface la condición del callback (y se detiene de inmediato). `.every()` exige que TODOS los elementos la cumplan.",
+    "proTip": "`.includes(valor)` busca por igualdad directa de valor, mientras que `.some(callback)` evalúa una expresión lógica."
+  },
+  {
+    "id": "js-19",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la comparación `[] == []` y `{} == {}` devuelve `false` en JavaScript?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "console.log([] == []); // false\nconsole.log({} == {}); // false",
+    "options": [
+      "Porque los arrays y objetos son tipos por referencia, y cada literal crea una nueva dirección distinta en memoria.",
+      "Porque los arrays vacíos se consideran NaN.",
+      "Porque JavaScript prohíbe comparar objetos vacíos.",
+      "Porque falta usar triple igual ===."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los tipos complejos (objetos, arrays) se comparan por referencia en memoria, no por valor estructural. Dos objetos creados por separado tienen direcciones de memoria diferentes, por lo que nunca son iguales.",
+    "proTip": "Para comparar arrays o estructuras por contenido, se recorren sus elementos o se usa una función como isEqual() de utilidades."
+  },
+  {
+    "id": "js-20",
+    "categoryId": "javascript",
+    "categoryName": "JavaScript Core",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve el almacenamiento local `localStorage` del navegador y qué tipo de datos guarda?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "localStorage.setItem(\"tema\", \"oscuro\");\nconst tema = localStorage.getItem(\"tema\");",
+    "options": [
+      "Almacena datos en el servidor de base de datos MySQL.",
+      "Almacena pares clave-valor de forma persistente en el navegador del usuario en formato string.",
+      "Almacena archivos multimedia pesados hasta 50 GB.",
+      "Borra los datos automáticamente al cerrar la pestaña."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "localStorage guarda hasta ~5MB de datos por dominio que persisten incluso tras reiniciar el navegador. Guarda únicamente cadenas (strings), por lo que para guardar objetos se usa JSON.stringify().",
+    "proTip": "Si quieres que los datos se borren al cerrar la pestaña o ventana, usa sessionStorage en lugar de localStorage."
+  },
+  {
+    "id": "ts-03",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia fundamental entre el tipo `any` y el tipo `unknown` en TypeScript?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "let v1: any;\nlet v2: unknown;\n\nv1.hacerAlgo(); // ¿Permitido?\nv2.hacerAlgo(); // ¿Permitido?",
+    "options": [
+      "`any` desactiva completamente el chequeo de tipos, mientras que `unknown` es tipo-seguro y obliga a comprobar el tipo antes de usarlo.",
+      "Son idénticos y solo cambia el nombre por compatibilidad.",
+      "`unknown` solo acepta valores null o undefined.",
+      "`any` lanza errores en tiempo de compilación si se llama a un método inexistente."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`any` desactiva el compilador de TypeScript permitiendo cualquier operación. `unknown` indica que el tipo es desconocido, pero TypeScript exige verificar el tipo (Type Narrowing) mediante typeof o comprobaciones lógicas antes de invocar métodos.",
+    "proTip": "Evita `any` siempre que puedas; si recibes datos dinámicos de una API externa, tipa como `unknown` y valida con zod o typeof."
+  },
+  {
+    "id": "ts-04",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se indica que una propiedad en una `interface` o `type` es opcional?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Usuario {\n    id: number;\n    nombre: string;\n    // ¿Cómo hacer que edad sea opcional?\n}",
+    "options": [
+      "edad: number | null",
+      "edad?: number",
+      "optional edad: number",
+      "edad: optional<number>"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El signo de interrogación `?` después del nombre de la propiedad (`edad?: number`) indica que la propiedad puede estar ausente o ser `undefined`.",
+    "proTip": "`edad?: number` es equivalente a `edad?: number | undefined`."
+  },
+  {
+    "id": "ts-05",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es una Unión de Tipos (Union Type) con el operador `|` en TypeScript?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "type Estado = \"cargando\" | \"exito\" | \"error\";\nlet e: Estado = \"cargando\";",
+    "options": [
+      "Permite que una variable acepte uno de varios tipos o valores literales especificados.",
+      "Combina dos tipos sumando todas sus propiedades obligatorias.",
+      "Convierte el tipo a un booleano bit a bit.",
+      "Crea una clase abstracta."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Una Unión (`A | B`) significa que el valor puede ser del tipo A o del tipo B. En este caso, restringe la variable a ser exclusivamente una de esas tres cadenas literales.",
+    "proTip": "Las uniones de cadenas literales son una alternativa moderna, más limpia y más liviana que los `enum` numéricos tradicionales."
+  },
+  {
+    "id": "ts-06",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué error detecta el compilador de TypeScript en la siguiente función?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "function multiplicar(a: number, b: number): number {\n    if (a === 0) return 0;\n    // Falta retornar cuando a != 0\n}",
+    "options": [
+      "No hay error, devolverá undefined automáticamente.",
+      "Error: Not all code paths return a value (no todos los caminos devuelven un número).",
+      "Error: if no admite comparaciones con number.",
+      "Error: number no es un tipo primitivo válido."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Si la firma indica que la función retorna un `number`, TypeScript verifica exhaustivamente que todos los caminos de ejecución devuelvan un `number`, no permitiendo retornos implícitos de `undefined`.",
+    "proTip": "Esta verificación estricta previene bugs comunes donde ciertas ramas de lógica olvidaban devolver datos."
+  },
+  {
+    "id": "ts-07",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo funciona el \"Type Narrowing\" (estrechamiento de tipos) con `typeof`?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "function imprimir(valor: string | number) {\n    if (typeof valor === \"string\") {\n        console.log(valor.toUpperCase()); // ¿Qué tipo tiene valor aquí?\n    }\n}",
+    "options": [
+      "Dentro del bloque if, TypeScript sabe con certeza que `valor` es de tipo `string` y habilita métodos de string.",
+      "`valor` sigue siendo string | number y da error de compilación.",
+      "`typeof` solo existe en JavaScript y TypeScript lo ignora.",
+      "Convierte automáticamente cualquier número a mayúsculas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "TypeScript analiza el flujo de control (Control Flow Analysis). Al ver una comprobación con `typeof valor === \"string\"`, reduce el tipo dentro de esa rama a `string`.",
+    "proTip": "Type Narrowing también funciona con `instanceof`, comprobaciones de igualdad (===) o comprobación de propiedades (\"clave\" in objeto)."
+  },
+  {
+    "id": "ts-08",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia más común en proyectos entre `interface` y `type` para modelar objetos?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Persona { nombre: string; }\ntype Empleado = { salario: number; };",
+    "options": [
+      "Las `interface` se pueden extender re-declarando el mismo nombre (declaration merging), mientras que `type` es más flexible para uniones y tipos primitivos.",
+      "`interface` genera código en JavaScript compilado y `type` no.",
+      "`type` es exclusivo de React y no funciona en Node.js.",
+      "`interface` no admite propiedades obligatorias."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Ambos sirven para describir la forma de objetos. Las interfaces son ideales para POO extensible y librerías públicas (merging), mientras que `type` permite uniones (`A | B`), tuplas y tipos primitivos.",
+    "proTip": "En la práctica la mayoría de equipos usan uno u otro por convención; lo importante es ser consistente en tu base de código."
+  },
+  {
+    "id": "ts-09",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve la aserción de tipos no nulos (Non-null assertion operator `!`)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "const elemento = document.getElementById(\"mi-boton\")!;\nelemento.addEventListener(\"click\", () => {});",
+    "options": [
+      "Invierte la lógica booleana del elemento.",
+      "Le asegura al compilador de TypeScript: \"garantizo que este valor NO es null ni undefined en tiempo de ejecución\".",
+      "Crea el elemento en el DOM si no existe.",
+      "Desactiva el recolector de basura para esa variable."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El operador `!` al final de una expresión le indica a TypeScript que confíe en que el valor existe. Si en tiempo de ejecución es null, la app lanzará un TypeError.",
+    "proTip": "Úsalo con cautela. Es más seguro comprobar con un `if (!elemento) return;` que arriesgarte a un crash con `!`."
+  },
+  {
+    "id": "ts-10",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es un Genérico básico (`<T>`) en TypeScript?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "function envolverEnArray<T>(elemento: T): T[] {\n    return [elemento];\n}\nconst nums = envolverEnArray(5); // ¿Qué tipo es nums?",
+    "options": [
+      "nums es de tipo number[], preservando el tipo exacto que se le pasó como argumento.",
+      "nums es de tipo any[].",
+      "nums es de tipo unknown.",
+      "T representa una variable temporal global de JavaScript."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los genéricos permiten escribir funciones y clases reutilizables que funcionan con múltiples tipos mientras capturan y preservan la información exacta del tipo suministrado.",
+    "proTip": "Piensa en `<T>` como una \"variable para tipos\": igual que pasas argumentos de datos, pasas tipos a la función."
+  },
+  {
+    "id": "ts-11",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué ocurre al compilar el siguiente código con propiedades `readonly`?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Configuracion {\n    readonly apiUrl: string;\n}\nconst config: Configuracion = { apiUrl: \"https://api.com\" };\nconfig.apiUrl = \"https://otra.com\";",
+    "options": [
+      "Compila perfectamente sin quejas.",
+      "TypeScript genera un error de compilación: Cannot assign to \"apiUrl\" because it is a read-only property.",
+      "La variable se elimina automáticamente de memoria.",
+      "Se reemplaza solo si es un entorno de desarrollo."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El modificador `readonly` marca una propiedad como inmutable después de la inicialización en tiempo de compilación de TypeScript.",
+    "proTip": "`readonly` solo es una garantía en tiempo de compilación; en tiempo de ejecución compilado a JS normal, el código se ejecutaría si no se usara Object.freeze()."
+  },
+  {
+    "id": "ts-12",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué tipo especial representa una función que nunca retorna porque lanza un error o entra en un bucle infinito?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "function lanzarError(mensaje: string): never {\n    throw new Error(mensaje);\n}",
+    "options": [
+      "void",
+      "never",
+      "undefined",
+      "null"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`void` significa que la función termina y no devuelve ningún valor útil (devuelve undefined). `never` significa que la función JAMÁS llega al final de su ejecución (lanza excepción o bucle infinito).",
+    "proTip": "`never` también se utiliza en TypeScript para verificaciones de exhaustividad en bloques switch."
+  },
+  {
+    "id": "ts-13",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué utilidad de tipo convierte todas las propiedades de una interfaz en opcionales?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Perfil {\n    nombre: string;\n    edad: number;\n}\ntype PerfilParcial = Partial<Perfil>;",
+    "options": [
+      "Required<Perfil>",
+      "Partial<Perfil>",
+      "Readonly<Perfil>",
+      "Omit<Perfil>"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`Partial<T>` es una Utility Type estándar de TypeScript que devuelve un nuevo tipo donde todas las propiedades de T se convierten en opcionales (?): { nombre?: string; edad?: number; }.",
+    "proTip": "Ideal para funciones de actualización/patch donde el usuario solo envía los campos que quiere modificar."
+  },
+  {
+    "id": "ts-14",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué hace la Utility Type `Pick<T, Keys>` en TypeScript?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Producto {\n    id: number;\n    nombre: string;\n    precio: number;\n    stock: number;\n}\ntype ResumenProducto = Pick<Producto, \"id\" | \"nombre\">;",
+    "options": [
+      "Elimina las propiedades seleccionadas de la interfaz.",
+      "Crea un nuevo tipo seleccionando únicamente las claves indicadas (\"id\" y \"nombre\") de Producto.",
+      "Convierte el producto en un array de dos posiciones.",
+      "Hace que las propiedades seleccionadas sean obligatorias."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`Pick<T, K>` construye un tipo escogiendo un conjunto de propiedades K de T. Para hacer lo opuesto (omitir propiedades), se utiliza `Omit<T, K>`.",
+    "proTip": "`Pick` y `Omit` son las herramientas más comunes para reutilizar interfaces de backend en componentes frontend."
+  },
+  {
+    "id": "ts-15",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué error ocurre al intentar tipar un array con dos tipos sin envolverlos adecuadamente?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "let lista: string | number[] = [\"hola\", 1, 2]; // ¿Es correcto para un array mixto?",
+    "options": [
+      "No, porque `string | number[]` significa: \"o bien es un solo string, o bien es un array de números\". Para array mixto debe ser `(string | number)[]`.",
+      "Sí, compila perfectamente y permite arrays mixtos.",
+      "En TypeScript los arrays nunca pueden mezclar tipos bajo ninguna circunstancia.",
+      "Falta la palabra clave `array`."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Por precedencia de operadores, `string | number[]` es la unión entre el tipo string y el tipo array de números. Para denotar un array de elementos que pueden ser string o number se debe agrupar: `(string | number)[]`.",
+    "proTip": "Ten cuidado con los paréntesis al combinar operadores de unión con la notación de array []."
+  },
+  {
+    "id": "ts-16",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué archivo de configuración define las reglas del compilador de TypeScript en un proyecto?",
+    "codeLanguage": "json",
+    "codeSnippet": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2022\",\n    \"strict\": true\n  }\n}",
+    "options": [
+      "package.json",
+      "tsconfig.json",
+      "tsrules.yaml",
+      "vite.config.ts"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`tsconfig.json` es el archivo raíz donde se especifican las opciones del compilador (`tsc`), niveles de rigurosidad (`strict: true`), rutas (`paths`) y versiones de destino ECMAScript.",
+    "proTip": "Mantén `\"strict\": true` siempre activado en nuevos proyectos para aprovechar al 100% las garantías de seguridad de TypeScript."
+  },
+  {
+    "id": "ts-17",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué ocurre con los tipos, interfaces y genéricos de TypeScript cuando el proyecto se compila a JavaScript?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Mensaje { texto: string; }\nconst m: Mensaje = { texto: \"Hola\" };",
+    "options": [
+      "Se convierten en clases de JavaScript en tiempo de ejecución.",
+      "Se eliminan completamente (type erasure) y no queda rastro de ellos en el JavaScript final producido.",
+      "Se guardan en una base de datos local SQLite.",
+      "Aumentan el peso del archivo bundle final en 500 KB."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "TypeScript solo existe en tiempo de desarrollo y compilación. Todo el sistema de tipos se elimina (type erasure) al compilar, produciendo código JavaScript limpio y ligero.",
+    "proTip": "Por eso TypeScript NO puede realizar validaciones en tiempo de ejecución de datos que vienen de un servidor o usuario sin librerías como Zod."
+  },
+  {
+    "id": "ts-18",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se define una tupla con longitud y tipos fijos por posición en TypeScript?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "const respuestaHTTP: [number, string] = [200, \"OK\"];",
+    "options": [
+      "Es un array de tamaño fijo donde la posición 0 siempre es `number` y la posición 1 siempre es `string`.",
+      "Es un objeto con claves numéricas aleatorias.",
+      "Solo admite strings de hasta 200 caracteres.",
+      "Es idéntico a `(number | string)[]` y admite cualquier cantidad de elementos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Una tupla en TypeScript define un array de longitud fija donde cada posición tiene un tipo específico garantizado por el compilador.",
+    "proTip": "Un ejemplo muy común de tupla es el valor retornado por `useState` en React: `[estado, setEstado]`."
+  },
+  {
+    "id": "ts-19",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué es el Type Assertion (`as string`) y cuándo puede ser peligroso si se abusa de él?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "const entrada: any = 12345;\nconst texto = entrada as string;\nconsole.log(texto.toUpperCase()); // ¿Qué ocurre en ejecución?",
+    "options": [
+      "Compila sin errores, pero en tiempo de ejecución lanza un TypeError porque \"as\" no convierte el valor real de number a string.",
+      "Convierte el número 12345 en la cadena \"12345\" automáticamente.",
+      "Lanza un error de compilación inmediato.",
+      "Imprime \"12345\" en mayúsculas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`as` es solo una aserción para decirle al compilador \"confía en mí, sé qué tipo es\". No realiza ninguna conversión de datos en tiempo de ejecución. Al ejecutarse, entrada sigue siendo un número y no tiene método toUpperCase().",
+    "proTip": "Nunca uses \"as Tipo\" para forzar tipos si no has comprobado el valor real antes."
+  },
+  {
+    "id": "ts-20",
+    "categoryId": "typescript",
+    "categoryName": "TypeScript Avanzado",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es el tipo de retorno implícito de una función flecha que no retorna ningún valor?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "const registrar = (msg: string) => {\n    console.log(msg);\n};",
+    "options": [
+      "any",
+      "void",
+      "never",
+      "null"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "En TypeScript, una función que ejecuta acciones secundarias pero no tiene una sentencia `return` (o hace `return;`) tiene un tipo de retorno `void`.",
+    "proTip": "Tipar callbacks como `() => void` indica claramente a otros desarrolladores que el retorno no será utilizado."
+  },
+  {
+    "id": "react-02",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué no se debe mutar el estado directamente en React con `contador++` o `items.push()`?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "const [contador, setContador] = useState(0);\n\nfunction handleClick() {\n    contador++; // ¿Por qué esto es un bug grave?\n}",
+    "options": [
+      "Porque React no detecta la mutación directa y el componente NO se volverá a renderizar con el nuevo valor en la pantalla.",
+      "Porque JavaScript no permite el operador ++ en variables numéricas.",
+      "Porque el navegador se bloquea por falta de memoria.",
+      "Porque contador se convierte en un string."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "React depende de la inmutabilidad para detectar cambios mediante comparación superficial (shallow equality). Si mutas la variable directamente sin llamar a la función de actualización `setContador(contador + 1)`, React no sabe que hubo un cambio y la interfaz visual no se actualiza.",
+    "proTip": "Siempre trata el estado como de solo lectura y actualízalo usando la función `setEstado` proporcionada por useState."
+  },
+  {
+    "id": "react-03",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Por qué es obligatorio asignar una prop `key` única al renderizar una lista con `.map()` en React?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "<ul>\n  {usuarios.map(u => (\n    <li key={u.id}>{u.nombre}</li>\n  ))}\n</ul>",
+    "options": [
+      "Para que React identifique qué elementos cambiaron, se agregaron o eliminaron durante la reconciliación del Virtual DOM de forma eficiente.",
+      "Para darle estilos CSS automáticos a cada ítem de la lista.",
+      "Porque el navegador HTML exige una etiqueta key en todas las etiquetas <li>.",
+      "Para ordenar alfabéticamente los elementos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las keys ayudan a React a identificar qué ítems han cambiado o se han reordenado. Permite reutilizar nodos del DOM existentes en lugar de re-renderizar la lista entera desde cero.",
+    "proTip": "Evita usar el índice del array (`key={index}`) si los elementos pueden reordenarse, filtrarse o eliminarse; usa siempre un ID único estable (ej. `u.id`)."
+  },
+  {
+    "id": "react-04",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué ocurre si ejecutas `useEffect` sin pasarle un array de dependencias (segundo argumento)?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "useEffect(() => {\n    console.log(\"Efecto ejecutado\");\n    // Sin segundo argumento\n});",
+    "options": [
+      "El efecto se ejecutará únicamente una sola vez cuando el componente se monte.",
+      "El efecto se ejecutará en CADA render del componente (en el montaje y en cada actualización de cualquier estado o prop).",
+      "Lanza un SyntaxError inmediato.",
+      "Nunca se ejecuta a menos que se invoque manualmente."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "Sin array de dependencias, `useEffect` corre tras cada renderizado del componente. Si dentro de ese efecto actualizas estado, provocarás un bucle infinito de re-renders.",
+    "proTip": "Usa `[]` (array vacío) si solo quieres que se ejecute una vez al montar, o `[variable]` si quieres que corra solo cuando esa variable cambie."
+  },
+  {
+    "id": "react-05",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la regla fundamental sobre DÓNDE se pueden llamar los Hooks en React?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "function MiComponente({ activo }) {\n    if (activo) {\n        const [dato, setDato] = useState(0); // ¿Es válido?\n    }\n}",
+    "options": [
+      "No es válido; los Hooks solo deben llamarse en el nivel superior del componente, nunca dentro de condicionales, bucles o funciones anidadas.",
+      "Es completamente válido siempre que activo sea un booleano.",
+      "Los Hooks solo pueden llamarse dentro de bloques try/catch.",
+      "Solo useEffect tiene restricciones, useState puede ir en cualquier lugar."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "React depende del orden exacto en que se llaman los Hooks en cada render. Si los envuelves en un if o bucle, el orden cambiaría entre renders, corrompiendo el estado interno de React.",
+    "proTip": "Instala y respeta siempre el plugin `eslint-plugin-react-hooks` para detectar estas violaciones en tiempo de escritura."
+  },
+  {
+    "id": "react-06",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué este botón no espera al clic y ejecuta la función inmediatamente durante el render?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "function Boton() {\n    function handleClick() { alert(\"Clic!\"); }\n    return <button onClick={handleClick()}>Púlsame</button>;\n}",
+    "options": [
+      "Porque se pusieron paréntesis `handleClick()`, invocando la función durante el render en vez de pasar la referencia `onClick={handleClick}`.",
+      "Porque React prohíbe el uso de alert().",
+      "Porque el botón debe llevar el tipo type=\"submit\".",
+      "Porque onClick debe escribirse en minúsculas onclick."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Escribir `onClick={handleClick()}` con paréntesis ejecuta la función en el instante en que el JSX se evalúa. Para pasar el manejador se pasa la referencia: `onClick={handleClick}` o una función flecha `onClick={() => handleClick()}`.",
+    "proTip": "Este es uno de los 3 errores más comunes en entrevistas y pruebas técnicas de React para juniors."
+  },
+  {
+    "id": "react-07",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es un Fragmento en React (`<React.Fragment>` o `<>...</>`) y para qué se usa?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "function Lista() {\n    return (\n        <>\n            <h1>Título</h1>\n            <p>Descripción</p>\n        </>\n    );\n}",
+    "options": [
+      "Permite agrupar una lista de elementos hijos sin añadir un nodo extra innecesario (como un <div>) al DOM HTML final.",
+      "Es un componente para cargar animaciones CSS complejas.",
+      "Sirve para crear hilos en segundo plano (Web Workers).",
+      "Obliga a que el contenido se renderice en el servidor."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En React, un componente debe retornar un único elemento raíz. Los fragmentos (`<>...</>`) cumplen esa regla sintáctica sin ensuciar el árbol del DOM con divs adicionales.",
+    "proTip": "Si necesitas pasar una prop `key` al fragmento (por ejemplo en un map), usa la sintaxis explícita `<React.Fragment key={id}>`."
+  },
+  {
+    "id": "react-08",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se pasa y se recibe información desde un componente padre a un componente hijo en React?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "// Padre:\n<Tarjeta titulo=\"Perfil\" edad={25} />\n\n// Hijo:\nfunction Tarjeta({ titulo, edad }) { ... }",
+    "options": [
+      "A través de las Props (propiedades), que viajan en una sola dirección (unidireccional) de padre a hijo.",
+      "A través de variables globales en la ventana window.",
+      "Usando cookies del navegador.",
+      "A través de eventos de sockets WebSocket."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El flujo de datos en React es unidireccional. Los componentes padres pasan datos a sus hijos a través de props, las cuales son de solo lectura (inmutables) para el hijo.",
+    "proTip": "Nunca intentes modificar una prop recibida (`props.titulo = \"otro\"`); si el hijo necesita cambiar el valor, el padre debe pasarle una función callback."
+  },
+  {
+    "id": "react-09",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es un Input Controlado (Controlled Component) en React?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "<input\n    type=\"text\"\n    value={nombre}\n    onChange={(e) => setNombre(e.target.value)}\n/>",
+    "options": [
+      "Un campo de entrada cuyo valor está controlado directamente por el estado de React (`value`) y se actualiza mediante un evento (`onChange`).",
+      "Un campo que solo permite caracteres numéricos controlados.",
+      "Un input que no puede ser modificado por el usuario bajo ninguna circunstancia.",
+      "Un input que se valida exclusivamente en el servidor backend."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En un componente controlado, el estado de React es la \"única fuente de la verdad\" (Single Source of Truth). El valor mostrado en pantalla refleja exactamente el estado actual de React.",
+    "proTip": "Esto permite validar datos en tiempo real (ej. caracteres restantes, formato de email) a medida que el usuario escribe."
+  },
+  {
+    "id": "react-10",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué actualizar el estado 3 veces consecutivas con el mismo valor previo solo incrementa en 1?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "const [conteo, setConteo] = useState(0);\n\nfunction sumarTres() {\n    setConteo(conteo + 1);\n    setConteo(conteo + 1);\n    setConteo(conteo + 1);\n}",
+    "options": [
+      "Porque React agrupa las actualizaciones (batching) y en todas las llamadas `conteo` sigue valiendo 0 durante ese render; para encadenar se debe usar la forma funcional `setConteo(prev => prev + 1)`.",
+      "Porque useState tiene un límite de una actualización por función.",
+      "Porque el navegador omite funciones repetidas.",
+      "Porque conteo es una variable global."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las actualizaciones de estado son asíncronas y se procesan por lotes. Todas las llamadas usan el valor de `conteo` del render actual (0). Usando la función actualizadora `setConteo(prev => prev + 1)` garantizas trabajar con el estado más reciente.",
+    "proTip": "Siempre que el nuevo estado dependa del valor anterior, usa la forma de función de actualización `prev => prev + 1`."
+  },
+  {
+    "id": "react-11",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se limpia un temporizador o suscripción en `useEffect` cuando el componente se desmonta?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "useEffect(() => {\n    const timer = setInterval(() => console.log(\"Tick\"), 1000);\n    // ¿Cómo limpiarlo?\n    return () => clearInterval(timer);\n}, []);",
+    "options": [
+      "Retornando una función de limpieza (cleanup function) dentro del callback de useEffect.",
+      "Llamando a stopEffect() al final del archivo.",
+      "No hace falta, React destruye los intervalos automáticamente.",
+      "Usando la etiqueta <clearTimer /> en el JSX."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La función devuelta por `useEffect` es la función de limpieza (cleanup). React la ejecuta cuando el componente se desmonta o antes de re-ejecutar el efecto si las dependencias cambiaron.",
+    "proTip": "Olvidar limpiar intervalos o eventListeners genera fugas de memoria (memory leaks) graves en aplicaciones de producción."
+  },
+  {
+    "id": "react-12",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve el Hook `useRef` en React y qué lo diferencia de `useState`?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "const miInputRef = useRef<HTMLInputElement>(null);\nconst clicsRef = useRef(0);",
+    "options": [
+      "Guarda una referencia mutable que persiste entre renders pero NO provoca un re-render del componente al ser modificada.",
+      "Hace que el componente sea más rápido comprimiendo el HTML.",
+      "Es idéntico a useState pero exclusivo para strings.",
+      "Se usa para hacer llamadas HTTP fetch."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`useRef` devuelve un objeto `{ current: valor }`. Cambiar `ref.current` no desencadena un re-renderizado. Se usa para acceder a elementos reales del DOM o guardar valores mutables como IDs de temporizadores.",
+    "proTip": "Para poner el foco en un input automáticamente: `miInputRef.current?.focus()`."
+  },
+  {
+    "id": "react-13",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el \"Levantamiento de Estado\" (Lifting State Up) en la arquitectura de React?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "// Componente Padre almacena el estado común y pasa callbacks a HijoA y HijoB",
+    "options": [
+      "Mover el estado al ancestro común más cercano de dos componentes hijos que necesitan compartir y sincronizar esa información.",
+      "Subir el estado a un servidor en la nube con GraphQL.",
+      "Convertir el estado en una variable global en el index.html.",
+      "Eliminar los componentes hijos y juntar todo en un solo archivo de 3000 líneas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Cuando dos componentes hermanos necesitan compartir datos o sincronizarse, la solución idónea en React es mover el estado al componente padre común y pasárselo a los hijos vía props y callbacks.",
+    "proTip": "Esta técnica resuelve la gran mayoría de necesidades de comunicación entre componentes sin necesitar Redux o Zustand al inicio."
+  },
+  {
+    "id": "react-14",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué error visual puede provocar usar el operador `&&` para renderizado condicional con números?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "const [total, setTotal] = useState(0);\nreturn (\n    <div>\n        {total && <p>Tienes {total} mensajes</p>}\n    </div>\n);",
+    "options": [
+      "Imprime un \"0\" visible en la pantalla cuando total vale 0, porque 0 es falsy y JavaScript evalúa la expresión devolviendo 0.",
+      "Lanza un TypeError en tiempo de ejecución.",
+      "Borra el div contenedor del DOM.",
+      "El componente se niega a compilar."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En JavaScript, la expresión `0 && <Componente />` devuelve `0`. React renderiza el número 0 como texto visible en la pantalla. Para evitarlo, usa un booleano explícito: `{total > 0 && ...}` o un ternario `{total ? ... : null}`.",
+    "proTip": "Usa siempre una condición booleana explícita con `&&` (ej. `mensajes.length > 0 && ...` en vez de `mensajes.length && ...`)."
+  },
+  {
+    "id": "react-15",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la forma correcta de renderizar contenido condicional (mostrar un botón u otro según si el usuario está autenticado)?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "return (\n    <div>\n        {estaAutenticado ? <BotonSalir /> : <BotonEntrar />}\n    </div>\n);",
+    "options": [
+      "Usando el operador ternario `condicion ? <Verdadero /> : <Falso />`.",
+      "Usando un bucle while dentro del JSX.",
+      "Creando dos archivos de componentes separados obligatoriamente.",
+      "Declarando una etiqueta <if> en el HTML."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El operador ternario es la forma más limpia y idiomática de renderizar una de dos alternativas visuales en JSX.",
+    "proTip": "Para condicionales complejos con más de 2 estados, es más limpio separar la lógica en una función auxiliar o usar switch fuera del JSX."
+  },
+  {
+    "id": "react-16",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve la prop especial `children` en un componente de React?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "function Contenedor({ children }) {\n    return <div className=\"caja\">{children}</div>;\n}\n// Uso:\n<Contenedor><p>Texto adentro</p></Contenedor>",
+    "options": [
+      "Permite pasar cualquier elemento, componente o texto anidado dentro de las etiquetas de apertura y cierre del componente (composición de componentes).",
+      "Indica la edad del usuario si la aplicación es para niños.",
+      "Es un contador de subcomponentes en memoria.",
+      "Se usa exclusivamente para renderizar listas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`props.children` es la base del patrón de composición en React. Permite crear componentes envoltorios reutilizables como Modales, Tarjetas o Layouts que no necesitan saber de antemano qué contenido mostrarán dentro.",
+    "proTip": "Favorece la composición usando `children` frente a herencia de componentes."
+  },
+  {
+    "id": "react-17",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué herramienta moderna de bundling y servidor de desarrollo es ampliamente utilizada por su extrema velocidad en lugar de Create React App?",
+    "codeLanguage": "bash",
+    "codeSnippet": "npm create vite@latest mi-app -- --template react-ts",
+    "options": [
+      "Vite",
+      "jQuery",
+      "Apache Struts",
+      "Flash Player"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Vite es la herramienta de desarrollo moderna recomendada oficialmente por la comunidad de React. Utiliza ES Modules nativos y Rollup/esbuild para proporcionar arranques instantáneos y Hot Module Replacement (HMR) ultrarrápido.",
+    "proTip": "Create React App (CRA) está deprecado y obsoleto; Vite y Next.js son los estándares actuales."
+  },
+  {
+    "id": "react-18",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se pasan argumentos a una función manejadora de eventos en JSX?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "// ¿Cuál es la sintaxis correcta para pasar el id del usuario?",
+    "options": [
+      "<button onClick={() => eliminarUsuario(u.id)}>Eliminar</button>",
+      "<button onClick={eliminarUsuario(u.id)}>Eliminar</button>",
+      "<button onClick=eliminarUsuario(u.id)>Eliminar</button>",
+      "<button onClick=\"{() => eliminarUsuario(u.id)}\">Eliminar</button>"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Para pasar argumentos personalizados al hacer clic, se debe envolver la llamada en una función flecha: `() => eliminarUsuario(u.id)`. De lo contrario, se ejecutaría inmediatamente durante el renderizado.",
+    "proTip": "Si solo necesitas el evento sintético sin argumentos adicionales, puedes pasar la referencia directa: `onClick={manejarClick}`."
+  },
+  {
+    "id": "react-19",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el Context API (`createContext` y `useContext`) en React y cuándo es útil para un junior?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "const TemaContext = createContext(\"claro\");\n// En cualquier componente hijo profundo:\nconst tema = useContext(TemaContext);",
+    "options": [
+      "Permite compartir datos globales (como tema claro/oscuro o usuario autenticado) a través del árbol de componentes sin tener que pasar props manualmente por cada nivel (prop drilling).",
+      "Sirve para reemplazar todas las bases de datos SQL.",
+      "Es un método para compilar código C en el navegador.",
+      "Controla la velocidad del procesador en dispositivos móviles."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Context resuelve el problema de \"prop drilling\" (pasar una prop a través de 5 componentes intermedios que no la necesitan solo para que llegue al sexto).",
+    "proTip": "No uses Context para todo el estado de la app; úsalo para datos verdaderamente globales como autenticación, idioma o preferencias de tema."
+  },
+  {
+    "id": "react-20",
+    "categoryId": "react",
+    "categoryName": "React & Ecosystem",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué problema ocurre si actualizas un array en el estado usando `items.push(nuevoItem)` antes de llamar a `setItems`?",
+    "codeLanguage": "tsx",
+    "codeSnippet": "const [tareas, setTareas] = useState([\"A\", \"B\"]);\nfunction agregar() {\n    tareas.push(\"C\");\n    setTareas(tareas);\n}",
+    "options": [
+      "React no detectará el cambio porque `tareas` sigue apuntando exactamente a la misma referencia del array en memoria, y el componente podría no re-renderizar.",
+      "Lanza un SyntaxError inmediato.",
+      "El array se reinicia a vacío.",
+      "Los elementos se añaden en orden inverso."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Al hacer `tareas.push()`, estás mutando el array existente. Cuando haces `setTareas(tareas)`, React compara la referencia anterior con la nueva: son el mismo array en memoria, por lo que asume que nada cambió. La solución correcta e inmutable es: `setTareas([...tareas, \"C\"])`.",
+    "proTip": "Regla de oro: con arrays en el estado usa siempre `[...items, nuevo]` para agregar, y `.filter(...)` para eliminar."
+  },
+  {
+    "id": "sql-04",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia fundamental entre `INNER JOIN` y `LEFT JOIN` en una consulta relacional?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT u.nombre, p.total\nFROM usuarios u\nLEFT JOIN pedidos p ON u.id = p.usuario_id;",
+    "options": [
+      "`INNER JOIN` devuelve solo las filas que tienen coincidencia en ambas tablas; `LEFT JOIN` devuelve todos los registros de la tabla izquierda aunque no tengan pedidos (rellenando con NULL).",
+      "`LEFT JOIN` borra los datos que no coincidan en la tabla derecha.",
+      "`INNER JOIN` es solo para bases de datos NoSQL.",
+      "Ambos devuelven exactamente los mismos resultados en cualquier circunstancia."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`INNER JOIN` requiere correspondencia estricta en ambas tablas. `LEFT JOIN` (o LEFT OUTER JOIN) preserva todas las filas de la tabla de la izquierda (usuarios); si un usuario no tiene pedidos, sus columnas de pedido aparecerán como NULL.",
+    "proTip": "Usa LEFT JOIN cuando quieras listar elementos que podrían no tener registros asociados (ej. \"todos los clientes y sus pedidos si tienen\")."
+  },
+  {
+    "id": "sql-05",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia entre la cláusula `WHERE` y la cláusula `HAVING` en SQL?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT departamento, COUNT(*) as total_empleados\nFROM empleados\nWHERE salario > 1000\nGROUP BY departamento\nHAVING COUNT(*) > 5;",
+    "options": [
+      "`WHERE` filtra filas individuales ANTES de agrupar; `HAVING` filtra grupos DESPUÉS de aplicar `GROUP BY` y funciones de agregación (como COUNT, AVG).",
+      "`HAVING` se ejecuta antes de `WHERE` para ordenar la tabla.",
+      "`WHERE` solo funciona con números y `HAVING` con strings.",
+      "Son sinónimos intercambiables en cualquier consulta."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`WHERE` no puede evaluar el resultado de funciones agregadas como COUNT(*) o AVG() porque opera fila por fila antes de la agregación. `HAVING` está diseñado específicamente para filtrar los grupos resultantes.",
+    "proTip": "Pregunta típica de entrevista junior: Recuerda la regla \"WHERE para filas, HAVING para grupos agregados\"."
+  },
+  {
+    "id": "sql-06",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la consulta `SELECT * FROM clientes WHERE telefono = NULL;` nunca devuelve resultados?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT * FROM clientes WHERE telefono = NULL;",
+    "options": [
+      "Porque en SQL `NULL` representa un valor desconocido y no se puede comparar con `=`, se debe usar la sintaxis `IS NULL`.",
+      "Porque los nombres de columnas no pueden llamarse telefono.",
+      "Porque falta escribir `NULL()` con paréntesis.",
+      "Porque las consultas SELECT prohíben buscar valores vacíos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En la lógica trivaluada de SQL (True, False, Unknown), `algo = NULL` siempre evalúa a `UNKNOWN` (desconocido), por lo que la condición nunca es verdadera. La única forma correcta de buscar nulos es: `WHERE telefono IS NULL` o `WHERE telefono IS NOT NULL`.",
+    "proTip": "Grábate esto a fuego: NUNCA uses `= NULL` ni `!= NULL`; usa siempre `IS NULL` o `IS NOT NULL`."
+  },
+  {
+    "id": "sql-07",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Cuál es el peligro crítico de ejecutar una sentencia `UPDATE` o `DELETE` sin cláusula `WHERE`?",
+    "codeLanguage": "sql",
+    "codeSnippet": "DELETE FROM usuarios; -- ¿Qué ocurre si ejecutas esto?",
+    "options": [
+      "Elimina todos los registros de toda la tabla de manera irreversible.",
+      "Da un error de sintaxis y no borra nada.",
+      "Borra únicamente el primer registro que fue insertado.",
+      "Crea una copia de seguridad automática antes de borrar."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Sin una condición `WHERE`, los comandos `UPDATE` y `DELETE` afectan a absolutamente todas las filas de la tabla. En producción, esto puede ocasionar una catástrofe de pérdida total de datos.",
+    "proTip": "Regla de oro: Antes de correr un DELETE o UPDATE con WHERE, corre primero un SELECT con ese mismo WHERE para verificar exactamente qué filas vas a modificar."
+  },
+  {
+    "id": "sql-08",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es una Clave Primaria (`PRIMARY KEY`) en una tabla relacional?",
+    "codeLanguage": "sql",
+    "codeSnippet": "CREATE TABLE productos (\n    id INT PRIMARY KEY AUTO_INCREMENT,\n    nombre VARCHAR(100) NOT NULL\n);",
+    "options": [
+      "Una columna (o conjunto de columnas) que identifica de forma única cada fila en una tabla, garantizando que no se repita y nunca sea NULL.",
+      "La contraseña para acceder a la base de datos.",
+      "El nombre de usuario que creó la tabla.",
+      "Una clave de encriptación SSL."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Una clave primaria garantiza la unicidad e integridad de cada fila. Combina implícitamente las restricciones `UNIQUE` y `NOT NULL`, y crea automáticamente un índice para búsquedas ultrarrápidas.",
+    "proTip": "Casi todas las tablas relacionales deben tener una clave primaria, habitualmente un ID entero autonumérico o un UUID."
+  },
+  {
+    "id": "sql-09",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve una Clave Foránea (`FOREIGN KEY`) en el diseño de bases de datos?",
+    "codeLanguage": "sql",
+    "codeSnippet": "CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)",
+    "options": [
+      "Garantiza la integridad referencial, asegurando que el valor en usuario_id exista realmente en la tabla usuarios.",
+      "Permite conectar bases de datos de servidores de otros países.",
+      "Oculta la columna para que los usuarios no puedan verla.",
+      "Convierte la base de datos a formato NoSQL."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las claves foráneas evitan registros huérfanos (por ejemplo, pedidos asignados a un cliente que no existe). Si intentas insertar un ID inexistente, la base de datos rechazará la operación.",
+    "proTip": "Configura `ON DELETE CASCADE` solo cuando tenga sentido de negocio que al borrar el registro padre se borren sus hijos relacionados."
+  },
+  {
+    "id": "sql-10",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué función de agregación calcula el promedio aritmético de una columna numérica?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT AVG(precio) as precio_promedio FROM productos;",
+    "options": [
+      "SUM()",
+      "AVG()",
+      "COUNT()",
+      "MEAN()"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`AVG()` (Average) suma los valores de la columna y los divide entre el número de registros no nulos.",
+    "proTip": "`AVG()` ignora automáticamente los valores NULL en su cálculo; no los toma como ceros."
+  },
+  {
+    "id": "sql-11",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se ordenan los resultados de una consulta de mayor a menor (descendente)?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT nombre, puntuacion FROM jugadores ORDER BY puntuacion DESC;",
+    "options": [
+      "ORDER BY puntuacion ASC",
+      "ORDER BY puntuacion DESC",
+      "SORT BY puntuacion DOWN",
+      "GROUP BY puntuacion DESC"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`DESC` (descendente) ordena de mayor a menor en números o de la Z a la A en texto. `ASC` (ascendente) es el comportamiento por defecto.",
+    "proTip": "Puedes combinar múltiples ordenamientos: `ORDER BY fecha DESC, nombre ASC`."
+  },
+  {
+    "id": "sql-12",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué cláusula limita la cantidad de registros devueltos por una consulta (ej. para paginación)?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT * FROM articulos ORDER BY fecha DESC LIMIT 10 OFFSET 20;",
+    "options": [
+      "LIMIT y OFFSET",
+      "TOP y STOP",
+      "RANGE y PAGE",
+      "MAX y SKIP"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`LIMIT 10` indica devolver un máximo de 10 filas. `OFFSET 20` se salta las primeras 20 filas. Juntas son la base de la paginación tradicional en PostgreSQL, MySQL y SQLite.",
+    "proTip": "En SQL Server se utiliza `TOP (10)` o `OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY`."
+  },
+  {
+    "id": "sql-13",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué operador se utiliza con `WHERE` para buscar patrones de texto que contengan una palabra específica?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT * FROM libros WHERE titulo LIKE \"%Python%\";",
+    "options": [
+      "MATCH",
+      "LIKE con el comodín %",
+      "CONTAINS",
+      "EQUALS"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El operador `LIKE` compara cadenas con comodines. El símbolo `%` representa cero o más caracteres arbitrarios, por lo que `\"%Python%\"` encuentra cualquier título que contenga \"Python\" en cualquier posición.",
+    "proTip": "El comodín `_` (guión bajo) representa exactamente un solo carácter cualquiera."
+  },
+  {
+    "id": "sql-14",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué función SQL devuelve el primer valor no nulo de una lista de argumentos?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT COALESCE(telefono, celular, \"Sin número\") as contacto FROM usuarios;",
+    "options": [
+      "IFNULL()",
+      "COALESCE()",
+      "NVL()",
+      "DEFAULT()"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`COALESCE(val1, val2, ...)` es una función estándar ANSI SQL que evalúa sus argumentos en orden y retorna el primer valor que no sea NULL.",
+    "proTip": "Es extremadamente útil para proporcionar valores de respaldo amigables en reportes y vistas."
+  },
+  {
+    "id": "sql-15",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la consulta `SELECT categoria, AVG(precio) FROM productos;` arroja un error en SQL estricto?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT categoria, AVG(precio) FROM productos;",
+    "options": [
+      "Porque falta la cláusula `GROUP BY categoria`; no se pueden mezclar columnas no agregadas con funciones de agregación sin agrupar.",
+      "Porque AVG() solo funciona en tablas temporales.",
+      "Porque la columna categoria debe ser numérica.",
+      "Porque SELECT prohíbe tener más de una columna si hay funciones."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Si seleccionas una columna individual (`categoria`) junto a una función agregada (`AVG(precio)`), el motor SQL necesita saber cómo agrupar las filas. La consulta correcta es: `SELECT categoria, AVG(precio) FROM productos GROUP BY categoria;`.",
+    "proTip": "Regla básica: Toda columna que aparezca en el SELECT que no esté dentro de una función de agregación debe estar en el GROUP BY."
+  },
+  {
+    "id": "sql-16",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué significa la propiedad ACID en las transacciones de bases de datos relacionales?",
+    "codeLanguage": "text",
+    "codeSnippet": "A - C - I - D",
+    "options": [
+      "Atomicidad, Consistencia, Aislamiento (Isolation) y Durabilidad.",
+      "Acceso, Conectividad, Integración y Distribución.",
+      "Algoritmo, Código, Interfaz y Datos.",
+      "Autenticación, Criptografía, Identidad y Despliegue."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "ACID garantiza transacciones seguras: Atomicidad (todo o nada), Consistencia (reglas de integridad se cumplen), Aislamiento (transacciones concurrentes no se interfieren) y Durabilidad (los datos confirmados sobreviven a fallos del sistema).",
+    "proTip": "Pregunta clásica de entrevista: En una transferencia bancaria, se descuenta de una cuenta y se suma en otra dentro de una misma transacción Atómica: si falla una, se revierte todo (ROLLBACK)."
+  },
+  {
+    "id": "sql-17",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué sirve crear un ÍNDICE (`INDEX`) en una columna de una tabla de base de datos?",
+    "codeLanguage": "sql",
+    "codeSnippet": "CREATE INDEX idx_email ON usuarios(email);",
+    "options": [
+      "Acelera dramáticamente la velocidad de las búsquedas y filtros (WHERE) en esa columna, a costa de un ligero coste adicional de espacio y tiempo en inserciones.",
+      "Obliga a que todos los emails sean únicos.",
+      "Encripta la columna email con SHA-256.",
+      "Oculta la columna en la consola del administrador."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Un índice funciona como el índice alfabético al final de un libro. En lugar de escanear la tabla entera fila por fila (Full Table Scan), el motor busca directamente en una estructura B-Tree optimizada.",
+    "proTip": "No indexes todas las columnas indiscriminadamente; indexa aquellas que se usan con alta frecuencia en cláusulas WHERE y JOIN."
+  },
+  {
+    "id": "sql-18",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué comando DDL se utiliza para agregar una nueva columna a una tabla existente sin borrarla?",
+    "codeLanguage": "sql",
+    "codeSnippet": "ALTER TABLE usuarios ADD COLUMN fecha_nacimiento DATE;",
+    "options": [
+      "UPDATE TABLE",
+      "MODIFY TABLE",
+      "ALTER TABLE",
+      "CHANGE TABLE"
+    ],
+    "correctAnswerIndex": 2,
+    "explanation": "`ALTER TABLE nombre_tabla ADD COLUMN nombre_columna tipo;` modifica la estructura de una tabla existente para incorporar nuevas columnas o restricciones.",
+    "proTip": "Comandos que cambian la estructura (CREATE, ALTER, DROP) son DDL (Data Definition Language); comandos que manipulan datos (SELECT, INSERT, UPDATE, DELETE) son DML."
+  },
+  {
+    "id": "sql-19",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué operador permite comprobar si un valor coincide con cualquiera de los valores dentro de una lista o subconsulta?",
+    "codeLanguage": "sql",
+    "codeSnippet": "SELECT * FROM pedidos WHERE estado IN (\"enviado\", \"entregado\", \"facturado\");",
+    "options": [
+      "BETWEEN",
+      "IN",
+      "EXISTS",
+      "LIKE"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "El operador `IN (...)` es una alternativa limpia y eficiente a encadenar múltiples condiciones `OR`: `WHERE estado = \"enviado\" OR estado = \"entregado\" OR ...`.",
+    "proTip": "También puedes usar `NOT IN (...)` para excluir una lista de valores."
+  },
+  {
+    "id": "sql-20",
+    "categoryId": "sql",
+    "categoryName": "SQL & Bases de Datos",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la forma segura y profesional de prevenir ataques de Inyección SQL (SQL Injection) en código backend?",
+    "codeLanguage": "sql",
+    "codeSnippet": "// ¿Cómo ejecutar consultas de forma segura con parámetros?",
+    "options": [
+      "Usar consultas preparadas (Prepared Statements / Parámetros Bind) o un ORM seguro, nunca concatenar texto del usuario directamente en la cadena SQL.",
+      "Reemplazar todas las comillas con espacios en blanco manualmente con regex.",
+      "Cambiar el puerto del servidor de base de datos a 9999.",
+      "Desactivar el comando SELECT en la base de datos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las consultas preparadas envían la plantilla SQL y los datos por canales separados al motor de base de datos. El motor trata los datos estrictamente como valores literales, haciendo imposible que el texto malicioso se interprete como instrucciones SQL.",
+    "proTip": "Nunca hagas: `query = \"SELECT * FROM users WHERE email = '\" + input + \"'\"` en ningún lenguaje."
+  },
+  {
+    "id": "solid-04",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué significa la \"S\" en SOLID y cuál es su definición en términos sencillos?",
+    "codeLanguage": "text",
+    "codeSnippet": "S - Single Responsibility Principle (SRP)",
+    "options": [
+      "Una clase debe tener una única razón para cambiar, es decir, debe encargarse de una sola responsabilidad bien delimitada.",
+      "Solo se puede crear un único objeto de cada clase (patrón Singleton).",
+      "El software debe compilarse en un solo archivo binario.",
+      "Las funciones solo pueden recibir un único parámetro."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El Principio de Responsabilidad Única (SRP) postula que cada módulo o clase debe encargarse de un único aspecto de la funcionalidad del software. Si una clase hace cálculos contables, guarda en BD y genera PDFs, tiene 3 razones para cambiar y viola el SRP.",
+    "proTip": "Pregúntate: \"¿Qué hace esta clase?\". Si la respuesta incluye la conjunción \"Y\" (ej: \"calcula salarios Y envía correos Y genera reportes\"), probablemente viola el SRP."
+  },
+  {
+    "id": "solid-05",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la siguiente clase `Factura` viola claramente el Principio de Responsabilidad Única (SRP)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class Factura {\n    calcularTotal() { /* cálculo */ }\n    guardarEnBaseDeDatos() { /* SQL INSERT */ }\n    enviarEmailAlCliente() { /* SMTP */ }\n}",
+    "options": [
+      "Porque mezcla lógica de negocio (cálculo), persistencia de datos (SQL) y comunicación externa (email) en una misma clase.",
+      "Porque TypeScript prohíbe tener más de dos métodos por clase.",
+      "Porque falta un constructor con parámetros tipados.",
+      "Porque Factura debería ser una interfaz y no una clase."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La clase Factura tiene 3 motivos distintos para ser modificada: si cambia la regla de impuestos, si cambia el motor de base de datos o si cambia el proveedor de email. La solución limpia es separar en `Factura`, `FacturaRepository` y `EmailService`.",
+    "proTip": "Separar estas responsabilidades facilita enormemente escribir pruebas unitarias independientes."
+  },
+  {
+    "id": "solid-06",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué significa la \"O\" en SOLID (Open/Closed Principle - Principio Abierto/Cerrado)?",
+    "codeLanguage": "text",
+    "codeSnippet": "O - Open / Closed Principle",
+    "options": [
+      "El software debe estar abierto a la extensión (añadir nuevas funcionalidades), pero cerrado a la modificación (sin alterar el código existente ya testeado).",
+      "El código fuente debe ser siempre de código abierto (Open Source).",
+      "Los archivos deben abrirse y cerrarse con comandos del sistema operativo.",
+      "Las clases deben tener constructores abiertos y métodos cerrados."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Debes poder extender el comportamiento de una clase sin tener que abrir su archivo y modificar su código fuente existente, utilizando abstracciones, herencia o polimorfismo.",
+    "proTip": "Si cada vez que añades un nuevo tipo de producto o método de pago tienes que editar un gigantesco switch / if-else, estás violando el OCP."
+  },
+  {
+    "id": "solid-07",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Cómo se refactoriza este código con if/else para cumplir el Principio Abierto/Cerrado (OCP)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "function procesarPago(metodo: string, monto: number) {\n    if (metodo === \"tarjeta\") { /* ... */ }\n    else if (metodo === \"paypal\") { /* ... */ }\n    else if (metodo === \"crypto\") { /* ... */ }\n}",
+    "options": [
+      "Crear una interfaz `MetodoPago` con el método `pagar(monto)`, e implementar clases concretas (`PagoTarjeta`, `PagoPaypal`, `PagoCrypto`).",
+      "Añadir más cláusulas else-if para cada moneda del mundo.",
+      "Reemplazar el if por un switch statement.",
+      "Usar una variable global con arrays asociativos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Al usar polimorfismo con una interfaz común `MetodoPago`, cuando surja un nuevo método (ej. `PagoTransferencia`), solo creas una nueva clase sin tocar ni modificar el código previo de procesarPago.",
+    "proTip": "El patrón Estrategia (Strategy Pattern) es la implementación canónica para cumplir con el OCP."
+  },
+  {
+    "id": "solid-08",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué establece el Principio de Sustitución de Liskov (LSP - la \"L\" de SOLID)?",
+    "codeLanguage": "text",
+    "codeSnippet": "L - Liskov Substitution Principle",
+    "options": [
+      "Los objetos de una clase hija deben poder sustituir a los objetos de la clase padre sin alterar el correcto funcionamiento del programa.",
+      "Todas las variables deben sustituirse por constantes.",
+      "Las subclases deben tener obligatoriamente más métodos que sus padres.",
+      "No se permite la herencia múltiple en ningún lenguaje."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Nombrado en honor a Barbara Liskov. Si una función espera un objeto de tipo `Vehiculo`, debe funcionar correctamente sin fallos tanto si le pasas un `Coche` como si le pasas una `Bicicleta` (siempre que ambas hereden de Vehiculo y cumplan su contrato).",
+    "proTip": "Si en tu código ves: `if (vehiculo instanceof Bicicleta)` para evitar llamar a un método que rompe, estás violando LSP."
+  },
+  {
+    "id": "solid-09",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "El clásico dilema: ¿Por qué hacer que `Cuadrado` herede de `Rectángulo` suele violar Liskov (LSP)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class Rectangulo {\n    setAncho(w: number) { this.ancho = w; }\n    setAlto(h: number) { this.alto = h; }\n}\nclass Cuadrado extends Rectangulo {\n    setAncho(w: number) { this.ancho = w; this.alto = w; } // Modifica ambos\n}",
+    "options": [
+      "Porque un usuario de Rectangulo espera que cambiar el ancho no altere el alto; el Cuadrado rompe ese comportamiento esperado.",
+      "Porque los cuadrados no tienen área calculable.",
+      "Porque TypeScript prohíbe que figuras geométricas sean clases.",
+      "Porque los cuadrados no son polígonos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Aunque matemáticamente un cuadrado es un tipo de rectángulo, en programación orientada a objetos mutable violan los contratos de comportamiento de sus métodos. El código que espera un Rectángulo verá su lógica quebrada.",
+    "proTip": "La herencia modela comportamiento (\"se comporta como\"), no únicamente taxonomía conceptual de la vida real."
+  },
+  {
+    "id": "solid-10",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué postula el Principio de Segregación de Interfaces (ISP - la \"I\" de SOLID)?",
+    "codeLanguage": "text",
+    "codeSnippet": "I - Interface Segregation Principle",
+    "options": [
+      "Ningún cliente debería verse obligado a depender de métodos que no utiliza; es mejor tener muchas interfaces pequeñas y específicas que una interfaz gigantesca.",
+      "Las interfaces deben declararse en archivos separados con extensión .interface.",
+      "Todas las interfaces deben tener como mínimo 10 métodos obligatorios.",
+      "Las interfaces solo pueden ser implementadas por clases abstractas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las \"interfaces grasas\" (fat interfaces) obligan a clases simples a implementar métodos con cuerpos vacíos o que arrojan excepciones tipo \"NotImplementedError\", lo que es una pésima práctica.",
+    "proTip": "Es preferible tener `interface Imprimible` e `interface Escaneable` que una gran `interface DispositivoMultifuncion` con todo forzado."
+  },
+  {
+    "id": "solid-11",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la siguiente interfaz viola el Principio de Segregación de Interfaces (ISP)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "interface Trabajador {\n    trabajar(): void;\n    comer(): void;\n}\nclass Robot implements Trabajador {\n    trabajar() { /* trabaja */ }\n    comer() { throw new Error(\"Los robots no comen\"); }\n}",
+    "options": [
+      "Porque obliga a la clase Robot a implementar el método comer(), el cual no tiene ningún sentido para un robot.",
+      "Porque los robots no pueden ser clases en POO.",
+      "Porque falta declarar un método dormir().",
+      "Porque las interfaces no admiten el tipo de retorno void."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Robot se ve forzado a implementar un método que no le corresponde, arrojando una excepción. La solución es segregar en `interface Trabajable { trabajar(): void }` y `interface Alimentable { comer(): void }`.",
+    "proTip": "Un robot implementará solo `Trabajable`, mientras que un Humano implementará ambas interfaces."
+  },
+  {
+    "id": "solid-12",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué establece el Principio de Inversión de Dependencias (DIP - la \"D\" de SOLID)?",
+    "codeLanguage": "text",
+    "codeSnippet": "D - Dependency Inversion Principle",
+    "options": [
+      "Los módulos de alto nivel no deben depender de módulos de bajo nivel; ambos deben depender de abstracciones (interfaces). Las abstracciones no deben depender de los detalles.",
+      "Las dependencias deben instalarse en orden inverso en el package.json.",
+      "El código backend debe depender directamente de los componentes de React.",
+      "Las bases de datos deben crearse antes que el código de la aplicación."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El DIP invierte la jerarquía tradicional. En lugar de que tu servicio de negocio cree directamente instancias de `MySQLDatabase` con `new`, el servicio depende de una interfaz abstracta `DatabaseConnection`.",
+    "proTip": "Esto desacopla tu lógica de negocio de la tecnología concreta de persistencia o red utilizada."
+  },
+  {
+    "id": "solid-13",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué la siguiente clase viola el Principio de Inversión de Dependencias (DIP)?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class ServicioUsuarios {\n    private emailService = new ServicioSendGrid(); // Instancia directa\n    registrarUsuario() { this.emailService.enviar(); }\n}",
+    "options": [
+      "Porque ServicioUsuarios está fuertemente acoplado a la implementación concreta de SendGrid; si quieres cambiar a Mailgun o hacer tests unitarios con un Mock, debes modificar la clase.",
+      "Porque las clases de servicio no pueden enviar emails.",
+      "Porque falta exportar ServicioSendGrid.",
+      "Porque new solo se puede usar dentro del constructor."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Al instanciar con `new` dentro de la clase, creas un acoplamiento duro. La solución es inyectar la dependencia a través del constructor recibiendo una interfaz común: `constructor(private emailService: IEmailService)`.",
+    "proTip": "La Inyección de Dependencias (DI) es la técnica práctica principal para aplicar el principio DIP."
+  },
+  {
+    "id": "solid-14",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es la Inyección de Dependencias (Dependency Injection) en la práctica?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class Carrito {\n    constructor(private pasarelaPago: IPasarelaPago) {}\n}",
+    "options": [
+      "Pasar las dependencias que una clase necesita desde el exterior (generalmente por el constructor), en lugar de que la clase las instancie internamente con `new`.",
+      "Un virus informático que infecta archivos TypeScript.",
+      "Un método para inyectar código SQL en bases de datos.",
+      "Una forma de compilar código en caliente."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La inyección de dependencias permite que otra entidad (el llamador o un contenedor DI) proporcione las instancias necesarias. Esto hace que las clases sean 100% testeables, ya que en tests puedes pasar un Mock simulado.",
+    "proTip": "En pruebas unitarias: puedes inyectar un `MockPasarelaPago` que no cobra dinero real y responde al instante."
+  },
+  {
+    "id": "solid-15",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es el beneficio más evidente de aplicar principios SOLID en un proyecto real?",
+    "codeLanguage": "text",
+    "codeSnippet": "Mantenibilidad + Testeabilidad + Escalabilidad",
+    "options": [
+      "El código es más fácil de mantener, extender sin romper cosas existentes y mucho más sencillo de probar con pruebas automatizadas.",
+      "El código se ejecuta 100 veces más rápido en la CPU.",
+      "Elimina la necesidad de usar bases de datos.",
+      "Garantiza que la aplicación nunca tendrá ningún error."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "SOLID no es para acelerar el hardware; es para el equipo humano de desarrollo: reduce el acoplamiento, aumenta la cohesión y previene la \"deuda técnica\" donde tocar una línea rompe diez partes no relacionadas del sistema.",
+    "proTip": "Los principios SOLID son guías, no dogmas absolutos; aplícalos con sentido común sin sobre-diseñar aplicaciones simples."
+  },
+  {
+    "id": "solid-16",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué patrón de diseño ayuda a cumplir el Principio de Responsabilidad Única extrayendo la construcción de objetos complejos?",
+    "codeLanguage": "text",
+    "codeSnippet": "Patrón Creacional",
+    "options": [
+      "Patrón Factory (Fábrica) o Builder",
+      "Patrón Observer",
+      "Patrón Decorator",
+      "Patrón MVC"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El patrón Factory delega la responsabilidad de instanciar y ensamblar objetos complejos a una clase especializada, liberando a la clase de negocio de conocer los detalles de creación.",
+    "proTip": "Usa Factory cuando crear un objeto requiera múltiples configuraciones o dependencias condicionales."
+  },
+  {
+    "id": "solid-17",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué síntoma en una base de código (\"Code Smell\") suele delatar una violación del Principio de Responsabilidad Única (SRP)?",
+    "codeLanguage": "text",
+    "codeSnippet": "God Object / Clase Dios",
+    "options": [
+      "Una \"Clase Dios\" (God Class) gigantesca con más de 2000 líneas que maneja la vista, la base de datos, las validaciones y los cálculos de negocio.",
+      "Un archivo con solo 20 líneas de código.",
+      "Usar nombres de variables en inglés.",
+      "Tener demasiadas pruebas unitarias que pasan."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las clases gigantescas que intentan \"hacer de todo\" son el síntoma clásico de violación del SRP. Son difíciles de leer, propensas a conflictos de merge en Git y casi imposibles de testear.",
+    "proTip": "Cuando veas una clase con cientos de líneas y métodos dispares, desglósala en clases colaboradoras más pequeñas y enfocadas."
+  },
+  {
+    "id": "solid-18",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se relaciona el Principio de Segregación de Interfaces (ISP) con el principio de diseño \"Keep It Simple\" (KISS)?",
+    "codeLanguage": "text",
+    "codeSnippet": "Interfaces específicas vs monolitos",
+    "options": [
+      "Al crear interfaces con pocos métodos específicos para cada rol, las clases que las implementan solo escriben el código estrictamente necesario sin métodos inútiles.",
+      "ISP prohíbe el uso de interfaces en proyectos sencillos.",
+      "KISS obliga a que todas las interfaces tengan un solo método llamado run().",
+      "No tienen ninguna relación conceptual."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Tener contratos pequeños y específicos mantiene las clases sencillas, comprensibles y sin código muerto o implementaciones vacías que confunden a otros programadores.",
+    "proTip": "En TypeScript y Go es común tener interfaces con uno o dos métodos (ej. `Reader`, `Writer`, `Clonable`)."
+  },
+  {
+    "id": "solid-19",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "En una entrevista técnica para Junior: ¿Quién propuso y popularizó el acrónimo SOLID?",
+    "codeLanguage": "text",
+    "codeSnippet": "Uncle Bob (Robert C. Martin)",
+    "options": [
+      "Robert C. Martin (\"Uncle Bob\") en sus libros y publicaciones sobre Clean Architecture y Agile.",
+      "Bill Gates en el lanzamiento de Windows 95.",
+      "Linus Torvalds al programar el kernel de Linux.",
+      "Mark Zuckerberg al crear React."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Robert C. Martin recopiló estos 5 principios a principios de la década de 2000, y más tarde Michael Feathers introdujo el mnemónico SOLID para recordarlos fácilmente.",
+    "proTip": "Conocer el origen y la filosofía detrás de SOLID demuestra madurez y cultura técnica en entrevistas de trabajo."
+  },
+  {
+    "id": "solid-20",
+    "categoryId": "solid",
+    "categoryName": "Principios SOLID",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué principio SOLID se violaría si una clase hija anula un método del padre para lanzar una excepción `throw new UnsupportedOperationException()`?",
+    "codeLanguage": "typescript",
+    "codeSnippet": "class Ave {\n    volar() { /* vuela */ }\n}\nclass Pinguino extends Ave {\n    volar() { throw new Error(\"Los pingüinos no pueden volar\"); }\n}",
+    "options": [
+      "El Principio de Sustitución de Liskov (LSP), porque Pinguino no puede sustituir a Ave de forma segura sin romper el código que llama a volar().",
+      "El Principio de Inversión de Dependencias (DIP).",
+      "El Principio de Responsabilidad Única (SRP).",
+      "Ninguno, es la forma correcta de modelar pingüinos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Cualquier código que reciba un `Ave` y llame a `.volar()` fallará inesperadamente si recibe un `Pinguino`. La jerarquía correcta sería no poner `.volar()` en el padre común `Ave`, sino crear una interfaz o subclase `AveVoladora`.",
+    "proTip": "Pregunta clásica de examen: \"Un Pingüino es un Ave, pero no todo Ave vuela; no heredes comportamiento que no todas las hijas poseen\"."
+  },
+  {
+    "id": "mf-03",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia fundamental entre Git y GitHub?",
+    "codeLanguage": "text",
+    "codeSnippet": "Git vs GitHub",
+    "options": [
+      "Git es el software de control de versiones distribuido local, mientras que GitHub es una plataforma en la nube para alojar y colaborar en repositorios Git.",
+      "Git es un lenguaje de programación y GitHub es el compilador.",
+      "Son exactamente lo mismo con dos nombres de marcas diferentes.",
+      "GitHub solo funciona en sistemas operativos Linux."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Git funciona completamente offline en tu máquina local gestionando el historial de commits. GitHub (junto con GitLab y Bitbucket) es un servicio web remoto donde subes tu repositorio para colaborar, hacer Pull Requests y CI/CD.",
+    "proTip": "Pregunta obligada en entrevistas iniciales: Git es la herramienta de consola local; GitHub es el servicio de alojamiento remoto."
+  },
+  {
+    "id": "mf-04",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué hace el comando `git add .` en el flujo de trabajo de Git?",
+    "codeLanguage": "bash",
+    "codeSnippet": "git add .",
+    "options": [
+      "Envía los cambios directamente a la rama remota en GitHub.",
+      "Agrega todos los archivos nuevos y modificados del directorio actual al área de preparación (Staging Area / Index).",
+      "Crea una nueva rama llamada \".\"",
+      "Deshace todos los cambios realizados desde el último commit."
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`git add` traslada los cambios del \"Working Directory\" (tu espacio de trabajo) a la \"Staging Area\" (área de preparación), listos para ser empaquetados en el siguiente commit con `git commit`.",
+    "proTip": "Para agregar solo un archivo específico y mantener commits atómicos y limpios: `git add ruta/archivo.ts`."
+  },
+  {
+    "id": "mf-05",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué NUNCA se deben subir archivos `.env` o la carpeta `node_modules/` a un repositorio Git?",
+    "codeLanguage": "text",
+    "codeSnippet": ".env\nnode_modules/",
+    "options": [
+      "Porque `.env` contiene secretos, claves de API y contraseñas que quedarían expuestas, y `node_modules` contiene miles de dependencias pesadas que se reinstalan con npm install.",
+      "Porque Git solo admite archivos con menos de 10 líneas de código.",
+      "Porque GitHub cobra una tarifa por cada archivo que empiece con punto.",
+      "Porque rompe la compatibilidad con Windows."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Subir claves en `.env` a repositorios públicos o compartidos es una de las vulnerabilidades más comunes en ciberseguridad. Además, las dependencias de `node_modules/` se reconstruyen fácilmente en cualquier máquina leyendo el `package.json`.",
+    "proTip": "Asegúrate siempre de añadir `.env` y `node_modules/` a tu archivo `.gitignore` antes del primer commit."
+  },
+  {
+    "id": "mf-06",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es el comando moderno de Git para crear una nueva rama y cambiarse a ella en un solo paso?",
+    "codeLanguage": "bash",
+    "codeSnippet": "# ¿Cuál comando crea y entra en la rama \"feature-login\"?",
+    "options": [
+      "git switch -c feature-login (o git checkout -b feature-login)",
+      "git create branch feature-login",
+      "git new feature-login",
+      "git branch --jump feature-login"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`git switch -c nombre-rama` (introducido en Git 2.23) o el comando clásico `git checkout -b nombre-rama` crean la rama y hacen el cambio a ella de forma instantánea.",
+    "proTip": "`git switch` se introdujo para separar la navegación de ramas de las operaciones de restauración de archivos que hacía `checkout`."
+  },
+  {
+    "id": "mf-07",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "En el protocolo HTTP: ¿Qué significa un código de estado en el rango 4xx (como 404 o 401)?",
+    "codeLanguage": "text",
+    "codeSnippet": "HTTP 404 Not Found | HTTP 401 Unauthorized | HTTP 400 Bad Request",
+    "options": [
+      "Un error del lado del cliente (petición malformada, recurso no encontrado o falta de autenticación).",
+      "Una respuesta exitosa que contiene datos en JSON.",
+      "Un error interno grave del servidor en el backend (crash de base de datos).",
+      "Una redirección permanente a otra URL."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los códigos HTTP se dividen en rangos: 2xx = Éxito, 3xx = Redirección, 4xx = Error del Cliente (tú pediste algo mal o no tienes permisos), 5xx = Error del Servidor (el backend se cayó o falló).",
+    "proTip": "Regla nemotécnica: \"4xx es tu culpa (cliente), 5xx es culpa de mi servidor\"."
+  },
+  {
+    "id": "mf-08",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué método HTTP se debe usar en una API REST estándar para CREAR un nuevo recurso en el servidor?",
+    "codeLanguage": "text",
+    "codeSnippet": "REST API Verbs: GET, POST, PUT, DELETE, PATCH",
+    "options": [
+      "GET",
+      "POST",
+      "DELETE",
+      "OPTIONS"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "En las convenciones de diseño RESTful: `POST` se utiliza para crear nuevos recursos enviando los datos en el cuerpo de la petición. `GET` solo lee sin modificar datos.",
+    "proTip": "`GET` debe ser siempre una operación segura e idempotente (nunca debe borrar o crear registros en la base de datos)."
+  },
+  {
+    "id": "mf-09",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué significan los marcadores `<<<<<<<`, `=======` y `>>>>>>>` cuando ocurre un Conflicto de Fusión (Merge Conflict) en Git?",
+    "codeLanguage": "text",
+    "codeSnippet": "<<<<<<< HEAD\nconst api = \"https://v1.api.com\";\n=======\nconst api = \"https://v2.api.com\";\n>>>>>>> feature-nueva",
+    "options": [
+      "Son marcadores generados por Git que delimitan el código de tu rama actual (HEAD) y el de la rama que estás fusionando (feature-nueva) que tocan las mismas líneas.",
+      "Son comentarios válidos de TypeScript para optimizar la compilación.",
+      "Un error de disco duro que corrompió el archivo.",
+      "Una directiva especial para que GitHub elija aleatoriamente una de las dos opciones."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Git no puede decidir por sí mismo cuál de los dos cambios es el correcto cuando dos personas modifican la misma línea. Muestra los marcadores para que el desarrollador edite el archivo manualmente, elija la versión correcta y borre los marcadores.",
+    "proTip": "Una vez resuelto manualmente, guarda el archivo, haz `git add archivo` y completa el merge con `git commit`."
+  },
+  {
+    "id": "mf-10",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué hace el comando `git pull` entre bastidores?",
+    "codeLanguage": "bash",
+    "codeSnippet": "git pull origin main",
+    "options": [
+      "Ejecuta un `git fetch` (descarga los commits del remoto) seguido inmediatamente de un `git merge` (los fusiona en tu rama local actual).",
+      "Sube tus archivos locales a GitHub.",
+      "Borra la rama remota de GitHub.",
+      "Crea una Pull Request en la interfaz web de GitHub."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`git pull` es la combinación abreviada de descargar las novedades del servidor remoto (`git fetch`) y aplicarlas a tu rama de trabajo actual (`git merge`).",
+    "proTip": "Si quieres evitar commits de merge automáticos y mantener un historial lineal, puedes usar `git pull --rebase`."
+  },
+  {
+    "id": "mf-11",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia entre el verbo HTTP `PUT` y `PATCH` al actualizar un recurso en una API REST?",
+    "codeLanguage": "text",
+    "codeSnippet": "PUT /usuarios/1 vs PATCH /usuarios/1",
+    "options": [
+      "`PUT` reemplaza el recurso completo (debes enviar todos los campos); `PATCH` aplica una modificación parcial (solo envías los campos que cambiaron).",
+      "`PATCH` solo funciona para imágenes y archivos binarios.",
+      "`PUT` solo se usa en bases de datos PostgreSQL.",
+      "Son totalmente idénticos en la especificación RFC."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`PUT` es un reemplazo completo idempotente del recurso. Si solo quieres cambiar el nombre de un usuario sin tener que enviar su email, contraseña y dirección, lo idiomático en REST es usar `PATCH`.",
+    "proTip": "Pregunta clásica de entrevista backend junior: \"PUT reemplaza todo, PATCH actualiza parcialmente\"."
+  },
+  {
+    "id": "mf-12",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué comando de Git permite inspeccionar el estado actual de los archivos (modificados, en staging o sin seguimiento)?",
+    "codeLanguage": "bash",
+    "codeSnippet": "git status",
+    "options": [
+      "git log",
+      "git status",
+      "git check",
+      "git diff --all"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`git status` muestra qué rama tienes activa, qué archivos están listos para commit (verde), cuáles modificados sin añadir (rojo) y cuáles no tienen seguimiento (untracked).",
+    "proTip": "Es una excelente costumbre ejecutar `git status` antes y después de cada `git add` y `git commit`."
+  },
+  {
+    "id": "mf-13",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es una Pull Request (PR) o Merge Request (MR)?",
+    "codeLanguage": "text",
+    "codeSnippet": "GitHub Pull Request (PR)",
+    "options": [
+      "Una propuesta formal para fusionar los cambios de una rama (generalmente una feature) en otra rama principal, permitiendo revisión de código (Code Review) y pruebas automáticas.",
+      "Una petición que hace el servidor al cliente para descargar archivos.",
+      "Un comando de consola exclusivo para borrar ramas.",
+      "Un tipo de licencia de software libre."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La Pull Request es la base de la colaboración en equipos modernos de desarrollo. Permite a compañeros de equipo comentar, sugerir mejoras, verificar que los tests pasen y aprobar el código antes de que llegue a producción.",
+    "proTip": "Mantén tus PRs pequeñas y enfocadas en una sola tarea (menos de 300 líneas); son mucho más fáciles de revisar y aprobar."
+  },
+  {
+    "id": "mf-14",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué un mensaje de commit como \"fix\", \"cambios\" o \"asdf\" es considerado una mala práctica profesional?",
+    "codeLanguage": "text",
+    "codeSnippet": "git commit -m \"arreglos\"",
+    "options": [
+      "Porque no explica qué cambió ni por qué, haciendo imposible rastrear bugs en el historial con git log o revertir cambios con confianza.",
+      "Porque Git rechaza commits que tengan menos de 20 palabras.",
+      "Porque impide hacer git push a GitHub.",
+      "Porque desactiva el compilador del proyecto."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los mensajes de commit deben ser descriptivos. La convención \"Conventional Commits\" recomienda formatos claros como: `feat: agregar formulario de login` o `fix: corregir cálculo de impuestos en el carrito`.",
+    "proTip": "Un buen commit responde a la frase: \"Si aplico este commit, este cambio va a...\"."
+  },
+  {
+    "id": "mf-15",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué comando de Git permite ver el historial cronológico de commits realizados en el repositorio?",
+    "codeLanguage": "bash",
+    "codeSnippet": "git log --oneline -n 5",
+    "options": [
+      "git history",
+      "git log",
+      "git show --all",
+      "git list"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`git log` lista los commits con su hash SHA-1, autor, fecha y mensaje. El modificador `--oneline` muestra cada commit de forma compacta en una sola línea.",
+    "proTip": "Usa `git log --graph --oneline --all` para ver un árbol visual de ramas en tu propia terminal."
+  },
+  {
+    "id": "mf-16",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué comando se utiliza para guardar temporalmente cambios sin commitear cuando necesitas cambiar urgentemente de rama?",
+    "codeLanguage": "bash",
+    "codeSnippet": "git stash\n# ... cambias de rama, trabajas ...\ngit stash pop",
+    "options": [
+      "git stash",
+      "git pause",
+      "git hold",
+      "git save"
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`git stash` toma tus modificaciones pendientes en el working directory y las guarda en una pila temporal limpia, dejando tu rama en el estado del último commit. Luego las recuperas con `git stash pop`.",
+    "proTip": "Es perfecto cuando estás en medio de una función y te piden arreglar un bug urgente en otra rama."
+  },
+  {
+    "id": "mf-17",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué código de estado HTTP indica que una petición fue exitosa y además se creó un nuevo recurso en el servidor?",
+    "codeLanguage": "text",
+    "codeSnippet": "HTTP 201 Created",
+    "options": [
+      "200 OK",
+      "201 Created",
+      "204 No Content",
+      "301 Moved Permanently"
+    ],
+    "correctAnswerIndex": 1,
+    "explanation": "`201 Created` es la respuesta estándar que un endpoint POST exitoso debe devolver al crear una nueva entidad (ej. un nuevo usuario o producto en la base de datos).",
+    "proTip": "`204 No Content` se usa cuando la operación fue exitosa pero no hay contenido que retornar en el cuerpo (muy común en DELETE)."
+  },
+  {
+    "id": "mf-18",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué significa el término \"CORS\" (Cross-Origin Resource Sharing) que frecuentemente causa errores en el frontend?",
+    "codeLanguage": "text",
+    "codeSnippet": "Access-Control-Allow-Origin",
+    "options": [
+      "Un mecanismo de seguridad del navegador que bloquea peticiones HTTP hechas desde un dominio/puerto hacia otro dominio distinto si el servidor no autoriza explícitamente el origen.",
+      "Un protocolo para conectar cables de fibra óptica.",
+      "Un error de compilación de CSS.",
+      "Un plugin de Chrome para acelerar descargas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Por seguridad, los navegadores impiden que una web en `http://localhost:3000` consulte una API en `http://api.empresa.com` a menos que el servidor envíe la cabecera `Access-Control-Allow-Origin`.",
+    "proTip": "El error de CORS se soluciona en el BACKEND habilitando el origen permitido o usando un proxy en desarrollo, NO en el código del navegador."
+  },
+  {
+    "id": "mf-19",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué hace el comando `git clone <url>`?",
+    "codeLanguage": "bash",
+    "codeSnippet": "git clone https://github.com/usuario/repo.git",
+    "options": [
+      "Descarga una copia completa de un repositorio remoto existente, incluyendo todos sus archivos, ramas y todo el historial de commits en una carpeta local.",
+      "Sube tu proyecto actual a un servidor nuevo.",
+      "Duplica un archivo en la misma carpeta.",
+      "Instala las dependencias con npm."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "`git clone` inicializa un repositorio local, configura el remoto `origin` apuntando a esa URL y descarga todas las ramas y commits disponibles.",
+    "proTip": "Es el primer comando que ejecutarás al integrarte a un nuevo equipo de trabajo o clonar un proyecto open source."
+  },
+  {
+    "id": "mf-20",
+    "categoryId": "modern_fundamentals",
+    "categoryName": "Fundamentos & Git",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el archivo `README.md` en la raíz de un repositorio de código?",
+    "codeLanguage": "markdown",
+    "codeSnippet": "# Mi Proyecto\nGuía de instalación y uso...",
+    "options": [
+      "La documentación principal del proyecto en formato Markdown que explica de qué trata el software, cómo instalarlo y cómo ponerlo en marcha.",
+      "El archivo donde se compila el código binario.",
+      "Un archivo oculto exclusivo de Windows.",
+      "El registro de contraseñas del servidor."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "GitHub y otras plataformas muestran automáticamente el contenido de `README.md` como portada de presentación del repositorio. Un buen README es fundamental en tu portafolio como programador junior.",
+    "proTip": "En tu portafolio: incluye capturas de pantalla, tecnologías usadas y pasos claros para correr el proyecto (`git clone`, `npm install`, `npm run dev`)."
+  },
+  {
+    "id": "ai-03",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es una \"alucinación\" en un modelo de lenguaje de Inteligencia Artificial (LLM)?",
+    "codeLanguage": "text",
+    "codeSnippet": "Alucinación de IA (Hallucination)",
+    "options": [
+      "Cuando el modelo genera información falsa, inventa librerías o métodos que no existen con absoluta apariencia de seguridad y certeza.",
+      "Cuando el servidor de la IA se queda sin memoria RAM y se reinicia.",
+      "Cuando el modelo genera código en más de tres lenguajes simultáneamente.",
+      "Un virus que altera los colores de la pantalla en el editor de código."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los LLMs son modelos probabilísticos que predicen el siguiente token más probable, no bases de conocimiento infalibles. Pueden inventar paquetes de npm inexistentes, parámetros de funciones inventados o URLs ficticias.",
+    "proTip": "Regla de oro: NUNCA copies y pegues ciegamente código de una IA en tu proyecto sin leerlo, entenderlo y verificar que las funciones realmente existan en la documentación oficial."
+  },
+  {
+    "id": "ai-04",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Cuál es el riesgo de seguridad más grave al interactuar con herramientas de IA públicas como ChatGPT o Claude?",
+    "codeLanguage": "text",
+    "codeSnippet": "Prompt: \"Aquí está mi archivo config con la clave de producción AIzaSy... arréglame este error\"",
+    "options": [
+      "Enviar credenciales reales, claves de API privadas, datos confidenciales o código propietario de la empresa, ya que pueden ser almacenados o filtrados.",
+      "Que la IA consuma todo el ancho de banda de internet de tu casa.",
+      "Que el archivo de texto cambie de codificación a UTF-16.",
+      "Que el teclado deje de responder."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Muchas empresas e ingenieros han sufrido filtraciones graves por pegar archivos de configuración con contraseñas o datos reales de clientes en chats de IA. Siempre anonimiza y reemplaza secretos con valores ficticios (`\"MI_CLAVE_AQUI\"`).",
+    "proTip": "En el trabajo, consulta la política de IA de tu empresa antes de compartir código de repositorios privados."
+  },
+  {
+    "id": "ai-05",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo se formula un \"Prompt\" eficaz cuando le pides a una IA que te ayude a resolver un bug en tu código?",
+    "codeLanguage": "text",
+    "codeSnippet": "Estructura de Prompt Profesional",
+    "options": [
+      "Proporcionar el lenguaje/framework exacto, el fragmento de código relevante, el mensaje de error completo y el comportamiento esperado.",
+      "Escribir únicamente \"no me funciona, arréglalo rápido\".",
+      "Copiar todo el proyecto entero de 50 archivos sin explicar qué pasa.",
+      "Escribir el prompt todo en mayúsculas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La calidad de la respuesta de la IA depende del contexto proporcionado. Incluir el stack (ej. \"React 19 + TypeScript\"), el snippet exacto, el stacktrace del error y qué intentabas lograr produce respuestas precisas y útiles.",
+    "proTip": "Fórmula ganadora: [Rol/Contexto] + [Código] + [Error exacto] + [Comportamiento esperado]."
+  },
+  {
+    "id": "ai-06",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es la \"Ventana de Contexto\" (Context Window) de un modelo de IA generativa?",
+    "codeLanguage": "text",
+    "codeSnippet": "Tokens de entrada + Tokens de salida",
+    "options": [
+      "La cantidad máxima de tokens (texto, código e instrucciones) que el modelo puede procesar y recordar en una sola conversación o solicitud.",
+      "La ventana emergente que se abre en el navegador web.",
+      "El tamaño en píxeles del monitor del programador.",
+      "El tiempo en segundos que tarda en responder la API."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La ventana de contexto mide el límite de memoria a corto plazo del modelo. Si una conversación o base de código es más larga que la ventana de contexto, el modelo olvidará los mensajes más antiguos o truncará la entrada.",
+    "proTip": "Modelos modernos como Gemini 1.5/2.0 cuentan con ventanas de hasta 1 a 2 millones de tokens, capaces de analizar repositorios enteros de código."
+  },
+  {
+    "id": "ai-07",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo puede un programador junior usar la IA de forma inteligente para APRENDER en lugar de solo copiar código?",
+    "codeLanguage": "text",
+    "codeSnippet": "\"Explícame línea por línea qué hace esta función y por qué...\"",
+    "options": [
+      "Pidiéndole que explique conceptos difíciles con analogías sencillas, que desglose código línea por línea o que sugiera preguntas de entrevista sobre el tema.",
+      "Pidiéndole que resuelva la prueba técnica y enviándola sin mirarla.",
+      "Desactivando el editor de código para no escribir nunca más.",
+      "Memorizando las respuestas textuales de la IA."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La IA es un tutor personal paciente 24/7. Preguntas como \"¿Por qué se usa un Set aquí en lugar de un Array?\" o \"¿Qué problemas de rendimiento tiene mi función?\" aceleran el aprendizaje exponencialmente.",
+    "proTip": "Prueba este prompt: \"Actúa como un Tech Lead senior y hazme una revisión de código (code review) constructiva de este componente\"."
+  },
+  {
+    "id": "ai-08",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es un \"Token\" en el contexto de los modelos de procesamiento de lenguaje natural y código?",
+    "codeLanguage": "text",
+    "codeSnippet": "1 Token ≈ 4 caracteres en inglés (~0.75 palabras)",
+    "options": [
+      "La unidad básica de texto (trozo de palabra, carácter o símbolo de código) en la que los modelos dividen y procesan la información.",
+      "Una moneda física para comprar computadoras.",
+      "Un tipo de dato primitivo en TypeScript.",
+      "Una contraseña de un solo uso por SMS."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los LLMs no leen letras individuales ni palabras completas, sino \"tokens\". En código fuente, una palabra reservada como `function` o símbolos como `=>` suelen ser uno o más tokens según el tokenizador del modelo.",
+    "proTip": "Las APIs de IA facturan tanto los tokens de entrada (tu prompt) como los tokens de salida generados."
+  },
+  {
+    "id": "ai-09",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué problema puede ocurrir si le pides a una IA que genere una librería para una tarea sencilla de dos líneas?",
+    "codeLanguage": "json",
+    "codeSnippet": "// package.json\n\"dependencies\": {\n    \"is-even-fast-ai\": \"^1.0.0\"\n}",
+    "options": [
+      "Riesgo de \"Alucinación de Paquetes\" (Package Hallucination / Slopsquatting), donde la IA recomienda un paquete inexistente que atacantes pueden registrar para inyectar malware.",
+      "Que la computadora gaste el doble de electricidad.",
+      "Que el código se vuelva automáticamente compatible con Python.",
+      "Que npm borre tu cuenta de usuario."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Investigaciones de ciberseguridad han demostrado que las IAs a veces inventan nombres verosímiles de paquetes. Los atacantes registran esos paquetes en npm o PyPI con código malicioso esperando que desarrolladores los instalen.",
+    "proTip": "Verifica siempre en npmjs.com o pypi.org la reputación, descargas semanales y autor de cualquier librería antes de hacer npm install."
+  },
+  {
+    "id": "ai-10",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Para qué tarea de desarrollo es especialmente útil y fiable la asistencia de IA para un programador?",
+    "codeLanguage": "text",
+    "codeSnippet": "Generación de Pruebas Unitarias (Unit Tests)",
+    "options": [
+      "Escribir casos de prueba unitarios (tests con Jest, Vitest o Pytest) cubriendo casos límite (edge cases) como valores nulos o arrays vacíos.",
+      "Tomar decisiones financieras críticas de la empresa.",
+      "Reemplazar a los clientes en la definición de requisitos.",
+      "Configurar la seguridad física de los servidores."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Escribir tests es ideal para IAs: la lógica esperada está bien acotada y los tests generados son verificables de inmediato por el framework de pruebas. La IA destaca encontrando casos bordes que al humano se le pasaron por alto.",
+    "proTip": "Pídele a la IA: \"Escribe pruebas unitarias con Vitest para esta función, incluyendo casos válidos, valores nulos y entradas inválidas\"."
+  },
+  {
+    "id": "ai-11",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es el \"System Prompt\" o Instrucción del Sistema en una aplicación basada en LLMs?",
+    "codeLanguage": "text",
+    "codeSnippet": "System: \"Eres un tutor paciente de programación para principiantes...\"",
+    "options": [
+      "Una directiva previa que define la personalidad, restricciones, formato de salida y reglas de comportamiento del modelo antes de que el usuario hable.",
+      "El sistema operativo Linux donde corre la IA.",
+      "El comando de terminal para instalar Node.js.",
+      "Un mensaje de error del BIOS."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El System Prompt establece el marco de referencia del modelo. Guía cómo debe responder, qué tono usar, qué tecnologías priorizar y qué temas o conductas tiene prohibido abordar.",
+    "proTip": "En la API de Google Gemini o OpenAI se configura mediante el parámetro `systemInstruction`."
+  },
+  {
+    "id": "ai-12",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué significa \"Few-Shot Prompting\" en la técnica de formulación de prompts?",
+    "codeLanguage": "text",
+    "codeSnippet": "Ejemplo 1: Entrada -> Salida\nEjemplo 2: Entrada -> Salida\nAhora resuelve esto: Entrada -> ?",
+    "options": [
+      "Proporcionar al modelo unos pocos ejemplos de entrada y salida deseada dentro del prompt para que comprenda el formato exacto requerido.",
+      "Hacer una sola pregunta sin dar contexto alguno (Zero-Shot).",
+      "Disparar varias peticiones simultáneas por HTTP.",
+      "Entrenar el modelo desde cero con millones de datos."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "En lugar de solo explicar las reglas con palabras, darle 1 o 2 ejemplos concretos (\"Entrada: hola -> Salida: HOLA\") aumenta drásticamente la precisión del resultado en tareas complejas.",
+    "proTip": "Es la técnica más rápida para lograr que una IA responda en formatos estructurados como JSON estricto."
+  },
+  {
+    "id": "ai-13",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Por qué NUNCA se debe colocar una clave de API de Gemini u OpenAI directamente en el código frontend de una web pública?",
+    "codeLanguage": "javascript",
+    "codeSnippet": "// src/App.tsx (Frontend público)\nconst apiKey = \"AIzaSyD5f...MiClavePrivada\";\nconst res = await fetch(\"https://generativelanguage.googleapis.com/...\", ...);",
+    "options": [
+      "Cualquier usuario puede ver el código fuente en su navegador, robar tu clave de API, agotar tu cuota o generar costos imprevistos a tu cuenta.",
+      "Porque React no soporta llamadas a APIs de Google.",
+      "Porque el navegador se apaga si detecta claves.",
+      "Porque el compilador TypeScript cambia la clave a mayúsculas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Todo el código que se envía al navegador del usuario (HTML, JS, bundle de Vite/Webpack) es público y legible en la pestaña Network o Sources de las DevTools. Las claves de API deben residir en un backend seguro (Node, Python, proxy /api/*).",
+    "proTip": "Usa una ruta en tu servidor backend que actúe como intermediario y guarde la clave en variables de entorno seguras (.env en el servidor)."
+  },
+  {
+    "id": "ai-14",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es RAG (Retrieval-Augmented Generation / Generación Aumentada por Recuperación)?",
+    "codeLanguage": "text",
+    "codeSnippet": "Base de Conocimiento -> Búsqueda -> Prompt con Contexto -> Respuesta IA",
+    "options": [
+      "Una técnica que busca documentos relevantes en una base de datos propia y se los inyecta al modelo en el prompt para que responda con datos actualizados y verídicos.",
+      "Un nuevo tipo de memoria RAM para ordenadores portátiles.",
+      "Un algoritmo para comprimir imágenes PNG.",
+      "Un framework de CSS similar a Tailwind."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "RAG permite que la IA responda sobre documentos internos de tu empresa (manuales, PDFs, bases de datos) sin necesidad de re-entrenar el modelo, evitando alucinaciones y garantizando datos vigentes.",
+    "proTip": "RAG combina bases de datos vectoriales (como pgvector o Pinecone) con LLMs."
+  },
+  {
+    "id": "ai-15",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cuál es la diferencia entre \"Temperatura 0.0\" y \"Temperatura 1.0\" al configurar una API de IA generativa?",
+    "codeLanguage": "json",
+    "codeSnippet": "{\n  \"temperature\": 0.0 // vs 1.0\n}",
+    "options": [
+      "Temperatura 0 produce respuestas más deterministas, precisas y predecibles (ideal para código); temperatura alta (1.0) produce respuestas más creativas y variadas.",
+      "Temperatura 0 mide el calor del ventilador de la tarjeta gráfica.",
+      "Temperatura 1 hace que la respuesta tarde 1 hora en generarse.",
+      "Son parámetros obsoletos que no afectan el resultado."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "La temperatura controla la aleatoriedad en la selección de tokens. Para tareas técnicas estrictas como escribir código o formatear JSON se recomienda temperatura baja (0.0 a 0.2) para evitar variaciones erráticas.",
+    "proTip": "Para escribir código o resolver tests: mantén temperature en 0 o 0.1."
+  },
+  {
+    "id": "ai-16",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Cómo puede un asistente de código (Cursor, GitHub Copilot) acelerar tareas repetitivas de un desarrollador?",
+    "codeLanguage": "text",
+    "codeSnippet": "Autocompletado inteligente & refactorización",
+    "options": [
+      "Autocompletando código boilerplate repetitivo, generando interfaces a partir de datos JSON de ejemplo y proponiendo firmas de funciones.",
+      "Asistiendo a reuniones de Scrum en lugar del programador.",
+      "Firmando contratos laborales de forma autónoma.",
+      "Comprando dominios web sin autorización."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Los asistentes de código son multiplicadores de productividad: ahorran tiempo escribiendo código rutinario (mapeos de DTOs, validaciones, comentarios JSDoc) permitiendo que el desarrollador se concentre en la arquitectura y la lógica de negocio.",
+    "proTip": "Usa comentarios claros para guiar el autocompletado: `// Función para validar si un RFC mexicano es válido`."
+  },
+  {
+    "id": "ai-17",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué es \"Chain-of-Thought Prompting\" (Cadena de Pensamiento)?",
+    "codeLanguage": "text",
+    "codeSnippet": "\"Paso 1: Analiza... Paso 2: Deduce... Paso 3: Concluye...\"",
+    "options": [
+      "Pedirle explícitamente a la IA que \"piense paso a paso\" antes de dar la respuesta final, lo cual mejora significativamente su razonamiento lógico y precisión matemática.",
+      "Conectar varios servidores en cadena con cables de red.",
+      "Un tipo de bucle for encadenado en JavaScript.",
+      "Una cadena de bloques en criptomonedas."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Indicarle al modelo frases como \"Piensa paso a paso y justifica cada conclusión\" fuerza al LLM a generar tokens de razonamiento intermedio, reduciendo drásticamente los errores en problemas lógicos y de programación complejos.",
+    "proTip": "Agregar \"Explica tu razonamiento paso a paso antes de mostrar el código final\" ayuda a descubrir falacias lógicas antes de implementar."
+  },
+  {
+    "id": "ai-18",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "En entrevistas para juniors: ¿Cómo debes abordar el uso de herramientas de IA durante tu desarrollo diario?",
+    "codeLanguage": "text",
+    "codeSnippet": "Mentalidad Profesional con IA",
+    "options": [
+      "Presentar la IA como una herramienta de amplificación de productividad y aprendizaje, siendo tú el responsable final que valida, comprende, testea y asume la autoría del código.",
+      "Ocultar que usas IA para que piensen que te sabes toda la sintaxis de memoria.",
+      "Decir que la IA hace el 100% de tu trabajo y que tú no sabes programar.",
+      "Prohibir que otros usen IA en la empresa."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Las empresas buscan desarrolladores que aprovechen las herramientas modernas para ser más ágiles, pero que posean el criterio técnico y los fundamentos sólidos para detectar errores, auditar seguridad y garantizar calidad.",
+    "proTip": "Tú eres el piloto y la IA es el copiloto; la responsabilidad del vuelo siempre es tuya."
+  },
+  {
+    "id": "ai-19",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "multiple_choice",
+    "title": "¿Qué significa que un LLM tenga una salida en formato \"JSON Mode\" o \"Structured Outputs\"?",
+    "codeLanguage": "json",
+    "codeSnippet": "{\n  \"status\": \"success\",\n  \"errorFound\": false\n}",
+    "options": [
+      "Garantiza por contrato sintáctico que el modelo responderá exclusivamente con un JSON válido y parseable, sin texto conversacional introductorio ni markdown.",
+      "Que el modelo solo puede hablar en lenguaje binario.",
+      "Que la salida se guarda en un disquete de 3.5 pulgadas.",
+      "Que el navegador debe cerrar la sesión."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "El modo JSON estructurado (Structured Outputs) obliga al decodificador del modelo a ceñirse a una gramática o esquema JSON Schema estricto. Esto previene que tus APIs crasheen con SyntaxError al parsear la respuesta con JSON.parse().",
+    "proTip": "Tanto la API de Google Gemini como OpenAI permiten pasar `responseSchema` para forzar estructuras de datos estrictas."
+  },
+  {
+    "id": "ai-20",
+    "categoryId": "ai_assistance",
+    "categoryName": "IA para Programadores",
+    "difficulty": "Junior",
+    "type": "find_the_bug",
+    "title": "¿Qué actitud o error de mentalidad puede frenar el crecimiento profesional de un programador junior que usa IA intensivamente?",
+    "codeLanguage": "text",
+    "codeSnippet": "Trampa del \"Copy-Paste sin entendimiento\"",
+    "options": [
+      "Aceptar código que funciona por casualidad sin entender el \"por qué\" ni los conceptos subyacentes, creando una falsa sensación de competencia que colapsa ante problemas nuevos.",
+      "Leer la documentación oficial de las librerías.",
+      "Hacer preguntas técnicas a compañeros seniors.",
+      "Escribir pruebas unitarias que verifiquen el código."
+    ],
+    "correctAnswerIndex": 0,
+    "explanation": "Si delegas el pensamiento y solo actúas como operador de copy-paste, nunca desarrollarás la intuición de depuración, la comprensión de arquitectura ni la capacidad de diseñar soluciones bajo presión. Usa la IA para entender profundamente, no solo para terminar rápido.",
+    "proTip": "Siempre que una IA te dé una solución que no entiendas, pregúntale: \"¿Por qué elegiste este enfoque en lugar de [alternativa] y qué desventajas tiene?\"."
+  },
+  {
     "id": "fs-01",
     "categoryId": "senior_fullstack",
     "categoryName": "Fullstack Senior (React, Python, Laravel)",
