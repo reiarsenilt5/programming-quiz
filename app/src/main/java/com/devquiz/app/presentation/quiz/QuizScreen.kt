@@ -292,7 +292,7 @@ fun QuizScreen(
                 ) {
                     Row(
                         modifier = Modifier
-                            .padding(14.dp)
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
                             .defaultMinSize(minHeight = 44.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -310,12 +310,13 @@ fun QuizScreen(
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             optionText,
                             modifier = Modifier.weight(1f),
                             fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.onBackground,
+                            lineHeight = 18.sp
                         )
                         if (isPreviousWrong && !state.isAnswerConfirmed) {
                             Surface(
@@ -382,7 +383,7 @@ fun QuizScreen(
                             RoundedCornerShape(12.dp)
                         )
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 if (isCorrect) Icons.Default.CheckCircle else Icons.Default.Cancel,
@@ -402,13 +403,15 @@ fun QuizScreen(
                         Text(
                             currentQuestion.explanation,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 18.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Espaciador de seguridad final para que la última opción o explicación quede holgadamente sobre la barra inferior
+            Spacer(modifier = Modifier.height(56.dp))
         }
     }
 

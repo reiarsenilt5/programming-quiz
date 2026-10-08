@@ -347,11 +347,6 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.update { it.copy(isAiLoading = true, aiError = null, aiExplanationText = null) }
             try {
-                val generativeModel = GenerativeModel(
-                    modelName = "gemini-flash-lite-latest",
-                    apiKey = apiKey
-                )
-
                 val prompt = """
                     Actúa como un Senior Software Architect y Tutor Técnico.
                     Explica de forma didáctica esta pregunta de examen técnico para desarrolladores:
@@ -368,11 +363,27 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                     3. Pro-Tip para entornos de producción.
                 """.trimIndent()
 
-                val response = withContext(Dispatchers.IO) {
-                    generativeModel.generateContent(prompt)
+                val text = withContext(Dispatchers.IO) {
+                    try {
+                        val generativeModel = GenerativeModel(
+                            modelName = "gemini-1.5-flash",
+                            apiKey = apiKey
+                        )
+                        generativeModel.generateContent(prompt).text
+                    } catch (primaryError: Exception) {
+                        // Reintento resiliente con gemini-2.0-flash
+                        try {
+                            val fallbackModel = GenerativeModel(
+                                modelName = "gemini-2.0-flash",
+                                apiKey = apiKey
+                            )
+                            fallbackModel.generateContent(prompt).text
+                        } catch (_: Exception) {
+                            throw primaryError
+                        }
+                    }
                 }
 
-                val text = response.text
                 if (text.isNullOrBlank()) {
                     throw IllegalStateException("El Tutor no retornó texto. Por favor reintenta.")
                 }

@@ -47,10 +47,18 @@ async function startServer() {
         },
       });
 
-      const testResponse = await testAi.models.generateContent({
-        model: 'gemini-flash-lite-latest',
-        contents: 'Test connection: responde OK',
-      });
+      let testResponse;
+      try {
+        testResponse = await testAi.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: 'Test connection: responde OK',
+        });
+      } catch {
+        testResponse = await testAi.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents: 'Test connection: responde OK',
+        });
+      }
 
       if (testResponse.text) {
         return res.json({ valid: true, message: '¡Clave de Gemini API verificada con éxito!' });
@@ -114,10 +122,18 @@ Por favor, estructura tu respuesta con claridad pedagógica y markdown limpio:
 
 Sé conciso, riguroso y en español neutro profesional.`;
 
-      const response = await client.models.generateContent({
-        model: 'gemini-flash-lite-latest',
-        contents: prompt,
-      });
+      let response;
+      try {
+        response = await client.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+        });
+      } catch {
+        response = await client.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents: prompt,
+        });
+      }
 
       res.json({
         explanation: response.text || 'No se pudo generar la respuesta detallada.',

@@ -428,8 +428,8 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                             <Sparkles className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className="font-bold text-white block">Tutor Gemini Flash Lite</span>
-                            <span className="text-[10px] text-slate-400">Google AI Studio API (gemini-flash-lite-latest)</span>
+                            <span className="font-bold text-white block">Tutor Gemini Flash</span>
+                            <span className="text-[10px] text-slate-400">Google AI Studio API (gemini-1.5-flash)</span>
                           </div>
                         </div>
                         <span className="text-emerald-400 font-semibold text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">
@@ -842,8 +842,8 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white">Tutor Gemini Flash Lite</h4>
-                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-flash-lite-latest)</p>
+                    <h4 className="text-xs font-bold text-white">Tutor Gemini Flash</h4>
+                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-1.5-flash)</p>
                   </div>
                 </div>
                 <button

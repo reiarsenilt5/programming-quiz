@@ -308,6 +308,7 @@ fun HomeContent(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .wrapContentHeight()
                     .clickable { onCategorySelected(category, GameMode.Practice) },
                 shape = RoundedCornerShape(14.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -315,29 +316,39 @@ fun HomeContent(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(14.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.size(42.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(category.iconEmoji(), fontSize = 22.sp)
+                            Text(category.iconEmoji(), fontSize = 20.sp)
                         }
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
                                 category.displayName,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f, fill = false),
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Surface(
@@ -357,16 +368,18 @@ fun HomeContent(
                             category.descriptionText(),
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            modifier = Modifier.padding(top = 2.dp)
+                            maxLines = 2,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     Icon(
                         Icons.Default.ChevronRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }

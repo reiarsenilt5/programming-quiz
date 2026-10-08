@@ -6,3 +6,15 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# AI Studio internal artifacts & scratch files
+.aistudio/
+
+# Android & Gradle local builds
+.gradle/
+local.properties
+app/build/
+*.apk
+*.aab
+.idea/
+*.iml
