@@ -30,6 +30,9 @@ fun QuizScreen(
     val currentQuestion = state.currentQuestion ?: return
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
         topBar = {
             TopAppBar(
                 title = {
@@ -40,7 +43,10 @@ fun QuizScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.size(48.dp)
+                    ) {
                         Icon(Icons.Default.Close, contentDescription = "Salir")
                     }
                 },
@@ -75,39 +81,55 @@ fun QuizScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (state.isAnswerConfirmed) {
-                        Button(
+                        OutlinedButton(
                             onClick = { onEvent(QuizUiEvent.RequestAiExplanation) },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF7C3AED),
-                                contentColor = Color.White
-                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Icon(
                                 Icons.Default.AutoAwesome,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Tutor de IA", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Tutor IA", 
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                         Button(
                             onClick = { onEvent(QuizUiEvent.NextQuestion) },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color(0xFF090D16)
+                            ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Siguiente ➔", fontWeight = FontWeight.SemiBold)
+                            Text("Siguiente ➔", fontWeight = FontWeight.Bold)
                         }
                     } else {
                         Button(
                             onClick = { onEvent(QuizUiEvent.ConfirmAnswer) },
                             enabled = state.selectedOptionIndex != null,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color(0xFF090D16)
+                            ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text("Comprobar Respuesta", fontWeight = FontWeight.Bold)
@@ -135,44 +157,46 @@ fun QuizScreen(
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        currentQuestion.category.displayName,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        currentQuestion.difficulty.name,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+            // Zero-Pill Typography Kicker (Anti-Slop Discipline)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(vertical = 2.dp)
+            ) {
+                Text(
+                    text = currentQuestion.category.displayName,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "·",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = when (currentQuestion.difficulty.name) {
+                        "Junior" -> "Nivel Inicial"
+                        "Mid" -> "Nivel Medio"
+                        else -> "Nivel Senior"
+                    },
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 if (state.gameMode == GameMode.FailedReview) {
-                    Surface(
-                        color = Color(0xFFF59E0B).copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            "🎯 Repaso",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFBBF24),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                    Text(
+                        text = "·",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = "Repaso de Fallo",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFFBBF24)
+                    )
                 }
             }
 
@@ -267,20 +291,22 @@ fun QuizScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(14.dp),
+                        modifier = Modifier
+                            .padding(14.dp)
+                            .defaultMinSize(minHeight = 44.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(28.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(
                                     "${('A' + index)}",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
-                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (isSelected) Color(0xFF090D16) else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -386,7 +412,7 @@ fun QuizScreen(
         }
     }
 
-    // Modal / Diálogo del Tutor de IA (Manejo visual robusto para carga, error y éxito)
+    // Modal / Diálogo del Tutor de IA
     if (state.isAiLoading || state.aiExplanationText != null || state.aiError != null) {
         AlertDialog(
             onDismissRequest = { onEvent(QuizUiEvent.DismissAiDialog) },
@@ -395,7 +421,7 @@ fun QuizScreen(
                     state.isAiLoading -> CircularProgressIndicator(
                         modifier = Modifier.size(28.dp),
                         strokeWidth = 3.dp,
-                        color = Color(0xFF8B5CF6)
+                        color = MaterialTheme.colorScheme.primary
                     )
                     state.aiError != null -> Icon(
                         Icons.Default.Warning,
@@ -406,7 +432,7 @@ fun QuizScreen(
                     else -> Icon(
                         Icons.Default.AutoAwesome,
                         contentDescription = "Tutor IA",
-                        tint = Color(0xFF8B5CF6),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -416,7 +442,7 @@ fun QuizScreen(
                     text = when {
                         state.isAiLoading -> "Consultando Tutor Gemini..."
                         state.aiError != null -> "Aviso del Tutor de IA"
-                        else -> "Tutor Gemini 1.5 Flash"
+                        else -> "Tutor Gemini 3.8 Flash"
                     },
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -450,9 +476,14 @@ fun QuizScreen(
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = state.aiError,
-                                        fontSize = 13.sp,
-                                        color = Color(0xFFFECDD3),
-                                        lineHeight = 18.sp
+                                        fontSize = 12.sp,
+                                        color = Color(0xFFFCA5A5)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Revisa tu conexión de red o ingresa tu clave API personal en Ajustes.",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -460,7 +491,7 @@ fun QuizScreen(
                         state.aiExplanationText != null -> {
                             Text(
                                 text = state.aiExplanationText,
-                                fontSize = 13.sp,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 lineHeight = 20.sp
                             )
@@ -470,30 +501,31 @@ fun QuizScreen(
             },
             confirmButton = {
                 if (state.aiError != null) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { onEvent(QuizUiEvent.DismissAiDialog) }) {
-                            Text("Cerrar")
-                        }
-                        Button(
-                            onClick = { onEvent(QuizUiEvent.RequestAiExplanation) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
-                        ) {
-                            Text("Reintentar")
-                        }
+                    Button(
+                        onClick = { onEvent(QuizUiEvent.RequestAiExplanation) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = Color(0xFF090D16)
+                        )
+                    ) {
+                        Text("Reintentar", fontWeight = FontWeight.Bold)
                     }
-                } else if (!state.isAiLoading) {
+                } else {
                     Button(
                         onClick = { onEvent(QuizUiEvent.DismissAiDialog) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = Color(0xFF090D16)
+                        )
                     ) {
-                        Text("Entendido")
+                        Text("Entendido", fontWeight = FontWeight.Bold)
                     }
                 }
             },
             dismissButton = {
-                if (state.isAiLoading) {
+                if (state.aiError != null) {
                     TextButton(onClick = { onEvent(QuizUiEvent.DismissAiDialog) }) {
-                        Text("Cancelar")
+                        Text("Cerrar")
                     }
                 }
             }

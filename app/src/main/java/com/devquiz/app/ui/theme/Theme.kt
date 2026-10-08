@@ -6,14 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = IndigoPrimary,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFF312E81),
-    onPrimaryContainer = Color(0xFFE0E7FF),
-    secondary = PurpleAccent,
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFF4C1D95),
-    onSecondaryContainer = Color(0xFFEDE9FE),
+    primary = EmeraldPrimary,
+    onPrimary = Color(0xFF090D16),
+    primaryContainer = Color(0xFF064E3B),
+    onPrimaryContainer = Color(0xFFA7F3D0),
+    secondary = EmeraldAccent,
+    onSecondary = Color(0xFF090D16),
+    secondaryContainer = Color(0xFF065F46),
+    onSecondaryContainer = Color(0xFFD1FAE5),
     tertiary = RoseBlitz,
     onTertiary = Color.White,
     background = DarkBackground,

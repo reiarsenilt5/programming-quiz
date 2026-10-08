@@ -1,176 +1,136 @@
-# Expansión Integral de Quizzes: Mínimo 20 Preguntas por Categoría (Enfoque Junior & Aprendizaje)
+# Rediseño Integral de UI/UX: Soporte de Safe-Area, Ergonomía Móvil y Estética Minimalista Moderna
 
-Plan arquitectónico y pedagógico para garantizar que los 13 cuestionarios técnicos de DevQuiz cuenten con **al menos 20 preguntas cada uno**, diseñadas específicamente para principiantes y programadores junior, equilibrando predicción de salidas de código, corrección de errores comunes, conceptos sintácticos y casos reales de entrevistas técnicas iniciales.
+Plan arquitectónico y visual para transformar la experiencia de usuario de DevQuiz, eliminando el apiñamiento de la barra superior en dispositivos reales y notch/isla dinámica, implementando la disciplina **Zero-Pill** de `frontend-design`, adoptando una paleta **Minimalista Moderna con Grafito Neutro y Esmeralda de Precisión**, y estableciendo una jerarquía de acciones nítida y accesible.
 
-## Decisiones Críticas y Preferencias del Usuario
+## Decisiones Críticas Confirmadas
 
 > [!IMPORTANT]
-> - **Nivel de Dificultad**: Todas las nuevas preguntas (161+ preguntas) estarán enfocadas en **Junior / Principiante**, con explicaciones detalladas paso a paso y consejos didácticos (`proTip`). Las preguntas avanzadas existentes se mantendrán para asegurar variedad sin afectar la accesibilidad para juniors.
-> - **Variedad de Formatos**: Distribución equitativa y balanceada entre:
->   1. **Predicción de salidas & detección de bugs novatos** (`find_the_bug` / salida esperada).
->   2. **Conceptos sintácticos esenciales y buenas prácticas fundamentales** (`multiple_choice`).
->   3. **Casos prácticos de entrevistas técnicas para Juniors** (preguntas frecuentes de reclutamiento técnico).
-> - **Sincronización Total**: Se actualizarán tanto los módulos de TypeScript de la aplicación web React (`src/data/`) como el archivo `app/src/main/assets/questions.json` del proyecto Android nativo y `src/data/androidProjectCode.ts` para descargas ZIP.
+> - **Espaciado Superior & Safe-Area**: Margen generoso con soporte nativo de `env(safe-area-inset-top)` y elevación de barra superior de al menos 54px para garantizar que la isla dinámica o cámara frontal nunca toque los controles de navegación.
+> - **Identidad Estética y Paleta**: *Minimalista moderno con grafito neutro y esmeralda de precisión*. Adiós al morado de IA genérico y los gradientes de neón chillones; hola a superficies profundas de grafito (`#0B0F17`, `#111827`, `#1E293B`) y acentos de esmeralda de alta precisión (`#10B981`, `#059669`).
+> - **Disciplina Zero-Pill & Jerarquía de Acciones**: Metadatos limpios en texto continuo con separadores tipográficos (`·`), eliminando cápsulas flotantes decorativas. Botón `Siguiente` como acción primaria de alto contraste y `Tutor IA` como acción secundaria en cristal/borde suave.
 
 ---
 
-## 1. Visión General y Alcance del Contenido
+## 1. Visión General y Diagnóstico del Problema
 
-### Estado Actual vs Meta Requerida
-| Categoría | Preguntas Actuales | Preguntas Nuevas (Junior) | Total Final (Meta ≥ 20) |
-| :--- | :---: | :---: | :---: |
-| **Python Moderno** (`python`) | 2 | +18 | **20** |
-| **PHP 8+ & OOP** (`php`) | 2 | +18 | **20** |
-| **JavaScript Core** (`javascript`) | 2 | +18 | **20** |
-| **TypeScript Avanzado** (`typescript`) | 2 | +18 | **20** |
-| **React & Ecosystem** (`react`) | 1 | +19 | **20** |
-| **SQL & Bases de Datos** (`sql`) | 3 | +17 | **20** |
-| **Principios SOLID** (`solid`) | 3 | +17 | **20** |
-| **Fundamentos & Git** (`modern_fundamentals`) | 2 | +18 | **20** |
-| **IA para Programadores** (`ai_assistance`) | 2 | +18 | **20** |
-| **Fullstack Senior** (`senior_fullstack`) | 50 | 0 | **50** (cumple ≥ 20) |
-| **DevOps & Cloud** (`devops_cloud`) | 50 | 0 | **50** (cumple ≥ 20) |
-| **Sutilezas Pro** (`subtle_engineering`) | 30 | 0 | **30** (cumple ≥ 20) |
-| **Docker Mastery** (`docker_mastery`) | 25 | 0 | **25** (cumple ≥ 20) |
-| **TOTAL GLOBAL** | **174** | **+163** | **337 preguntas** |
+### El Diagnóstico Visual
+En el estado actual (evidenciado en la captura del usuario):
+1. **Colisión de Cabecera**: La barra de navegación (`X` y `1 / 20`) se encuentra a apenas 40px del borde físico, quedando pegada y comprimida debajo de la Isla Dinámica / notch.
+2. **Cliché de Píldoras ("Pill Sandwich")**: Dos badges cápsula saturados (`[IA PARA PROGRAMADORES]` `[MID]`) encima del título saturan la vista y violan la constitución de diseño.
+3. **Conflicto de CTAs**: Dos botones violetas de igual peso visual compiten por la atención al pie de la pantalla, empujados contra la barra de gestos de inicio.
 
----
-
-## 2. Experiencia de Usuario y Pedagogía Junior
-
-### Pilares Didácticos para Principiantes y Juniors:
-1. **Claridad Inmediata**: Código fuente conciso (de 4 a 12 líneas) enfocado en un solo concepto a la vez (ej. mutabilidad, scope, tipos primitivos vs referencia, async básico, SELECT/WHERE básico).
-2. **Explicación Paso a Paso (`explanation`)**:
-   - Por qué la respuesta correcta funciona así.
-   - Por qué las otras opciones son trampas comunes en las que suelen caer quienes están aprendiendo.
-3. **Consejo Profesional Junior (`proTip`)**:
-   - Una regla mnemotécnica o convención de la industria que el junior puede aplicar directamente en su trabajo diario o entrevista.
-4. **Distractores Educativos**: Las opciones incorrectas reflejan las confusiones más comunes de juniors (ej. confundir `==` con `===`, no saber que los strings son inmutables, olvidar `await`, etc.) y educan al usuario cuando falla.
+```
+ESTADO ANTERIOR (APIÑADO & CLICHÉ)                NUEVO DISEÑO (ESPACIOSO & EDITORIAL)
+┌──────────────────────────────────────┐          ┌──────────────────────────────────────┐
+│  09:41      ( [·] )              5G  │          │  09:41           ( [·] )         5G  │
+│  [X]                         1 / 20  │ ◄ PEGA   │                                      │ ◄ SAFE ZONE
+│  ══════════════════════════════════  │          │  [✕] Salir                   1 de 20 │
+│  [ IA PROG ] [ MID ]                 │ ◄ PILLS  │  ─────────────────────────────────── │
+│  ¿Qué es un Package Hallucination... │          │  IA para Programadores · Nivel Medio │ ◄ ZERO-PILL
+│                                      │          │  ¿Qué es un Package Hallucination... │
+│  ┌────────────────────────────────┐  │          │                                      │
+│  │ A  Opción...                   │  │          │  ┌────────────────────────────────┐  │
+│  └────────────────────────────────┘  │          │  │ A  Opción legible              │  │
+│                                      │          │  └────────────────────────────────┘  │
+│  [✨ Tutor IA]      [Siguiente →]     │ ◄ CLASH  │                                      │
+│                 ──                   │ ◄ BARRA  │  [✨ Tutor IA]     [ Siguiente → ]   │ ◄ JERARQUÍA
+└──────────────────────────────────────┘          │                 ──                   │ ◄ PB-SAFE
+                                                  └──────────────────────────────────────┘
+```
 
 ---
 
-## 3. Plan de Temarios por Categoría (18+ preguntas nuevas cada una)
+## 2. Sistema de Diseño y Ficha de Estilo
 
-1. **Python Junior**:
-   - Variables, tipos básicos (`int`, `str`, `list`, `dict`), list comprehensions simples.
-   - Slicing de strings y listas (`[::-1]`, `[1:3]`).
-   - Diferencia entre `is` y `==`.
-   - Manejo de excepciones con `try/except/finally`.
-   - Funciones `*args` y `**kwargs`, funciones lambda simples.
-   - Scope local vs global y la palabra clave `global`.
-   - Métodos comunes de diccionarios (`.get()`, `.keys()`, `.items()`).
-   - Virtual environments (`venv`) y `pip requirements.txt`.
+### A. Paleta de Color (Minimalista Grafito & Esmeralda)
+- **60% Lienzo Neutro Dominante**:
+  - `Canvas Base`: `#090D16` (obsidiana fría con tinte pizarra profundo).
+  - `Surface 1 (Contenedores)`: `#0F172A` / `#111827`.
+  - `Surface 2 (Tarjetas & Opciones)`: `#1E293B` con bordes sutiles en `rgba(255,255,255,0.06)`.
+- **30% Estructura y Tipografía**:
+  - `Texto Principal`: `#F8FAFC` (blanco neutro suavizado, sin deslumbramiento).
+  - `Texto Secundario`: `#94A3B8` (slate neutro legible, contraste WCAG AA 6:1).
+  - `Bordes y Separadores`: `rgba(148, 163, 184, 0.12)`.
+- **10% Acento de Precisión**:
+  - `Acento Primario`: `#10B981` (esmeralda de precisión técnica).
+  - `Acento Hover/Active`: `#059669`.
+  - `Semántica de Acierto`: Fondo verde tintado al 10% con borde esmeralda.
+  - `Semántica de Error`: `#F43F5E` (rosa carmín para fallos) con borde sutil.
 
-2. **PHP Junior**:
-   - Variables con `$`, diferencia entre `echo` y `print`.
-   - Comparación débil `==` vs estricta `===` y `declare(strict_types=1)`.
-   - Arrays asociativos e indexados, funciones `array_map`, `count()`.
-   - Clases y POO básica: `public`, `private`, `protected`, constructores.
-   - Herencia básica y uso de `parent::__construct()`.
-   - Manejo de formularios GET vs POST, sanitización con `htmlspecialchars()`.
-   - Composer y autoloading de PSR-4.
-
-3. **JavaScript Junior**:
-   - `var`, `let`, `const` y temporal dead zone (TDZ).
-   - Coerción de tipos (`"5" + 2` vs `"5" - 2`).
-   - Métodos de arrays: `map`, `filter`, `reduce`, `find`, `includes`.
-   - Arrow functions vs funciones tradicionales (comportamiento de `this`).
-   - Promesas y `async/await` básico: manejo de `.catch()`.
-   - Desestructuración de objetos y arrays, operador spread/rest (`...`).
-   - Event Bubbling básico en el DOM y `addEventListener`.
-
-4. **TypeScript Junior**:
-   - Tipos primitivos (`string`, `number`, `boolean`, `any`, `unknown`, `never`).
-   - Interfaces vs Types: sintaxis y cuándo usar cada uno.
-   - Propiedades opcionales (`?`) y unión de tipos (`|`).
-   - Aserción de tipos (`as string`) y Type Narrowing con `typeof` / `instanceof`.
-   - Tipado de funciones (parámetros y retorno).
-   - Generics introductorios (`Array<T>`, funciones con `<T>`).
-   - Enums vs Union Types de cadenas literales.
-
-5. **React Junior**:
-   - Qué es JSX y reglas de tags cerrados / fragmentos (`<>...</>`).
-   - Props vs State (`useState`).
-   - Reglas de los Hooks (no condicionales, solo en el nivel superior).
-   - `useEffect`: array de dependencias (`[]` vs dependencias vs sin array).
-   - Renderizado de listas y la importancia de `key` única.
-   - Event handling (`onClick={() => handleClick()}`).
-   - Formularios controlados vs no controlados (`value` y `onChange`).
-   - Levantamiento de estado (Lifting State Up) básico.
-
-6. **SQL Junior**:
-   - Cláusulas fundamentales: `SELECT`, `FROM`, `WHERE`, `ORDER BY`, `LIMIT`.
-   - Diferencia entre `INNER JOIN` y `LEFT JOIN` con diagramas mentales claros.
-   - Funciones de agregación: `COUNT()`, `SUM()`, `AVG()` y la cláusula `GROUP BY`.
-   - Diferencia entre `WHERE` y `HAVING`.
-   - Claves primarias (`PRIMARY KEY`) vs claves foráneas (`FOREIGN KEY`).
-   - Comandos DDL vs DML (`SELECT`, `INSERT`, `UPDATE`, `DELETE` sin WHERE peligroso).
-   - Concepto de `NULL` y operadores `IS NULL` / `COALESCE`.
-
-7. **Principios SOLID Junior**:
-   - **S (SRP)**: Una clase con una sola responsabilidad (ej. factura no debe enviar emails ni guardar en BD).
-   - **O (OCP)**: Código abierto para extensión, cerrado para modificación (usar polimorfismo en vez de if/else infinitos).
-   - **L (LSP)**: Una subclase debe poder sustituir a su clase padre sin romper el programa (ej. Cuadrado y Rectángulo).
-   - **I (ISP)**: No forzar a una clase a implementar métodos que no usa (interfaces pequeñas).
-   - **D (DIP)**: Depender de abstracciones/interfaces, no de clases concretas (inyección de dependencias explicada de forma simple).
-
-8. **Fundamentos & Git Junior**:
-   - Comandos básicos: `git init`, `git add`, `git commit -m`, `git status`.
-   - Ramas: `git branch`, `git checkout -b` / `git switch -c`, `git merge`.
-   - Diferencia entre Git (control de versiones) y GitHub (plataforma de alojamiento).
-   - Resolver un conflicto de fusión básico (marcadores `<<<<<<<`, `=======`, `>>>>>>>`).
-   - Código HTTP: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Server Error).
-   - Verbos HTTP en APIs REST: `GET`, `POST`, `PUT`, `DELETE`.
-   - `.gitignore`: por qué no subir `node_modules/` o `.env`.
-
-9. **IA para Programadores Junior**:
-   - Prompting eficaz: dar contexto, especificar lenguaje y formato de salida.
-   - Alucinaciones de IA: por qué nunca copiar código sin leerlo y probarlo.
-   - Seguridad: jamás enviar claves API, contraseñas o datos de clientes a un LLM público.
-   - Uso de IA para explicar errores: "Explícame qué significa TypeError: undefined is not a function".
-   - Generación de tests unitarios y documentación usando asistentes de código.
+### B. Tipografía y Jerarquía
+- **Metadatos Limpios**:
+  - Texto en `12px` (`text-xs`), tracking sutil, separado por punto medio `·`. Sin fondos de píldora ni bordes innecesarios.
+- **Títulos y Enunciados**:
+  - Tipografía equilibrada con `text-wrap: balance`, peso `font-semibold` o `font-bold`, y `line-height: 1.4`.
+- **Bloque de Código**:
+  - Contenedor con fondo `#070A10`, sintaxis contrastada y tipografía monospace (`JetBrains Mono` / `font-mono tabular-nums`).
 
 ---
 
-## 4. Arquitectura de Datos y Estrategia de Implementación
+## 3. Ergonomía Móvil y Distribución de Zonas
+
+### A. Zona Superior (Hard Reach / Info)
+- **Altura de Cabecera**: Incrementada a `56px` + margen de safe-area nativo (`pt-safe` / `env(safe-area-inset-top)`).
+- **Control de Salida**: Botón de cerrar con área de toque táctil mínima de **44x44px** para evitar toques fallidos.
+- **Contador de Progreso**: Indicador `1 de 20` claro con barra de progreso esmeralda de 2px de altura.
+
+### B. Zona Media (Stretch Zone / Contenido)
+- **Opciones de Respuesta**:
+  - Tarjetas de opción con altura mínima de **48px**.
+  - Identificador de letra (`A`, `B`, `C`, `D`) integrado con tipografía sólida en lugar de círculo recargado.
+  - Micro-interacción de toque con `active:scale-[0.99]` y transición suave $\le 150\text{ms}$.
+
+### C. Zona Inferior (Natural Thumb Reach / Acciones)
+- **Acción Primaria**: Botón `Siguiente` ocupa el rol protagónico con fondo esmeralda sólido (`bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold`).
+- **Acción Secundaria**: Botón `Tutor IA` con superficie de cristal translúcido (`bg-slate-800/60 hover:bg-slate-800 text-slate-200 border border-slate-700/60`).
+- **Separación Inferior**: Espacio de resguardo de 24px (`pb-6` / `pb-safe`) por encima de la barra de gestos.
+
+---
+
+## 4. Diagrama de Arquitectura de Componentes
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                        DATA SOURCES SYNCHRONIZATION                    │
+│                        PHONE SIMULATOR CONTAINER                       │
+│  [Hardware Shell] -> [Safe-Area Inset Adapter]                         │
 └────────────────────────────────────────────────────────────────────────┘
                                     │
            ┌────────────────────────┴────────────────────────┐
            ▼                                                 ▼
 ┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
-│        REACT WEB APPLICATION         │  │        ANDROID APK PROJECT           │
+│        QUIZ TOP BAR & PROGRESS       │  │          QUIZ CONTENT FEED           │
 ├──────────────────────────────────────┤  ├──────────────────────────────────────┤
-│ src/data/questionsData.ts            │  │ app/src/main/assets/questions.json   │
-│ src/data/juniorExpandedQuestions.ts  │  │ (337+ preguntas estructuradas        │
-│ • Importación tipada modular         │  │  leídas por Room / Assets manager)   │
-│ • Componentes UI interactivos        │  │                                      │
-│ • Simulador y Estadísticas de test   │  │ src/data/androidProjectCode.ts       │
-│                                      │  │ (Espejo en ZIP exportable)           │
+│ • Status Bar: Generous 48-56px       │  │ • Zero-Pill Typography Kicker        │
+│ • Island Clearance: 16px bottom gap  │  │ • Balanced Question Title            │
+│ • Close Hitbox: 44x44px touch area   │  │ • High-Contrast Code Syntax Box      │
+│ • Precision Linear Emerald Progress  │  │ • 48px Touch-Target Options List     │
 └──────────────────────────────────────┘  └──────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      THUMB-ZONE ACTION CONTROLS                        │
+├────────────────────────────────────────────────────────────────────────┤
+│ • Feedback Panel: Success Emerald / Error Rose with structured advice  │
+│ • Action Grid: [Tutor IA (Secondary Glass)] + [Siguiente (Primary CTA)]│
+│ • Home Indicator Safety Buffer: 20px padding clearance                │
+└────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Plan de Archivos a Modificar:
-1. **Nuevo Módulo Modular (`src/data/juniorExpandedQuestions.ts`)**:
-   - Alberga las 161+ preguntas nuevas para mantener el código limpio y mantenible sin sobrecargar un solo archivo gigante.
-2. **Actualización de `src/data/questionsData.ts`**:
-   - Importar y unir las nuevas preguntas a `QUESTIONS_DATA`.
-3. **Actualización de `app/src/main/assets/questions.json`**:
-   - Sincronizar el archivo JSON con las 337+ preguntas totales.
-4. **Actualización de `src/data/androidProjectCode.ts`**:
-   - Sincronizar el asset `questions.json` dentro del bundle de archivos exportables.
-5. **Verificación**:
-   - Validar con script de conteo que cada una de las 13 categorías tenga `>= 20` preguntas.
-   - Ejecutar `lint_applet` y `compile_applet`.
 
 ---
 
-## 5. Criterio de Aceptación y Verificación
+## 5. Plan de Ejecución y Archivos a Modificar
 
-1. **Condición de Terminación Estricta**: Cada categoría individual (13 en total) tiene $\ge 20$ preguntas verificadas por script.
-2. **Nivel Junior Asegurado**: Las nuevas preguntas cuentan con código claro, explicaciones didácticas paso a paso y consejos prácticos.
-3. **Distribución Balanceada**: Presencia equilibrada de bugs novatos, sintaxis y preguntas de entrevistas iniciales.
-4. **Cero Errores de Tipado o Compilación**: El proyecto compila sin errores (`tsc --noEmit` y `npm run build` exitosos).
+1. **`src/index.css`**:
+   - Añadir utilidades de safe area (`pt-safe`, `pb-safe`) y suavizado tipográfico optimizado.
+2. **`src/components/PhoneSimulator.tsx`**:
+   - Rediseñar el marco del teléfono: ajustar el notch / dynamic island y otorgar margen superior generoso de 56px.
+   - Refactorizar la cabecera del Quiz: botón de cerrar accesible (44x44px), indicador textual y barra de progreso.
+   - Aplicar disciplina Zero-Pill a los metadatos de categoría y nivel.
+   - Rediseñar las opciones de respuesta y la barra inferior de botones con la nueva jerarquía.
+   - Actualizar la paleta de colores global a grafito y esmeralda.
+3. **`src/App.tsx`**:
+   - Actualizar la pantalla de Quiz de la vista principal y web responsiva para compartir las mismas mejoras de espaciado, Zero-Pill y botones.
+4. **`app/src/main/java/com/devquiz/app/presentation/quiz/QuizScreen.kt`**:
+   - Asegurar que el TopAppBar nativo de Android en Compose respete los `WindowInsets.statusBars` y padding de barras de navegación para que el APK en dispositivos físicos reales tampoco sufra recortes.
+5. **Verificación y Compilación**:
+   - Ejecutar `lint_applet` y `compile_applet` para garantizar cero regresiones.

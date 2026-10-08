@@ -340,49 +340,51 @@ export default function App() {
   const currentQ = activeQuestions[currentIndex];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-2 sm:p-4 font-sans select-none selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-[#070A10] text-slate-100 flex items-center justify-center p-0 sm:p-4 font-sans select-none selection:bg-emerald-500 selection:text-slate-950">
       {/* Native Mobile Frame (Material 3 Mobile Screen) */}
-      <div className="w-full max-w-[420px] h-[860px] max-h-[96vh] bg-slate-950 rounded-[44px] shadow-2xl border-4 border-slate-800 ring-1 ring-slate-700/50 flex flex-col overflow-hidden relative">
+      <div className="w-full sm:max-w-[420px] h-screen sm:h-[860px] sm:max-h-[96vh] bg-[#090D16] sm:rounded-[44px] shadow-2xl sm:border-4 border-slate-800/90 ring-0 sm:ring-1 ring-slate-700/50 flex flex-col overflow-hidden relative">
         
-        {/* Android Punch Hole & Speaker */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-slate-900 rounded-full z-50 flex items-center justify-between px-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-slate-950 ring-1 ring-slate-800" />
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
+        {/* Android Punch Hole & Speaker with generous clearance (visible on desktop mockup, hidden on real small-screen mobile to avoid double punch-hole) */}
+        <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-50 items-center justify-between px-3.5 ring-1 ring-slate-800/60 shadow-md">
+          <div className="w-2.5 h-2.5 rounded-full bg-slate-900 ring-1 ring-slate-700/80" />
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/90 animate-pulse" />
         </div>
 
-        {/* Status Bar */}
-        <div className="h-8 px-6 flex items-center justify-between text-[11px] text-slate-400 font-medium z-40 bg-slate-950/80 backdrop-blur-sm pt-1">
-          <span>09:41</span>
-          <div className="flex items-center gap-1.5">
-            <span>5G</span>
-            <div className="w-4 h-2.5 border border-slate-400 rounded-xs relative">
-              <div className="absolute inset-0.5 bg-slate-200 rounded-2xs" />
+        {/* Status Bar with generous safe area height preventing notch / camera clipping */}
+        <div className="pt-safe pb-2.5 px-5 sm:px-6 flex items-center justify-between text-[11px] text-slate-400 font-medium z-40 bg-[#090D16]/95 backdrop-blur-md shrink-0 border-b border-slate-850/80 min-h-[58px] sm:h-14 sm:pt-4">
+          <span className="font-semibold tracking-tight text-slate-300">09:41</span>
+          <div className="flex items-center gap-2 text-slate-400">
+            <span className="text-[10px] font-bold">5G</span>
+            <div className="w-5 h-2.5 border border-slate-400/80 rounded-xs relative p-0.5">
+              <div className="h-full w-2.5 bg-slate-300 rounded-2xs" />
             </div>
           </div>
         </div>
 
         {/* Main Mobile App Content */}
-        <div className="flex-1 overflow-y-auto px-4 pb-3 flex flex-col">
+        <div className="flex-1 overflow-y-auto px-4.5 sm:px-5 pb-3 flex flex-col">
           
           {/* ==================== QUIZ ACTIVE VIEW ==================== */}
           {inQuiz && !quizFinished && currentQ && (
-            <div className="flex-1 flex flex-col justify-between py-1 space-y-3 animate-in fade-in duration-200">
-              {/* Quiz Header */}
-              <div>
-                <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+            <div className="flex-1 flex flex-col justify-between pt-3 pb-2 space-y-3.5 animate-in fade-in duration-150">
+              {/* Quiz Header with safe margin and accessible touch target */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-300">
                   <button
                     onClick={exitQuiz}
-                    className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition cursor-pointer"
+                    className="min-w-[44px] min-h-[44px] rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800/90 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                    title="Salir del examen"
+                    aria-label="Salir del examen"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
-                  <div className="flex items-center gap-2 font-mono text-[11px]">
-                    <span className="font-bold text-slate-300">
-                      {currentIndex + 1} / {activeQuestions.length}
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-semibold text-slate-300 tracking-tight">
+                      {currentIndex + 1} <span className="text-slate-500 font-normal">/</span> {activeQuestions.length}
                     </span>
                     {selectedMode === 'time_trial' && (
-                      <span className={`px-2 py-0.5 rounded-full font-bold ${
-                        timeLeft <= 10 ? 'bg-rose-500/20 text-rose-400 animate-pulse' : 'bg-slate-800 text-slate-300'
+                      <span className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold border ${
+                        timeLeft <= 10 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse' : 'bg-slate-900 text-emerald-400 border-slate-800'
                       }`}>
                         ⏱ {timeLeft}s
                       </span>
@@ -391,38 +393,39 @@ export default function App() {
                 </div>
 
                 {/* Linear Progress Indicator */}
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-3">
+                <div className="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden">
                   <div
-                    className="bg-indigo-500 h-full transition-all duration-300 rounded-full"
+                    className="bg-emerald-500 h-full transition-all duration-300 rounded-full"
                     style={{
                       width: `${((currentIndex + 1) / activeQuestions.length) * 100}%`,
                     }}
                   />
                 </div>
 
-                {/* Chips */}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    {currentQ.categoryName}
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
-                    {currentQ.difficulty}
+                {/* Clean Zero-Pill Metadata Kicker (Anti-Slop Discipline) */}
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 select-none flex-wrap">
+                  <span className="font-semibold text-emerald-400">{currentQ.categoryName}</span>
+                  <span aria-hidden="true" className="text-slate-600">·</span>
+                  <span className="text-slate-300">
+                    {currentQ.difficulty === 'Junior' ? 'Nivel Inicial' : currentQ.difficulty === 'Mid' ? 'Nivel Medio' : 'Nivel Senior'}
                   </span>
                   {currentQ.type === 'find_the_bug' && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300">
-                      🐛 Bug Hunt
-                    </span>
+                    <>
+                      <span aria-hidden="true" className="text-slate-600">·</span>
+                      <span className="text-amber-400 font-medium">Búsqueda de Bug</span>
+                    </>
                   )}
                   {selectedMode === 'failed_review' && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      🎯 Repaso de Fallo
-                    </span>
+                    <>
+                      <span aria-hidden="true" className="text-slate-600">·</span>
+                      <span className="text-amber-400 font-medium">Repaso de Fallo</span>
+                    </>
                   )}
                 </div>
 
                 {/* Banner de Repaso de Fallo si aplica */}
                 {selectedMode === 'failed_review' && (
-                  <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-2.5 mb-2.5 text-xs flex items-center justify-between">
+                  <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-2.5 text-xs flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <RotateCcw className="w-4 h-4 text-amber-400 shrink-0" />
                       <div>
@@ -447,14 +450,14 @@ export default function App() {
                 )}
 
                 {/* Title */}
-                <h3 className="text-xs sm:text-sm font-bold text-slate-100 leading-snug">
+                <h3 className="text-xs sm:text-[13px] font-bold text-slate-100 leading-snug tracking-tight">
                   {currentQ.title}
                 </h3>
 
                 {/* Code Block */}
                 {currentQ.codeSnippet && (
-                  <div className="mt-2.5 bg-slate-900 border border-slate-800 rounded-xl p-3 overflow-x-auto text-[10px] font-mono text-indigo-200">
-                    <pre className="leading-relaxed whitespace-pre">
+                  <div className="mt-2 bg-[#070b12] border border-slate-800/90 rounded-xl p-2.5 overflow-x-auto text-[10px] font-mono text-emerald-200/90 shadow-inner">
+                    <pre className="leading-relaxed whitespace-pre font-mono">
                       {currentQ.codeSnippet}
                     </pre>
                   </div>
@@ -464,22 +467,22 @@ export default function App() {
               {/* Options */}
               <div className="space-y-2 my-auto">
                 {currentQ.options.map((opt, idx) => {
-                  let borderClass = 'border-slate-800 bg-slate-900/80 hover:bg-slate-850';
+                  let borderClass = 'border-slate-800/80 bg-slate-900/60 hover:bg-slate-850 hover:border-slate-700/80';
                   let textClass = 'text-slate-200';
-                  let badgeClass = 'bg-slate-800 text-slate-300';
+                  let badgeClass = 'bg-slate-800/90 text-slate-300 border border-slate-700/50';
 
                   if (selectedOption === idx) {
-                    borderClass = 'border-indigo-500 bg-indigo-500/15';
-                    badgeClass = 'bg-indigo-600 text-white';
+                    borderClass = 'border-emerald-500/80 bg-emerald-500/10 text-white';
+                    badgeClass = 'bg-emerald-500 text-slate-950 font-black border-transparent';
                   }
 
                   if (isAnswerConfirmed) {
                     if (idx === currentQ.correctAnswerIndex) {
-                      borderClass = 'border-emerald-500 bg-emerald-500/20 text-emerald-200';
-                      badgeClass = 'bg-emerald-600 text-white';
+                      borderClass = 'border-emerald-500 bg-emerald-950/40 text-emerald-100';
+                      badgeClass = 'bg-emerald-500 text-slate-950 font-black border-transparent';
                     } else if (selectedOption === idx) {
-                      borderClass = 'border-rose-500 bg-rose-500/20 text-rose-200';
-                      badgeClass = 'bg-rose-600 text-white';
+                      borderClass = 'border-rose-500/80 bg-rose-950/40 text-rose-100';
+                      badgeClass = 'bg-rose-500 text-white font-black border-transparent';
                     }
                   }
 
@@ -491,12 +494,12 @@ export default function App() {
                       key={idx}
                       disabled={isAnswerConfirmed}
                       onClick={() => setSelectedOption(idx)}
-                      className={`w-full text-left p-2.5 rounded-xl border ${borderClass} transition flex items-start gap-2.5 text-xs cursor-pointer active:scale-[0.99]`}
+                      className={`w-full text-left p-3 rounded-xl border ${borderClass} transition flex items-center gap-3 text-xs cursor-pointer active:scale-[0.99] min-h-[48px]`}
                     >
-                      <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeClass}`}>
+                      <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0 ${badgeClass}`}>
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      <span className={`text-[11px] leading-tight ${textClass} flex-1`}>{opt}</span>
+                      <span className={`text-[12px] leading-snug ${textClass} flex-1`}>{opt}</span>
                       {isPreviousWrong && !isAnswerConfirmed && (
                         <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30 font-semibold shrink-0">
                           Tu fallo previo
@@ -508,7 +511,7 @@ export default function App() {
               </div>
 
               {/* Immediate Feedback Card */}
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2 pt-1 pb-1">
                 {isAnswerConfirmed && (
                   <>
                     {selectedMode === 'failed_review' && selectedOption === currentQ.correctAnswerIndex && (
@@ -521,55 +524,55 @@ export default function App() {
                       </div>
                     )}
 
-                    <div className={`p-2.5 rounded-xl border text-[11px] ${
+                    <div className={`p-3 rounded-xl border text-[11px] space-y-1 ${
                       selectedOption === currentQ.correctAnswerIndex
                         ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
                         : 'bg-rose-950/40 border-rose-500/40 text-rose-200'
                     }`}>
-                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                      <div className="flex items-center gap-1.5 font-bold">
                         {selectedOption === currentQ.correctAnswerIndex ? (
                           <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>¡Correcto! (+100 pts)</span>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span className="text-emerald-300">¡Correcto! (+100 pts)</span>
                           </>
                         ) : (
                           <>
-                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Incorrecto</span>
+                            <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                            <span className="text-rose-300">Incorrecto</span>
                           </>
                         )}
                       </div>
-                      <p className="text-[10px] text-slate-300 leading-normal">
+                      <p className="text-[10px] text-slate-300 leading-normal pl-5.5">
                         {currentQ.explanation}
                       </p>
                     </div>
                   </>
                 )}
 
-                {/* Bottom Action Buttons */}
+                {/* Bottom Action Buttons (Primary Emerald CTA vs Secondary Glass Tutor) */}
                 {!isAnswerConfirmed ? (
                   <button
                     disabled={selectedOption === null}
                     onClick={handleConfirmAnswer}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer active:scale-98 shadow-md shadow-indigo-900/40"
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-900 disabled:text-slate-500 disabled:border-slate-800 border border-emerald-400/50 text-slate-950 font-bold py-3.5 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-emerald-950/40 cursor-pointer active:scale-98 disabled:cursor-not-allowed disabled:shadow-none min-h-[48px]"
                   >
                     Comprobar Respuesta
                   </button>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2.5">
                     <button
                       onClick={requestAiExplanation}
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer shadow-md shadow-purple-900/40"
+                      className="flex-1 flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-850 border border-slate-700/80 hover:border-slate-600 text-slate-200 py-3 rounded-xl font-semibold text-xs transition cursor-pointer active:scale-98 min-h-[48px]"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
                       <span>Tutor IA</span>
                     </button>
                     <button
                       onClick={handleNextQuestion}
-                      className="flex-1 flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer shadow-md shadow-indigo-900/40"
+                      className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-emerald-950/40 cursor-pointer active:scale-98 min-h-[48px]"
                     >
                       <span>Siguiente</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 )}
@@ -1205,11 +1208,11 @@ export default function App() {
 
         {/* ==================== BOTTOM NAVIGATION BAR ==================== */}
         {!inQuiz && (
-          <nav className="h-16 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md px-4 flex items-center justify-around z-40">
+          <nav className="border-t border-slate-800/80 bg-[#090D16]/95 backdrop-blur-md px-4 pt-1 pb-safe min-h-[60px] sm:h-16 flex items-center justify-around z-40">
             <button
               onClick={() => setActiveTab('home')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer ${
-                activeTab === 'home' ? 'text-indigo-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'home' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <Home className="w-4.5 h-4.5" />
@@ -1218,7 +1221,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab('blitz')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer ${
+              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
                 activeTab === 'blitz' ? 'text-rose-400 font-bold' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
@@ -1228,8 +1231,8 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab('stats')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer ${
-                activeTab === 'stats' ? 'text-indigo-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'stats' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <BarChart3 className="w-4.5 h-4.5" />
@@ -1238,8 +1241,8 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer ${
-                activeTab === 'settings' ? 'text-indigo-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'settings' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <Settings className="w-4.5 h-4.5" />
@@ -1248,8 +1251,8 @@ export default function App() {
           </nav>
         )}
 
-        {/* Android Home Indicator Bar */}
-        <div className="h-4.5 flex items-center justify-center bg-slate-950">
+        {/* Android Simulated Home Indicator Bar (Desktop Mockup only) */}
+        <div className="hidden sm:flex h-4 items-center justify-center bg-[#090D16]">
           <div className="w-28 h-1 bg-slate-600 rounded-full" />
         </div>
 

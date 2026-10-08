@@ -247,18 +247,19 @@ import androidx.compose.ui.graphics.Color
 val DarkBackground = Color(0xFF090D16)
 val DarkSurface = Color(0xFF0F172A)
 val DarkSurfaceVariant = Color(0xFF1E293B)
-val IndigoPrimary = Color(0xFF6366F1)
-val PurpleAccent = Color(0xFF8B5CF6)
+val EmeraldPrimary = Color(0xFF10B981)
+val EmeraldDark = Color(0xFF059669)
+val EmeraldAccent = Color(0xFF34D399)
 val RoseBlitz = Color(0xFFF43F5E)
 val TextPrimary = Color(0xFFF8FAFC)
 val TextSecondary = Color(0xFF94A3B8)
 
 private val DarkColorScheme = darkColorScheme(
-    primary = IndigoPrimary,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFF312E81),
-    onPrimaryContainer = Color(0xFFE0E7FF),
-    secondary = PurpleAccent,
+    primary = EmeraldPrimary,
+    onPrimary = Color(0xFF090D16),
+    primaryContainer = Color(0xFF064E3B),
+    onPrimaryContainer = Color(0xFFA7F3D0),
+    secondary = EmeraldAccent,
     background = DarkBackground,
     onBackground = TextPrimary,
     surface = DarkSurface,
@@ -1318,16 +1319,23 @@ fun QuizScreen(
     val currentQuestion = state.currentQuestion ?: return
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "\${state.currentIndex + 1}/\${state.questions.size}",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.size(48.dp)
+                    ) {
                         Icon(Icons.Default.Close, contentDescription = "Salir")
                     }
                 },
@@ -1344,33 +1352,53 @@ fun QuizScreen(
             )
         },
         bottomBar = {
-            Surface(tonalElevation = 8.dp) {
+            Surface(
+                tonalElevation = 8.dp,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (state.isAnswerConfirmed) {
                         OutlinedButton(
                             onClick = { onEvent(QuizUiEvent.RequestAiExplanation) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("✨ Explicar con IA")
+                            Text("Tutor IA", fontWeight = FontWeight.SemiBold)
                         }
                         Button(
                             onClick = { onEvent(QuizUiEvent.NextQuestion) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color(0xFF090D16)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Siguiente ➔")
+                            Text("Siguiente ➔", fontWeight = FontWeight.Bold)
                         }
                     } else {
                         Button(
                             onClick = { onEvent(QuizUiEvent.ConfirmAnswer) },
                             enabled = state.selectedOptionIndex != null,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color(0xFF090D16)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Comprobar Respuesta")
+                            Text("Comprobar Respuesta", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1390,18 +1418,36 @@ fun QuizScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp))
+                    .clip(RoundedCornerShape(3.dp)),
+                color = MaterialTheme.colorScheme.primary
             )
 
-            // Dificultad y Tipo
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AssistChip(
-                    onClick = {},
-                    label = { Text(currentQuestion.difficulty.name) }
+            // Zero-Pill Typography Kicker (Anti-Slop Discipline)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(vertical = 2.dp)
+            ) {
+                Text(
+                    text = currentQuestion.category.displayName,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
                 )
-                AssistChip(
-                    onClick = {},
-                    label = { Text(currentQuestion.category.displayName) }
+                Text(
+                    text = "·",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = when (currentQuestion.difficulty.name) {
+                        "Junior" -> "Nivel Inicial"
+                        "Mid" -> "Nivel Medio"
+                        else -> "Nivel Senior"
+                    },
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
