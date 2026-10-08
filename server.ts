@@ -48,7 +48,7 @@ async function startServer() {
       });
 
       const testResponse = await testAi.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-flash-lite-latest',
         contents: 'Test connection: responde OK',
       });
 
@@ -65,7 +65,7 @@ async function startServer() {
     }
   });
 
-  // API endpoint: Explain question with AI Tutor (Gemini 2.5/3.8 Flash)
+  // API endpoint: Explain question with AI Tutor (Gemini Flash Lite)
   app.post('/api/ai-explain', async (req, res) => {
     try {
       const {
@@ -115,7 +115,7 @@ Por favor, estructura tu respuesta con claridad pedagógica y markdown limpio:
 Sé conciso, riguroso y en español neutro profesional.`;
 
       const response = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-flash-lite-latest',
         contents: prompt,
       });
 

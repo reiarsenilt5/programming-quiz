@@ -1028,7 +1028,7 @@ export default function App() {
                     </div>
                     <div>
                       <span className="font-bold text-sm text-white block">Tutor de IA (Google Gemini)</span>
-                      <span className="text-[10px] text-purple-300">Modelos Gemini 1.5 / 2.5 Flash</span>
+                      <span className="text-[10px] text-purple-300">Modelo Gemini Flash Lite (gemini-flash-lite-latest)</span>
                     </div>
                   </div>
                   <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
@@ -1266,8 +1266,8 @@ export default function App() {
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white">Tutor Gemini 3.8 Flash</h4>
-                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad</p>
+                    <h4 className="text-xs font-bold text-white">Tutor Gemini Flash Lite</h4>
+                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-flash-lite-latest)</p>
                   </div>
                 </div>
                 <button

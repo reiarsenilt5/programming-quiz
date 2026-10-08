@@ -348,7 +348,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.update { it.copy(isAiLoading = true, aiError = null, aiExplanationText = null) }
             try {
                 val generativeModel = GenerativeModel(
-                    modelName = "gemini-1.5-flash",
+                    modelName = "gemini-flash-lite-latest",
                     apiKey = apiKey
                 )
 
