@@ -39,6 +39,21 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
   // App navigation state
   const [currentScreen, setCurrentScreen] = useState<'home' | 'quiz' | 'result'>('home');
   const [currentTab, setCurrentTab] = useState<'home' | 'stats' | 'settings'>('home');
+  const [tabSlideDirection, setTabSlideDirection] = useState<'left' | 'right'>('right');
+
+  const phoneTabOrder: Record<'home' | 'stats' | 'settings', number> = {
+    home: 0,
+    stats: 1,
+    settings: 2,
+  };
+
+  const handlePhoneTabChange = (newTab: 'home' | 'stats' | 'settings') => {
+    if (newTab === currentTab) return;
+    const currentIdx = phoneTabOrder[currentTab] ?? 0;
+    const newIdx = phoneTabOrder[newTab] ?? 0;
+    setTabSlideDirection(newIdx > currentIdx ? 'right' : 'left');
+    setCurrentTab(newTab);
+  };
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('modern_fundamentals');
   const [selectedMode, setSelectedMode] = useState<GameMode>('practice');
 
@@ -245,7 +260,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                 
                 {/* TAB 1: INICIO */}
                 {currentTab === 'home' && (
-                  <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+                  <div key="sim-tab-home" className={`space-y-4 pt-1 ${tabSlideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div>
@@ -346,7 +361,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
 
                 {/* TAB 2: ESTADÍSTICAS */}
                 {currentTab === 'stats' && (
-                  <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+                  <div key="sim-tab-stats" className={`space-y-4 pt-1 ${tabSlideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
                     <h2 className="text-base font-extrabold text-white">Estadísticas</h2>
                     
                     {/* Summary row */}
@@ -423,7 +438,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
 
                 {/* TAB 3: AJUSTES */}
                 {currentTab === 'settings' && (
-                  <div className="space-y-3.5 pt-1 animate-in fade-in duration-200">
+                  <div key="sim-tab-settings" className={`space-y-3.5 pt-1 ${tabSlideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
                     <h2 className="text-base font-extrabold text-white">Configuración</h2>
 
                     {/* Gemini AI Key Card */}
@@ -435,7 +450,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                           </div>
                           <div>
                             <span className="font-bold text-white block">Tutor Gemini Flash</span>
-                            <span className="text-[10px] text-slate-400">Google AI Studio API (gemini-1.5-flash)</span>
+                            <span className="text-[10px] text-slate-400">Google AI Studio API (gemini-3.1-flash-lite)</span>
                           </div>
                         </div>
                         <span className="text-emerald-400 font-semibold text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">
@@ -803,7 +818,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
           {currentScreen === 'home' && (
             <nav className="h-14 border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-3 flex items-center justify-around z-40 shrink-0">
               <button
-                onClick={() => setCurrentTab('home')}
+                onClick={() => handlePhoneTabChange('home')}
                 className={`flex flex-col items-center gap-0.5 transition cursor-pointer min-w-[44px] py-1 ${
                   currentTab === 'home' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
                 }`}
@@ -821,7 +836,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
               </button>
 
               <button
-                onClick={() => setCurrentTab('stats')}
+                onClick={() => handlePhoneTabChange('stats')}
                 className={`flex flex-col items-center gap-0.5 transition cursor-pointer min-w-[44px] py-1 ${
                   currentTab === 'stats' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
                 }`}
@@ -831,7 +846,7 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
               </button>
 
               <button
-                onClick={() => setCurrentTab('settings')}
+                onClick={() => handlePhoneTabChange('settings')}
                 className={`flex flex-col items-center gap-0.5 transition cursor-pointer min-w-[44px] py-1 ${
                   currentTab === 'settings' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
                 }`}

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devquiz.app.domain.model.CategoryType
 import com.devquiz.app.presentation.quiz.QuizViewModel
+import com.devquiz.app.presentation.quiz.VirtualMedalData
 
 @Composable
 fun StatsScreen(
@@ -327,7 +328,10 @@ fun StatsScreen(
             }
         }
 
-        // Logros Desbloqueados
+        val medals = viewModel.getVirtualMedals(streakDays)
+        val unlockedCount = medals.count { it.isUnlocked }
+
+        // Medallas Virtuales & Hitos
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -336,22 +340,67 @@ fun StatsScreen(
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    "Logros Desbloqueados",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BadgeItem(emoji = "🎯", title = "Junior Ready", subtitle = "Primer quiz", modifier = Modifier.weight(1f))
-                    BadgeItem(emoji = "⚡", title = "Blitz Runner", subtitle = "60s blitz", modifier = Modifier.weight(1f))
-                    BadgeItem(emoji = "🤖", title = "AI Explorer", subtitle = "Tutor Gemini", modifier = Modifier.weight(1f))
+                    Column {
+                        Text(
+                            "Medallas Virtuales & Hitos",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            "Recompensas por disciplina y dominio",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFF59E0B).copy(alpha = 0.18f)
+                    ) {
+                        Text(
+                            "$unlockedCount / ${medals.size}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = Color(0xFFFBBF24),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                // Overall Medals Progress Bar
+                LinearProgressIndicator(
+                    progress = { if (medals.isNotEmpty()) unlockedCount.toFloat() / medals.size else 0f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = Color(0xFFF59E0B),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+
+                // Grid of Medals (chunks of 2)
+                medals.chunked(2).forEach { rowMedals ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowMedals.forEach { medal ->
+                            MedalCardItem(
+                                medal = medal,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        if (rowMedals.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
         }
@@ -361,25 +410,91 @@ fun StatsScreen(
 }
 
 @Composable
-fun BadgeItem(
-    emoji: String,
-    title: String,
-    subtitle: String,
+fun MedalCardItem(
+    medal: VirtualMedalData,
     modifier: Modifier = Modifier
 ) {
+    val tierColor = when (medal.tier) {
+        "Diamante" -> Color(0xFF06B6D4)
+        "Oro" -> Color(0xFFF59E0B)
+        "Plata" -> Color(0xFF94A3B8)
+        else -> Color(0xFFF97316)
+    }
+
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        shape = RoundedCornerShape(14.dp),
+        color = if (medal.isUnlocked) tierColor.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (medal.isUnlocked) tierColor.copy(alpha = 0.45f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        )
     ) {
         Column(
-            modifier = Modifier.padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(10.dp)
         ) {
-            Text(emoji, fontSize = 22.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    medal.emoji,
+                    fontSize = 22.sp
+                )
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = tierColor.copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        medal.tier,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = tierColor,
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                medal.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+
+            Text(
+                medal.description,
+                fontSize = 9.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                lineHeight = 12.sp,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (medal.isUnlocked) {
+                    Text("✓ Desbloqueada", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
+                } else {
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(10.dp),
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(medal.progressText, fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                }
+            }
         }
     }
 }

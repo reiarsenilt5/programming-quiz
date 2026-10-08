@@ -30,10 +30,13 @@ import {
   Save,
   RefreshCw,
   AlertTriangle,
-  Target
+  Target,
+  Medal,
+  Lock
 } from 'lucide-react';
 import { CategoryId, FailedQuestionRecord, GameMode, Question, QuizUserAnswer } from './types/quiz';
 import { CATEGORIES, QUESTIONS_DATA } from './data/questionsData';
+import { MEDAL_DEFINITIONS, MedalDefinition, MilestoneContext, loadUnlockedMedals, evaluateAndAwardMedals } from './data/medalsData';
 
 export default function App() {
   // Navigation Tabs in Mobile App
@@ -97,6 +100,46 @@ export default function App() {
   const [totalAnswered, setTotalAnswered] = useState(28);
   const [totalCorrect, setTotalCorrect] = useState(24);
   const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Virtual Medals Milestone State
+  const [unlockedMedals, setUnlockedMedals] = useState<Record<string, number>>(() => loadUnlockedMedals());
+  const [hasPerfectTest, setHasPerfectTest] = useState<boolean>(() => {
+    try { return localStorage.getItem('devquiz_has_perfect_test') === 'true'; } catch { return false; }
+  });
+  const [blitzHighScore, setBlitzHighScore] = useState<number>(() => {
+    try { return Number(localStorage.getItem('devquiz_blitz_high_score')) || 0; } catch { return 0; }
+  });
+  const [masteredBugsCount, setMasteredBugsCount] = useState<number>(() => {
+    try { return Number(localStorage.getItem('devquiz_mastered_bugs_count')) || 0; } catch { return 0; }
+  });
+  const [hasUsedAiTutor, setHasUsedAiTutor] = useState<boolean>(() => {
+    try { return localStorage.getItem('devquiz_has_used_ai_tutor') === 'true'; } catch { return false; }
+  });
+  const [newlyUnlockedMedal, setNewlyUnlockedMedal] = useState<MedalDefinition | null>(null);
+  const [selectedMedalDetail, setSelectedMedalDetail] = useState<MedalDefinition | null>(null);
+
+  // Milestone Evaluation Function
+  const checkAndAwardMedals = (overrides?: Partial<MilestoneContext>) => {
+    const ctx: MilestoneContext = {
+      streakDays: overrides?.streakDays ?? streakDays,
+      totalAnswered: overrides?.totalAnswered ?? totalAnswered,
+      totalCorrect: overrides?.totalCorrect ?? totalCorrect,
+      hasPerfectTest: overrides?.hasPerfectTest ?? hasPerfectTest,
+      blitzHighScore: overrides?.blitzHighScore ?? blitzHighScore,
+      masteredBugsCount: overrides?.masteredBugsCount ?? masteredBugsCount,
+      hasUsedAiTutor: overrides?.hasUsedAiTutor ?? hasUsedAiTutor,
+    };
+    const updated = evaluateAndAwardMedals(ctx, unlockedMedals, (newMedal) => {
+      setNewlyUnlockedMedal(newMedal);
+    });
+    setUnlockedMedals(updated);
+  };
+
+  // Evaluate on initial mount and state changes
+  useEffect(() => {
+    checkAndAwardMedals();
+  }, [streakDays, totalAnswered, totalCorrect, hasPerfectTest, blitzHighScore, masteredBugsCount, hasUsedAiTutor]);
+
 
   // Category stats tracking
   const [categoryStats, setCategoryStats] = useState<Record<CategoryId, { answered: number; correct: number }>>({
@@ -238,12 +281,22 @@ export default function App() {
     } else if (selectedMode === 'failed_review') {
       // Correct in review mode: eliminate from failed list!
       setFailedQuestions((prev) => prev.filter((f) => f.questionId !== currentQ.id));
+      const newMastered = masteredBugsCount + 1;
+      setMasteredBugsCount(newMastered);
+      try { localStorage.setItem('devquiz_mastered_bugs_count', String(newMastered)); } catch {}
+      checkAndAwardMedals({ masteredBugsCount: newMastered });
     }
 
     if (isCorrect) {
       setScore((prev) => prev + 100);
       setTotalCorrect((prev) => prev + 1);
-      setStreakDays((prev) => prev + 1);
+      const newStreak = streakDays + 1;
+      setStreakDays(newStreak);
+      checkAndAwardMedals({
+        totalAnswered: totalAnswered + 1,
+        totalCorrect: totalCorrect + 1,
+        streakDays: newStreak
+      });
     }
   };
 
@@ -262,6 +315,29 @@ export default function App() {
   const finishQuiz = () => {
     setIsTimerRunning(false);
     setQuizFinished(true);
+
+    const isPerfect = userAnswers.length >= 3 && userAnswers.every((a) => a.isCorrect);
+    let updatedPerfect = hasPerfectTest;
+    if (isPerfect) {
+      updatedPerfect = true;
+      setHasPerfectTest(true);
+      try { localStorage.setItem('devquiz_has_perfect_test', 'true'); } catch {}
+    }
+
+    let updatedBlitz = blitzHighScore;
+    if (selectedMode === 'time_trial') {
+      const blitzCorrect = userAnswers.filter((a) => a.isCorrect).length;
+      if (blitzCorrect > blitzHighScore) {
+        updatedBlitz = blitzCorrect;
+        setBlitzHighScore(blitzCorrect);
+        try { localStorage.setItem('devquiz_blitz_high_score', String(blitzCorrect)); } catch {}
+      }
+    }
+
+    checkAndAwardMedals({
+      hasPerfectTest: updatedPerfect,
+      blitzHighScore: updatedBlitz,
+    });
   };
 
   const exitQuiz = () => {
@@ -301,6 +377,9 @@ export default function App() {
       }
 
       setAiExplanation(data.explanation);
+      setHasUsedAiTutor(true);
+      try { localStorage.setItem('devquiz_has_used_ai_tutor', 'true'); } catch {}
+      checkAndAwardMedals({ hasUsedAiTutor: true });
     } catch (err: any) {
       setAiError(err.message || 'No se pudo obtener la explicación de IA.');
     } finally {
@@ -1026,23 +1105,137 @@ export default function App() {
                 )}
               </div>
 
-              {/* Badges / Medals */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-                  Logros Desbloqueados
-                </h3>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-xl">🎯</span>
-                    <span className="text-[10px] font-bold block mt-1 text-slate-200">Junior Ready</span>
+              {/* Medallas Virtuales Basadas en Hitos */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5 shadow-lg shadow-amber-950/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                      <Medal className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                        Medallas Virtuales & Hitos
+                      </h3>
+                      <p className="text-[10px] text-slate-400">
+                        Premios permanentes por tus logros técnicos y disciplina
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-xl">🐛</span>
-                    <span className="text-[10px] font-bold block mt-1 text-slate-200">Bug Hunter</span>
-                  </div>
-                  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <span className="text-xl">🤖</span>
-                    <span className="text-[10px] font-bold block mt-1 text-slate-200">AI Prompt Master</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    {Object.keys(unlockedMedals).length} / {MEDAL_DEFINITIONS.length}
+                  </span>
+                </div>
+
+                {/* Overall Medals Progress Bar */}
+                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${(Object.keys(unlockedMedals).length / MEDAL_DEFINITIONS.length) * 100}%`,
+                    }}
+                  />
+                </div>
+
+                {/* Medals Interactive Grid */}
+                <div className="grid grid-cols-2 gap-2 text-left">
+                  {MEDAL_DEFINITIONS.map((medal) => {
+                    const isUnlocked = Boolean(unlockedMedals[medal.id]);
+                    const currentCtx: MilestoneContext = {
+                      streakDays,
+                      totalAnswered,
+                      totalCorrect,
+                      hasPerfectTest,
+                      blitzHighScore,
+                      masteredBugsCount,
+                      hasUsedAiTutor,
+                    };
+                    const progress = medal.getProgress(currentCtx);
+
+                    let tierBadge = 'Bronce';
+                    let tierColor = 'border-orange-500/30 text-orange-400 bg-orange-950/20';
+                    let cardBorder = isUnlocked ? 'border-amber-500/40 bg-gradient-to-br from-amber-950/20 to-slate-900 shadow-sm' : 'border-slate-800 bg-slate-950/60 opacity-65';
+
+                    if (medal.tier === 'gold') {
+                      tierBadge = 'Oro';
+                      tierColor = 'border-amber-500/40 text-amber-300 bg-amber-950/30';
+                    } else if (medal.tier === 'diamond') {
+                      tierBadge = 'Diamante';
+                      tierColor = 'border-cyan-500/40 text-cyan-300 bg-cyan-950/30';
+                      if (isUnlocked) cardBorder = 'border-cyan-500/40 bg-gradient-to-br from-cyan-950/20 to-slate-900 shadow-sm';
+                    } else if (medal.tier === 'silver') {
+                      tierBadge = 'Plata';
+                      tierColor = 'border-slate-400/40 text-slate-300 bg-slate-800/40';
+                    }
+
+                    return (
+                      <button
+                        key={medal.id}
+                        type="button"
+                        onClick={() => setSelectedMedalDetail(medal)}
+                        className={`p-2.5 rounded-xl border text-left transition cursor-pointer relative group flex flex-col justify-between hover:scale-[1.02] active:scale-[0.98] ${cardBorder}`}
+                      >
+                        <div className="flex items-start justify-between mb-1.5">
+                          <span className={`text-2xl filter ${isUnlocked ? 'drop-shadow-md' : 'grayscale opacity-70'}`}>
+                            {medal.emoji}
+                          </span>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${tierColor}`}>
+                            {tierBadge}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-100 block leading-tight truncate">
+                            {medal.title}
+                          </span>
+                          <p className="text-[9px] text-slate-400 line-clamp-1 mt-0.5">
+                            {medal.description}
+                          </p>
+                        </div>
+
+                        <div className="mt-2 pt-1.5 border-t border-slate-800/60 flex items-center justify-between text-[9px]">
+                          {isUnlocked ? (
+                            <span className="text-emerald-400 font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Desbloqueada</span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 font-medium flex items-center gap-1">
+                              <Lock className="w-2.5 h-2.5 text-slate-500" />
+                              <span className="truncate">{progress}</span>
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Quick Simulation / Testing Affordance */}
+                <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between text-[10px] text-slate-400">
+                  <span>¿Quieres probar los hitos?</span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newStreak = Math.max(streakDays, 7);
+                        setStreakDays(newStreak);
+                        checkAndAwardMedals({ streakDays: newStreak });
+                      }}
+                      className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-semibold cursor-pointer transition active:scale-95"
+                    >
+                      🔥 Racha 7 días
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHasPerfectTest(true);
+                        try { localStorage.setItem('devquiz_has_perfect_test', 'true'); } catch {}
+                        checkAndAwardMedals({ hasPerfectTest: true });
+                      }}
+                      className="px-2 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[10px] font-semibold cursor-pointer transition active:scale-95"
+                    >
+                      🎯 100% Precisión
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1369,6 +1562,105 @@ export default function App() {
                 className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-2.5 rounded-xl font-medium mt-2 cursor-pointer"
               >
                 Cerrar Tutor
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== MEDAL CELEBRATION TOAST ==================== */}
+        {newlyUnlockedMedal && (
+          <div className="absolute top-12 left-4 right-4 z-50 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 p-[1.5px] rounded-2xl shadow-2xl animate-in slide-in-from-top-6 duration-300">
+            <div className="bg-[#090D16]/95 backdrop-blur-md p-3.5 rounded-2xl flex items-center justify-between gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-2xl shrink-0">
+                {newlyUnlockedMedal.emoji}
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                  🎉 ¡Nueva Medalla Desbloqueada!
+                </span>
+                <span className="text-xs font-extrabold text-white truncate block">
+                  {newlyUnlockedMedal.title}
+                </span>
+                <p className="text-[10px] text-slate-300 truncate">
+                  {newlyUnlockedMedal.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNewlyUnlockedMedal(null)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== MEDAL DETAIL BOTTOMSHEET ==================== */}
+        {selectedMedalDetail && (
+          <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md rounded-[44px] z-50 p-4 flex flex-col justify-end animate-in fade-in duration-200">
+            <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-5 shadow-2xl space-y-4 text-left">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-3xl">
+                    {selectedMedalDetail.emoji}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white leading-tight">
+                      {selectedMedalDetail.title}
+                    </h4>
+                    <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
+                      Hito Nivel {selectedMedalDetail.tier.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMedalDetail(null)}
+                  className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-semibold text-slate-300 block">
+                  Criterio de desbloqueo:
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+                  {selectedMedalDetail.description}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+                <span className="text-slate-400">Estado:</span>
+                {unlockedMedals[selectedMedalDetail.id] ? (
+                  <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>¡Conseguida con éxito!</span>
+                  </span>
+                ) : (
+                  <span className="text-amber-400 font-semibold flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Progreso: {selectedMedalDetail.getProgress({
+                      streakDays,
+                      totalAnswered,
+                      totalCorrect,
+                      hasPerfectTest,
+                      blitzHighScore,
+                      masteredBugsCount,
+                      hasUsedAiTutor
+                    })}</span>
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedMedalDetail(null)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-2.5 rounded-xl font-medium cursor-pointer"
+              >
+                Cerrar
               </button>
             </div>
           </div>

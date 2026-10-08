@@ -66,3 +66,14 @@ export interface CategoryInfo {
   description: string;
   tag: string;
 }
+
+export interface VirtualMedal {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  tier: 'bronze' | 'silver' | 'gold' | 'diamond';
+  unlockedAt?: number | null;
+  progressText?: string;
+}
+

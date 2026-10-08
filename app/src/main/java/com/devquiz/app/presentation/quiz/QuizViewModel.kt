@@ -306,6 +306,16 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
 
         if (nextIdx >= state.questions.size) {
             timerJob?.cancel()
+            val allCorrect = state.userAnswers.isNotEmpty() && state.userAnswers.all { it.isCorrect }
+            if (allCorrect) {
+                statsPrefs.edit().putBoolean("medal_perfect_100", true).apply()
+            }
+            if (state.gameMode == GameMode.TimeTrial) {
+                val correctCount = state.userAnswers.count { it.isCorrect }
+                if (correctCount >= 5) {
+                    statsPrefs.edit().putBoolean("medal_blitz_5", true).apply()
+                }
+            }
             _uiState.update { it.copy(isGameOver = true) }
         } else {
             val nextQ = state.questions.getOrNull(nextIdx)
@@ -388,6 +398,7 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                     throw IllegalStateException("El Tutor no retornó texto. Por favor reintenta.")
                 }
 
+                statsPrefs.edit().putBoolean("medal_ai_tutor", true).apply()
                 _uiState.update {
                     it.copy(isAiLoading = false, aiExplanationText = text, aiError = null)
                 }
@@ -412,8 +423,84 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun getVirtualMedals(currentStreak: Int = 5): List<VirtualMedalData> {
+        val totalAnswered = getTotalAnswered()
+        val bestStreak = maxOf(currentStreak, statsPrefs.getInt("best_streak", currentStreak))
+        val hasPerfect = statsPrefs.getBoolean("medal_perfect_100", false)
+        val hasBlitz = statsPrefs.getBoolean("medal_blitz_5", false)
+        val hasBug = statsPrefs.getBoolean("medal_bug_hunter", false)
+        val hasAi = statsPrefs.getBoolean("medal_ai_tutor", false)
+
+        return listOf(
+            VirtualMedalData(
+                id = "streak_7",
+                title = "Racha de 7 Días",
+                description = "Mantén una racha de estudio activa de 7 días consecutivos.",
+                emoji = "🔥",
+                tier = "Oro",
+                isUnlocked = bestStreak >= 7,
+                progressText = "${minOf(bestStreak, 7)} / 7 días"
+            ),
+            VirtualMedalData(
+                id = "perfect_100",
+                title = "100% de Precisión",
+                description = "Completa un test de examen sin cometer ningún fallo.",
+                emoji = "🎯",
+                tier = "Diamante",
+                isUnlocked = hasPerfect,
+                progressText = if (hasPerfect) "100% logrado" else "0 / 1 test perfecto"
+            ),
+            VirtualMedalData(
+                id = "blitz_runner",
+                title = "Relámpago Blitz",
+                description = "Consigue 5 o más aciertos en una ronda de Blitz 60s.",
+                emoji = "⚡",
+                tier = "Plata",
+                isUnlocked = hasBlitz,
+                progressText = if (hasBlitz) "Completado" else "0 / 5 aciertos"
+            ),
+            VirtualMedalData(
+                id = "veteran",
+                title = "Veterano del Código",
+                description = "Responde al menos 50 preguntas técnicas en total.",
+                emoji = "🚀",
+                tier = "Oro",
+                isUnlocked = totalAnswered >= 50,
+                progressText = "${minOf(totalAnswered, 50)} / 50 preguntas"
+            ),
+            VirtualMedalData(
+                id = "bug_hunter",
+                title = "Cazador de Bugs",
+                description = "Supera y domina preguntas del banco de fallos técnicos.",
+                emoji = "🐛",
+                tier = "Bronce",
+                isUnlocked = hasBug,
+                progressText = if (hasBug) "Dominado" else "0 / 1 fallo"
+            ),
+            VirtualMedalData(
+                id = "ai_explorer",
+                title = "Poder de la IA",
+                description = "Aprende de una explicación del Mentor Gemini Flash Lite.",
+                emoji = "🤖",
+                tier = "Bronce",
+                isUnlocked = hasAi,
+                progressText = if (hasAi) "Consultado" else "0 / 1 consulta"
+            )
+        )
+    }
+
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
     }
 }
+
+data class VirtualMedalData(
+    val id: String,
+    val title: String,
+    val description: String,
+    val emoji: String,
+    val tier: String,
+    val isUnlocked: Boolean,
+    val progressText: String
+)

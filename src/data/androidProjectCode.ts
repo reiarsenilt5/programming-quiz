@@ -865,7 +865,7 @@ import javax.inject.Inject
 @HiltViewModel
 class QuizViewModel @Inject constructor(
     private val repository: QuizRepository,
-    private val geminiModel: GenerativeModel // Inyectado con "gemini-1.5-flash"
+    private val geminiModel: GenerativeModel // Inyectado con "gemini-2.5-flash"
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QuizUiState())
