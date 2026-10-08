@@ -10,7 +10,17 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Permite compilar manualmente con un clic en GitHub Actions
+  workflow_dispatch:
+    inputs:
+      log_level:
+        description: 'Nivel de logging de Gradle (info, debug, lifecycle)'
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - 'info'
+          - 'debug'
+          - 'lifecycle'
 
 jobs:
   build:
@@ -33,8 +43,8 @@ jobs:
       - name: 🛡️ Auto-generar Gradle Wrapper si falta en el repo
         run: |
           if [ ! -f "gradlew" ]; then
-            echo "Aviso: gradlew no encontrado. Generando wrapper automáticamente con Gradle 8.3..."
-            gradle wrapper --gradle-version 8.3
+            echo "Aviso: gradlew no encontrado. Generando wrapper automáticamente con Gradle 8.6..."
+            gradle wrapper --gradle-version 8.6
           fi
           chmod +x gradlew
 
@@ -48,10 +58,42 @@ jobs:
             echo "gemini.api.key=\${GEMINI_API_KEY}" >> local.properties
           fi
 
-      - name: 🔨 Compilar APK Debug
-        run: ./gradlew assembleDebug --stacktrace
+      - name: 🔨 Compilar APK Debug con Logging Detallado
+        env:
+          GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
+          GRADLE_LOG_LEVEL: \${{ inputs.log_level || 'info' }}
+        run: |
+          echo "=== INICIANDO COMPILACIÓN GRADLE CON LOGGING DETALLADO ==="
+          echo "Nivel: --\${GRADLE_LOG_LEVEL} --full-stacktrace --warning-mode all --no-daemon"
+          ./gradlew assembleDebug --\${GRADLE_LOG_LEVEL} --full-stacktrace --warning-mode all --no-daemon
+
+      - name: 📋 Diagnóstico y Extracción de Errores (si falla la compilación)
+        if: failure()
+        run: |
+          echo "================================================================="
+          echo "❌ ERROR DETECTADO DURANTE LA COMPILACIÓN DE GRADLE"
+          echo "================================================================="
+          if [ -d "app/build/reports" ]; then
+            find app/build/reports -type f -exec echo ">>> Reporte: {}" \; -exec head -n 120 {} \;
+          fi
+          if [ -d "$HOME/.gradle/daemon" ]; then
+            find "$HOME/.gradle/daemon" -type f -name "*.log" -exec echo ">>> Daemon log: {}" \; -exec tail -n 100 {} \;
+          fi
+          echo "================================================================="
+
+      - name: 📦 Subir Reportes de Error como Artifact (si falla)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DevQuiz-Gradle-Failure-Logs
+          path: |
+            app/build/reports/
+            **/build/reports/
+            ~/.gradle/daemon/*.log
+          retention-days: 7
 
       - name: 📦 Subir APK Debug como Artefacto Descargable
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: DevQuiz-Debug-APK
@@ -381,7 +423,10 @@ export default function CiCdGuide() {
               <strong className="text-white">Permisos del Gradlew:</strong> El paso <code className="bg-slate-800 px-1 py-0.5 rounded text-indigo-300">chmod +x gradlew</code> previene el típico error "Permission denied" de Linux.
             </li>
             <li>
-              <strong className="text-white">Disparador manual:</strong> Gracias a <code className="bg-slate-800 px-1 py-0.5 rounded text-indigo-300">workflow_dispatch</code>, puedes ir a Actions en GitHub y presionar "Run workflow" en cualquier momento sin hacer commits.
+              <strong className="text-white">Logging Detallado y Diagnóstico de Errores:</strong> Ejecuta <code className="bg-slate-800 px-1 py-0.5 rounded text-amber-300">--info --full-stacktrace --warning-mode all</code> para exponer el mensaje de error exacto (compilador Kotlin, AAPT2 o dependencias) y sube automáticamente los reportes y logs del daemon si falla la compilación.
+            </li>
+            <li>
+              <strong className="text-white">Disparador manual configurable:</strong> Con <code className="bg-slate-800 px-1 py-0.5 rounded text-indigo-300">workflow_dispatch</code>, puedes elegir el nivel de detalle de logs (<code className="text-indigo-300 font-mono">info</code>, <code className="text-indigo-300 font-mono">debug</code> o <code className="text-indigo-300 font-mono">lifecycle</code>) antes de ejecutar el flujo.
             </li>
           </ul>
         </div>

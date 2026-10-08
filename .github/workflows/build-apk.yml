@@ -4,6 +4,16 @@ on:
   push:
     branches: [ "main", "master" ]
   workflow_dispatch:
+    inputs:
+      log_level:
+        description: 'Nivel de logging de Gradle (info, debug, lifecycle)'
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - 'info'
+          - 'debug'
+          - 'lifecycle'
 
 permissions:
   contents: write
@@ -44,10 +54,57 @@ jobs:
             echo "gemini.api.key=${GEMINI_API_KEY}" >> local.properties
           fi
 
-      - name: 🔨 Compilar APK Debug
+      - name: 🔍 Diagnóstico previo del entorno
+        run: |
+          echo "=== ENTORNO DE COMPILACIÓN ==="
+          java -version
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          ./gradlew --version
+
+      - name: 🔨 Compilar APK Debug con Logging Detallado
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+          GRADLE_LOG_LEVEL: ${{ inputs.log_level || 'info' }}
+        run: |
+          echo "================================================================="
+          echo "🚀 INICIANDO COMPILACIÓN GRADLE CON LOGGING DETALLADO"
+          echo "Nivel seleccionado: --${GRADLE_LOG_LEVEL}"
+          echo "Flags: --${GRADLE_LOG_LEVEL} --full-stacktrace --warning-mode all --no-daemon"
+          echo "================================================================="
+          ./gradlew assembleDebug --${GRADLE_LOG_LEVEL} --full-stacktrace --warning-mode all --no-daemon
+
+      - name: 📋 Diagnóstico y extracción de errores (si la compilación falla)
+        if: failure()
+        run: |
+          echo "================================================================="
+          echo "❌ ERROR DETECTADO DURANTE LA COMPILACIÓN DE GRADLE"
+          echo "================================================================="
+          echo "--- 1. Reportes y archivos de log generados en app/build/reports ---"
+          if [ -d "app/build/reports" ]; then
+            find app/build/reports -type f -exec echo ">>> Archivo: {}" \; -exec head -n 120 {} \;
+          else
+            echo "No se encontró el directorio app/build/reports"
+          fi
+          
+          echo "--- 2. Logs recientes del Gradle Daemon (~/.gradle/daemon) ---"
+          if [ -d "$HOME/.gradle/daemon" ]; then
+            find "$HOME/.gradle/daemon" -type f -name "*.log" -exec echo ">>> Daemon log: {}" \; -exec tail -n 100 {} \;
+          fi
+
+          echo "--- 3. Búsqueda de logs de fallo JVM o crashes ---"
+          find . -maxdepth 2 -name "hs_err_pid*.log" -exec echo ">>> JVM Crash Log: {}" \; -exec head -n 50 {} \; 2>/dev/null || true
+          echo "================================================================="
+
+      - name: 📦 Subir Reportes de Fallo como Artifact (si falla)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-failure-reports
+          path: |
+            app/build/reports/
+            **/build/reports/
+            ~/.gradle/daemon/*.log
+          retention-days: 7
 
       - name: 🏷️ Preparar APK con versión para Release
         run: |
@@ -79,6 +136,7 @@ jobs:
             - **Commit**: `${{ github.sha }}`
             - **Categorías**: 13 cuestionarios técnicos (SOLID, SQL, Fullstack Senior 2026, DevOps & Cloud 2026, Sutilezas Pro, Docker Mastery 25+, etc.)
             - **Modo**: 100% Funcional Offline (IA Gemini opcional)
+            - **Logging**: Configurado con nivel exhaustivo para trazabilidad completa.
           files: |
             DevQuiz-v1.0.${{ github.run_number }}-debug.apk
         env:
