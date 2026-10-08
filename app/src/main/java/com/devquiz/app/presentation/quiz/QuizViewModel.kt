@@ -366,15 +366,15 @@ class QuizViewModel(application: Application) : AndroidViewModel(application) {
                 val text = withContext(Dispatchers.IO) {
                     try {
                         val generativeModel = GenerativeModel(
-                            modelName = "gemini-1.5-flash",
+                            modelName = "gemini-2.5-flash",
                             apiKey = apiKey
                         )
                         generativeModel.generateContent(prompt).text
                     } catch (primaryError: Exception) {
-                        // Reintento resiliente con gemini-2.0-flash
+                        // Reintento resiliente con gemini-flash-latest
                         try {
                             val fallbackModel = GenerativeModel(
-                                modelName = "gemini-2.0-flash",
+                                modelName = "gemini-flash-latest",
                                 apiKey = apiKey
                             )
                             fallbackModel.generateContent(prompt).text

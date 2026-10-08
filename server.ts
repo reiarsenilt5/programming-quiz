@@ -50,14 +50,21 @@ async function startServer() {
       let testResponse;
       try {
         testResponse = await testAi.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3.1-flash-lite',
           contents: 'Test connection: responde OK',
         });
       } catch {
-        testResponse = await testAi.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents: 'Test connection: responde OK',
-        });
+        try {
+          testResponse = await testAi.models.generateContent({
+            model: 'gemini-flash-latest',
+            contents: 'Test connection: responde OK',
+          });
+        } catch {
+          testResponse = await testAi.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: 'Test connection: responde OK',
+          });
+        }
       }
 
       if (testResponse.text) {
@@ -125,14 +132,23 @@ Sé conciso, riguroso y en español neutro profesional.`;
       let response;
       try {
         response = await client.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3.1-flash-lite',
           contents: prompt,
         });
-      } catch {
-        response = await client.models.generateContent({
-          model: 'gemini-1.5-flash',
-          contents: prompt,
-        });
+      } catch (err: any) {
+        console.warn('Fallback to gemini-flash-latest:', err?.message);
+        try {
+          response = await client.models.generateContent({
+            model: 'gemini-flash-latest',
+            contents: prompt,
+          });
+        } catch (err2: any) {
+          console.warn('Fallback to gemini-2.5-flash:', err2?.message);
+          response = await client.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+          });
+        }
       }
 
       res.json({

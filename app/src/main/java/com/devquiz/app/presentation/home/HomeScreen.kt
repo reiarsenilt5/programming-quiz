@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import com.devquiz.app.domain.model.CategoryType
 import com.devquiz.app.domain.model.GameMode
 import com.devquiz.app.presentation.quiz.QuizViewModel
@@ -176,21 +179,36 @@ fun MainScreen(
             }
         }
     ) { padding ->
-        Box(
+        AnimatedContent(
+            targetState = selectedTab,
+            transitionSpec = {
+                val targetIndex = targetState.ordinal
+                val initialIndex = initialState.ordinal
+                if (targetIndex > initialIndex) {
+                    (slideInHorizontally(
+                        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
+                        initialOffsetX = { fullWidth -> fullWidth }
+                    ) + fadeIn(animationSpec = tween(280))) togetherWith (slideOutHorizontally(
+                        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
+                        targetOffsetX = { fullWidth -> -fullWidth }
+                    ) + fadeOut(animationSpec = tween(280)))
+                } else {
+                    (slideInHorizontally(
+                        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
+                        initialOffsetX = { fullWidth -> -fullWidth }
+                    ) + fadeIn(animationSpec = tween(280))) togetherWith (slideOutHorizontally(
+                        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
+                        targetOffsetX = { fullWidth -> fullWidth }
+                    ) + fadeOut(animationSpec = tween(280)))
+                }
+            },
+            label = "tab_slide_in_transition",
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-        ) {
-            when (selectedTab) {
-                MainNavTab.HOME -> {
-                    HomeContent(
-                        onCategorySelected = onCategorySelected,
-                        failedCount = viewModel.getFailedCount(),
-                        onStartFailedReview = onStartFailedReview
-                    )
-                }
-                MainNavTab.BLITZ -> {
-                    // Blitz inicia automáticamente el quiz via onStartBlitz()
+        ) { tab ->
+            when (tab) {
+                MainNavTab.HOME, MainNavTab.BLITZ -> {
                     HomeContent(
                         onCategorySelected = onCategorySelected,
                         failedCount = viewModel.getFailedCount(),

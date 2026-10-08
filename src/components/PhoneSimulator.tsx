@@ -842,8 +842,8 @@ export default function PhoneSimulator({ onOpenCode }: PhoneSimulatorProps) {
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white">Tutor Gemini Flash</h4>
-                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-1.5-flash)</p>
+                    <h4 className="text-xs font-bold text-white">Tutor Gemini Flash Lite</h4>
+                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-3.1-flash-lite)</p>
                   </div>
                 </div>
                 <button

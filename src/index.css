@@ -51,3 +51,37 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(16, 185, 129, 0.5);
 }
+
+/* Fluid Mobile Tab Slide-in Animations */
+@keyframes slideInFromRight {
+  0% {
+    transform: translate3d(24px, 0, 0);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translate3d(-24px, 0, 0);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.tab-slide-right {
+  animation: slideInFromRight 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.tab-slide-left {
+  animation: slideInFromLeft 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+

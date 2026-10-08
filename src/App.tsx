@@ -38,6 +38,22 @@ import { CATEGORIES, QUESTIONS_DATA } from './data/questionsData';
 export default function App() {
   // Navigation Tabs in Mobile App
   const [activeTab, setActiveTab] = useState<'home' | 'blitz' | 'stats' | 'settings'>('home');
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+
+  const tabOrder: Record<'home' | 'blitz' | 'stats' | 'settings', number> = {
+    home: 0,
+    blitz: 1,
+    stats: 2,
+    settings: 3,
+  };
+
+  const handleTabChange = (newTab: 'home' | 'blitz' | 'stats' | 'settings') => {
+    if (newTab === activeTab) return;
+    const currentIdx = tabOrder[activeTab];
+    const newIdx = tabOrder[newTab];
+    setSlideDirection(newIdx > currentIdx ? 'right' : 'left');
+    setActiveTab(newTab);
+  };
 
   // Quiz Game State
   const [inQuiz, setInQuiz] = useState(false);
@@ -680,7 +696,7 @@ export default function App() {
 
           {/* ==================== 1. TAB: HOME ==================== */}
           {!inQuiz && activeTab === 'home' && (
-            <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+            <div key="tab-home" className={`space-y-4 pt-1 ${slideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
               {/* App Bar Header */}
               <div className="flex items-center justify-between">
                 <div>
@@ -804,7 +820,7 @@ export default function App() {
 
           {/* ==================== 2. TAB: BLITZ ==================== */}
           {!inQuiz && activeTab === 'blitz' && (
-            <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+            <div key="tab-blitz" className={`space-y-4 pt-2 ${slideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
               <div className="text-center py-4">
                 <div className="w-16 h-16 rounded-3xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-rose-950/40">
                   <Clock className="w-8 h-8" />
@@ -842,7 +858,7 @@ export default function App() {
 
           {/* ==================== 3. TAB: STATS ==================== */}
           {!inQuiz && activeTab === 'stats' && (
-            <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+            <div key="tab-stats" className={`space-y-4 pt-1 ${slideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
               <h2 className="text-base font-bold text-white">Estadísticas & Rendimiento</h2>
 
               {/* Overview Metrics */}
@@ -1016,7 +1032,7 @@ export default function App() {
 
           {/* ==================== 4. TAB: SETTINGS ==================== */}
           {!inQuiz && activeTab === 'settings' && (
-            <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+            <div key="tab-settings" className={`space-y-4 pt-1 ${slideDirection === 'right' ? 'tab-slide-right' : 'tab-slide-left'}`}>
               <h2 className="text-base font-bold text-white">Configuración</h2>
 
               {/* Gemini AI Key Configuration Box */}
@@ -1028,7 +1044,7 @@ export default function App() {
                     </div>
                     <div>
                       <span className="font-bold text-sm text-white block">Tutor de IA (Google Gemini)</span>
-                      <span className="text-[10px] text-purple-300">Modelo Gemini Flash Lite (gemini-flash-lite-latest)</span>
+                      <span className="text-[10px] text-purple-300">Modelo Gemini Flash Lite (gemini-3.1-flash-lite)</span>
                     </div>
                   </div>
                   <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
@@ -1210,9 +1226,9 @@ export default function App() {
         {!inQuiz && (
           <nav className="border-t border-slate-800/80 bg-[#090D16]/95 backdrop-blur-md px-4 pt-1 pb-safe min-h-[60px] sm:h-16 flex items-center justify-around z-40">
             <button
-              onClick={() => setActiveTab('home')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
-                activeTab === 'home' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              onClick={() => handleTabChange('home')}
+              className={`flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'home' ? 'text-indigo-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <Home className="w-4.5 h-4.5" />
@@ -1220,9 +1236,9 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setActiveTab('blitz')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
-                activeTab === 'blitz' ? 'text-rose-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              onClick={() => handleTabChange('blitz')}
+              className={`flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'blitz' ? 'text-rose-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <Zap className="w-4.5 h-4.5" />
@@ -1230,9 +1246,9 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setActiveTab('stats')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
-                activeTab === 'stats' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              onClick={() => handleTabChange('stats')}
+              className={`flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'stats' ? 'text-emerald-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <BarChart3 className="w-4.5 h-4.5" />
@@ -1240,9 +1256,9 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setActiveTab('settings')}
-              className={`flex flex-col items-center gap-1 transition cursor-pointer min-w-[48px] py-1 ${
-                activeTab === 'settings' ? 'text-emerald-400 font-bold' : 'text-slate-500 hover:text-slate-300'
+              onClick={() => handleTabChange('settings')}
+              className={`flex flex-col items-center gap-1 transition-all duration-200 cursor-pointer min-w-[48px] py-1 ${
+                activeTab === 'settings' ? 'text-purple-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <Settings className="w-4.5 h-4.5" />
@@ -1267,7 +1283,7 @@ export default function App() {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-white">Tutor Gemini Flash Lite</h4>
-                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-flash-lite-latest)</p>
+                    <p className="text-[9px] text-purple-300">Explicación técnica en profundidad (gemini-3.1-flash-lite)</p>
                   </div>
                 </div>
                 <button
@@ -1314,7 +1330,7 @@ export default function App() {
                         onClick={() => {
                           setShowAiModal(false);
                           setInQuiz(false);
-                          setActiveTab('settings');
+                          handleTabChange('settings');
                         }}
                         className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-2 rounded-xl font-medium cursor-pointer border border-slate-700"
                       >
